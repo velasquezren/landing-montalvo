@@ -79,6 +79,11 @@
 
   /* Las pestañas se anclan debajo de la navegación persistente. */
   --header-bottom: var(--header-h);
+
+  /* Profundidad del arco de marca. Ver la sección EL ARCO, más abajo.
+     Fija en móvil, proporcional en pantallas anchas: un arco relativo al ancho
+     se convierte en un cuenco en un monitor de 27 pulgadas. */
+  --arc-depth: clamp(1.5rem, 4vw, 4rem);
 }
 
 @media (min-width: 1024px) {
@@ -182,6 +187,35 @@ body {
      UTILIDADES
      ========================================================================== */
 
+  /* ============================================================================
+     EL ARCO DE LA MARCA
+
+     El isotipo de la clínica no tiene una sola línea recta: son medias lunas
+     concéntricas, un círculo y una coma. La página, en cambio, estaba resuelta
+     entera con ángulos de 90 grados —rejillas, hairlines, bloques a sangre—, de
+     modo que la retícula contradecía a la marca.
+
+     Esto no lo arregla redondeando todo: eso convertiría una institución médica
+     en una aplicación de consumo. Lo arregla una sola curva, usada con una
+     regla explícita y en pocos sitios:
+
+         todo bloque verde termina en arco.
+
+     Se cumple en el héroe de cada página y en la franja de cierre, que son
+     justamente los dos sitios donde el verde se encuentra con el blanco. El
+     resto de la página sigue siendo recta, que es lo que le da el aire clínico.
+     ========================================================================== */
+
+  /* La misma curva a escala pequeña, como marca recurrente. Sustituye al
+     separador recto de los encabezados de sección: es el eco que hace que el
+     arco del héroe se lea como sistema y no como un adorno suelto. */
+  .arc-rule {
+    width: 2.5rem;
+    height: 0.4rem;
+    border-top: 1px solid currentColor;
+    border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  }
+
   /* Barrido diagonal muy tenue para separar bloques oscuros sin usar gradientes
      de colores ajenos a la paleta. */
   .grain {
@@ -193,6 +227,20 @@ body {
       transparent 7px
     );
   }
+}
+
+/* El radio elíptico horizontal es la mitad del ancho, así que las dos esquinas
+   se encuentran en el centro y forman un único arco continuo de lado a lado. Se
+   recalcula solo al cambiar el ancho: no hay SVG, ni imagen, ni medida en
+   JavaScript.
+
+   Va con `@utility` y no dentro de `@layer components` porque se usa con
+   variantes de ancho (`lg:arc-end`). Tailwind solo genera variantes de las
+   clases que tiene registradas; declarada como clase suelta, `lg:arc-end`
+   simplemente no existía y el arco desaparecía en escritorio. */
+@utility arc-end {
+  border-bottom-left-radius: 50% var(--arc-depth);
+  border-bottom-right-radius: 50% var(--arc-depth);
 }
 
 /* ============================================================================
@@ -451,15 +499,77 @@ body {
   }
 }
 
-/* Solo opacidad: no crea un bloque de referencia para los elementos fijos
-   ni interfiere con el scroll y el foco administrados por Next.js. */
-@keyframes page-enter {
-  from { opacity: 0.65; }
-  to { opacity: 1; }
+/* ============================================================================
+   TRANSICIONES ENTRE PÁGINAS (View Transitions API)
+   El relevo entre páginas lo anima el navegador, no la aplicación: toma una
+   instantánea de la página que sale y otra de la que entra y funde entre las
+   dos. Sin librería, en el compositor, y sin nada que hidratar.
+   ========================================================================== */
+
+::view-transition-old(root) {
+  animation: 140ms var(--ease-smooth) both page-out;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .page-enter { animation: page-enter 180ms ease-out; }
+::view-transition-new(root) {
+  /* Entra con un retardo igual a la salida: primero se va lo anterior y
+     después llega lo nuevo, en lugar de verse las dos a la vez a media
+     opacidad, que es lo que enturbia un crossfade sobre texto. */
+  animation: 220ms var(--ease-out-quart) 140ms both page-in;
+}
+
+@keyframes page-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+
+/* Cabecera y pie no participan: son el punto de referencia de la página. Si
+   parpadean al navegar, la sensación es de recarga y no de continuidad. */
+::view-transition-group(site-header),
+::view-transition-group(site-footer) {
+  animation: none;
+}
+
+::view-transition-old(site-header),
+::view-transition-old(site-footer) {
+  /* Sin esto, la instantánea vieja y la nueva se ven a la vez un instante. */
+  display: none;
+}
+
+::view-transition-new(site-header),
+::view-transition-new(site-footer) {
+  animation: none;
+}
+
+/* El bloque verde con el que abren todas las páginas lleva el mismo nombre en
+   todas, así que el navegador lo trata como un elemento que continúa: en vez de
+   desaparecer y volver a dibujarse, se transforma de una forma a la otra. Es lo
+   que distingue una transición de un fundido. */
+::view-transition-group(page-hero) {
+  animation-duration: 320ms;
+  animation-timing-function: var(--ease-out-quart);
+}
+
+/* La capa de transición captura los clics mientras dura. Dejarlos pasar evita
+   perder una pulsación hecha a mitad de la animación. */
+::view-transition {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
 }
 
 [data-hero] :where(a, button):focus-visible {

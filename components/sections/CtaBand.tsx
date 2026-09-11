@@ -30,11 +30,11 @@ export default function CtaBand({
   return (
     <section
       aria-labelledby="cta-heading"
-      className="relative bg-primary text-white"
+      className="arc-end relative overflow-hidden bg-primary text-white"
     >
       <div className="grain absolute inset-0" aria-hidden="true" />
 
-      <div className="relative mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 lg:grid-cols-12 lg:items-end lg:gap-16 lg:py-28">
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-5 pb-24 pt-16 sm:px-8 lg:grid-cols-12 lg:items-end lg:gap-16 lg:pb-32 lg:pt-24">
         <div className="lg:col-span-7">
           <h2 id="cta-heading" className="h2 reveal text-white">
             {title}

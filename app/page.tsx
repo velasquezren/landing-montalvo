@@ -24,9 +24,16 @@ export default function HomePage() {
   const appointment = getAppointmentLink();
   return (
     <>
-      <section data-hero="" aria-labelledby="inicio-heading" className="bg-primary text-white">
+      {/* El arco cambia de dueño según el ancho, y por eso cambia también el
+          fondo. En escritorio el héroe son dos columnas —verde y fotografía— y
+          el borde inferior de la sección lo comparten las dos: el arco va ahí y
+          las recorta juntas. Apilado, en cambio, la última pieza es la
+          fotografía, así que un arco en la sección quedaría al pie de ella,
+          contra blanco y sin contraste: invisible. Apilado lo lleva la columna
+          verde, que es la que de verdad termina. */}
+      <section data-hero="" aria-labelledby="inicio-heading" style={{ viewTransitionName: "page-hero" }} className="overflow-hidden text-white lg:arc-end lg:bg-primary">
         <div className="mx-auto grid max-w-7xl lg:grid-cols-2">
-          <div className="px-5 py-14 sm:px-8 sm:py-20 lg:py-24 lg:pr-12">
+          <div className="arc-end bg-primary px-5 py-14 sm:px-8 sm:py-20 lg:rounded-none lg:bg-transparent lg:py-24 lg:pr-12">
             <p className="label leading-relaxed text-white/75">Clínica Montalvo · Santa Cruz de la Sierra</p>
             <h1 id="inicio-heading" className="display mt-6 max-w-xl">Su salud, con atención cercana.</h1>
             <p className="lead mt-6 max-w-lg text-white/85">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>

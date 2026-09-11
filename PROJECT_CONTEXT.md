@@ -356,3 +356,90 @@ de direcciones le quitaría al visitante ver dónde está y poder compartirlo.
 Los PNG se rasterizaron desde el SVG con el motor de Chromium, que es el mismo
 que los pinta. Para rehacerlos basta con volver a exportar desde
 `public/images/logo/isotipo.svg` con los encuadres descritos arriba.
+
+---
+
+## 14. Transiciones nativas y el arco de marca — 11 de septiembre de 2026
+
+### Transiciones entre páginas (View Transitions API)
+
+El relevo entre páginas lo anima ahora el navegador, con `<ViewTransition>` de
+React, que el App Router de Next 16 soporta sin configuración. Antes era un
+fundido de opacidad desde 0,65 sobre el contenido nuevo (`.page-enter`), que
+dejaba ver el corte.
+
+* **Cabecera y pie anclados** (`viewTransitionName: site-header` / `site-footer`,
+  con `animation: none` en `::view-transition-group`). No participan: son el
+  punto de referencia de la página, y si parpadean la sensación es de recarga.
+* **El héroe se transforma**: el bloque verde lleva `viewTransitionName:
+  page-hero` en la portada y en `PageHero`, así que el navegador lo reconoce
+  como un elemento que continúa y lo morfea de una forma a la otra en vez de
+  redibujarlo. Es lo que separa una transición de un fundido.
+* **`::view-transition { pointer-events: none }`**: la capa de transición captura
+  los clics mientras dura; sin esto se pierde una pulsación hecha a mitad.
+* Movimiento reducido anula todas las duraciones.
+
+Coste: **0 bytes.** El paquete sigue en 190 KB gz. Es API del navegador, y sin
+soporte la navegación funciona igual, sin animar.
+
+**No se llevó al cambio de suite**: ahí el CSS responde en 12 ms; usar la API
+obligaría a acotar la animación raíz con más CSS y a diferir la actualización,
+con riesgo de empeorar justo esa métrica.
+
+### Tiempos
+
+Se dejaron como estaban, por decisión expresa: salida de página 140 ms, entrada
+220 ms tras ella, morfeo del héroe 320 ms, cambio de suite 300 ms.
+
+### El arco de marca
+
+El isotipo no tiene una sola línea recta —son medias lunas concéntricas, un
+círculo y una coma— mientras que la página estaba resuelta entera con ángulos de
+90 grados. La retícula contradecía a la marca, y de ahí la sensación de
+"demasiado cuadrado".
+
+No se arregla redondeando todo: eso convierte una institución médica en una
+aplicación de consumo. Se arregla con una sola curva y una regla explícita:
+
+> **Todo bloque verde termina en arco.**
+
+Se cumple en el héroe de cada página y en la franja de cierre, que son los dos
+sitios donde el verde se encuentra con el blanco. El resto sigue recto, que es
+lo que da el aire clínico. El eco pequeño es `.arc-rule`, que sustituye al
+separador recto de los encabezados de sección y hace que el arco grande se lea
+como sistema y no como un adorno suelto.
+
+**Implementación**: `@utility arc-end` en `app/globals.css`. El radio elíptico
+horizontal es la mitad del ancho, de modo que las dos esquinas se encuentran en
+el centro y forman un arco continuo de lado a lado; se recalcula solo al cambiar
+el ancho, sin SVG, sin imagen y sin medir en JavaScript. La profundidad es
+`--arc-depth: clamp(1.5rem, 4vw, 4rem)`: fija en móvil y proporcional en
+pantallas anchas, porque un arco relativo al ancho se vuelve un cuenco en un
+monitor de 27 pulgadas.
+
+Va con `@utility` y no dentro de `@layer components` porque se usa con variantes
+de ancho. Tailwind solo genera variantes de las clases registradas; declarada
+como clase suelta, `lg:arc-end` no existía y el arco desaparecía en escritorio.
+
+**La portada cambia de dueño según el ancho.** En escritorio el héroe son dos
+columnas —verde y fotografía— y el borde inferior lo comparten: el arco va en la
+sección y las recorta juntas. Apilado, la última pieza es la fotografía, así que
+un arco en la sección quedaría al pie de ella, contra blanco y sin contraste.
+Apilado lo lleva la columna verde, que es la que de verdad termina. De ahí el
+juego de `bg-primary` / `lg:bg-transparent` entre sección y columna.
+
+### Sobre el verde
+
+Medido sobre la portada: el verde sólido pasó de **25,4 % a 24,0 %** de la
+página. Es poco, y es lo esperado: el arco cambia la forma, no la superficie.
+
+El diagnóstico de fondo no es "mucho verde" sino **mucho verde vacío**, y su
+causa principal son los tres huecos de fotografía —lado derecho del héroe,
+sección de internación y galería de habitaciones—, que hoy son rectángulos
+pálidos con el isotipo de marca de agua. Cuando entren fotografías reales, el
+verde pasará de masa a acento. El inventario de pendientes de la sección 9 sigue
+siendo la vía para eso.
+
+El relleno de la franja de cierre se reequilibró (`pt-16 pb-24`, `lg:pt-24
+lg:pb-32`) para que el contenido no parezca deslizarse dentro de la curva. No
+reduce su altura: compensa el área que el arco quita por abajo.

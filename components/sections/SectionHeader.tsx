@@ -31,7 +31,7 @@ export default function SectionHeader({
     <header className={cn("", className)}>
       <Reveal className="flex items-center gap-3">
         <span className="label text-primary">{index}</span>
-        <span aria-hidden="true" className="h-px w-10 bg-border-strong" />
+        <span aria-hidden="true" className="arc-rule text-border-strong" />
         <span className="label text-muted-foreground">{eyebrow}</span>
       </Reveal>
 

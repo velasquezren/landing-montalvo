@@ -84,13 +84,17 @@ export default function RootLayout({
           Saltar al contenido
         </a>
 
-        <Header />
+        <div style={{ viewTransitionName: "site-header" }}>
+          <Header />
+        </div>
         {/* La barra es fija: este relleno evita que cualquier página sin héroe
             quede por debajo. Los héroes lo compensan con un margen negativo. */}
         <main id="contenido" className="flex-1 pt-[var(--header-h)]">
           {children}
         </main>
-        <Footer />
+        <div style={{ viewTransitionName: "site-footer" }}>
+          <Footer />
+        </div>
         <WhatsAppFloat />
       </body>
     </html>
