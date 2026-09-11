@@ -605,9 +605,16 @@ recomendaciones de duración recogidas en corewebvitals.io y talkingtech.io.
 ## 18. Pedido fotográfico — 11 de septiembre de 2026
 
 `public/images/README.md` es ahora un encargo completo para Marketing, no una
-nota técnica: **13 fotografías más 3 galerías**, con nombre de archivo y carpeta
-exactos, medidas mínimas, indicaciones de encuadre, tratamiento visual, lo que
-no sirve, orden de prioridad y cómo se activa cada foto en `content/`.
+nota técnica: **13 fotografías más 3 galerías**, organizado **página por página**
+y con **prioridad numerada del 01 al 13**, de modo que se pueda encargar por
+partes sin decidir nada sobre la marcha. Incluye nombre de archivo y carpeta
+exactos, ancho de entrega por tipo de foto, indicaciones de encuadre,
+tratamiento visual, lo que no sirve y cómo se activa cada foto en `content/`.
+
+El orden de prioridad no es arbitrario: **01** es la fotografía de portada
+—la primera que ve cualquier visitante— y **02 a 04** son las principales de las
+tres suites, porque la internación es el argumento comercial del sitio y hoy es
+el hueco más grande. Las cabeceras de las páginas secundarias van al final.
 
 Las medidas del documento están **tomadas del sitio construido** a 1920, 1440 y
 412 px, no estimadas. Las dos que condicionan el encargo:
