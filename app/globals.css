@@ -1,26 +1,337 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   TOKENS
+   La paleta es la del tablero de marca: verde oscuro, verde claro, blanco y
+   negro. Nada más. Los tonos derivados (hover, washes, hairlines) se calculan
+   mezclando esos cuatro sobre blanco, para no meter colores ajenos.
+   ========================================================================== */
+
+@theme {
+  /* --- Marca: valores exactos del tablero --- */
+  --color-primary: #006156; /* verde oscuro */
+  /* Verde claro. Da 2,7:1 sobre blanco y 2,7:1 sobre el verde oscuro, así que
+     NO sirve para texto ni para bordes finos: es un color de relleno, para
+     manchas grandes y fondos suaves. */
+  --color-accent: #39ada3;
+
+  /* --- Derivados del verde oscuro --- */
+  --color-primary-dark: #00453d; /* hover, pulsado y velos sobre fotografía */
+  --color-wash: #f5fbfa; /* verde claro al 5%: hovers y fondos sutiles */
+
+  /* --- Superficies y texto --- */
+  --color-background: #ffffff;
+  --color-foreground: #111111; /* el negro del tablero, apenas suavizado */
+  --color-muted-foreground: #5a6664; /* 5,9:1 sobre blanco */
+
+  /* Hairlines: verde oscuro al 10% y al 18% sobre blanco. Un gris neutro se ve
+     sucio al lado de un verde tan saturado. */
+  --color-border: #e8efee;
+  --color-border-strong: #d5e1df;
+
+  /* Categorías de suite. No son colores de marca: son etiquetas de producto
+     (Gold, Silver, Bronce) y tienen que distinguirse entre sí. */
+  --color-gold: #b8893b;
+  --color-silver: #8a96a3;
+  --color-bronce: #a8693f;
+
+  /* --- Tipografía ---
+     Una sola familia en todo el sitio: la sans del tablero de marca. Se probó
+     una serif para los titulares y resultaba demasiado marcada.
+
+     `--font-display` se mantiene como token aparte, apuntando a la misma
+     familia, porque el logotipo definitivo vendrá con su propia tipografía: el
+     día que llegue, cambiar los titulares es esta línea y nada más. */
+  --font-display: var(--font-montserrat), system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-montserrat), system-ui, -apple-system, sans-serif;
+
+  /* Radios: escala corta. Sin píldoras ni esquinas de 24px. */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+  --radius-3xl: 24px;
+
+  /* Elevación mínima: la estructura la dan las líneas, no las sombras. */
+  --shadow-xs: 0 1px 2px rgb(0 69 61 / 0.05);
+  --shadow-sm: 0 1px 2px rgb(0 69 61 / 0.05), 0 2px 6px -2px rgb(0 69 61 / 0.05);
+  --shadow-md: 0 6px 20px -8px rgb(0 69 61 / 0.16);
+  --shadow-lg: 0 24px 60px -20px rgb(0 69 61 / 0.28);
+
+  /* Curvas. Entradas con expo-out, cambios de estado con la curva estándar. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Declaradas aquí, no como clases sueltas: solo así Tailwind genera también
+     las variantes `data-[state=open]:animate-*` que necesita Radix. Como
+     clases planas, el acordeón se abría sin animación ninguna. */
+  --animate-accordion-down: accordion-down 0.32s var(--ease-out-quart);
+  --animate-accordion-up: accordion-up 0.24s var(--ease-smooth);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Alto real de la barra superior. Lo consumen el <main> y los anclajes, así
+     que basta cambiarlo aquí para recalibrar el sitio. */
+  --header-h: 60px;
+
+  /* Las pestañas se anclan debajo de la navegación persistente. */
+  --header-bottom: var(--header-h);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@media (min-width: 1024px) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --header-h: 76px;
   }
 }
 
+/* ============================================================================
+   BASE
+   ========================================================================== */
+
+html {
+  scroll-behavior: auto;
+  /* Los anclajes (#habitaciones) quedaban debajo de la barra fija. */
+  scroll-padding-top: calc(var(--header-h) + 1.5rem);
+  color-scheme: light;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+/* Un único estilo de foco para todo el sitio. */
+:where(a, button, [role="button"], [role="tab"], input, summary):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* Las clases propias van en la capa `components` para que cualquier utilidad
+   de Tailwind (text-white, max-w-*, gap-*) pueda sobrescribirlas. Fuera de
+   capa ganarían siempre: CSS sin capa vence a CSS en capa.
+   Ejemplo real: `.lead` fija color y dejaba gris el subtítulo del héroe,
+   que lo quiere blanco. */
+@layer components {
+  /* ============================================================================
+     TIPOGRAFÍA
+     Contraste alto entre titulares (serif, grandes, poco tracking) y la interfaz
+     (sans, pequeña, tracking amplio en mayúsculas).
+     ========================================================================== */
+
+  .display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(2.125rem, 4.8vw, 3.75rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+  }
+
+  .h2 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.5rem, 2.9vw, 2.25rem);
+    line-height: 1.18;
+    letter-spacing: -0.022em;
+  }
+
+  .h3 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+    font-size: clamp(1rem, 1.2vw, 1.125rem);
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+
+  .lead {
+    font-size: clamp(0.9375rem, 1.2vw, 1.0625rem);
+    line-height: 1.65;
+    color: var(--color-muted-foreground);
+  }
+
+  /* Etiquetas pequeñas en mayúsculas: numeración de secciones, antetítulos. */
+  .label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Ancho de lectura cómodo sin tener que repetir max-w-* por todos lados. */
+  .measure {
+    max-width: 36em;
+  }
+
+  /* ============================================================================
+     UTILIDADES
+     ========================================================================== */
+
+  /* Barrido diagonal muy tenue para separar bloques oscuros sin usar gradientes
+     de colores ajenos a la paleta. */
+  .grain {
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgb(255 255 255 / 0.035) 0px,
+      rgb(255 255 255 / 0.035) 1px,
+      transparent 1px,
+      transparent 7px
+    );
+  }
+}
+
+/* ============================================================================
+   ANIMACIONES CSS
+   Todo lo demás se anima con Motion; aquí solo lo que Radix controla por data-state.
+   ========================================================================== */
+
+@keyframes accordion-down {
+  from {
+    height: 0;
+    opacity: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+    opacity: 1;
+  }
+  to {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+/* Entradas por encima del pliegue. Van en CSS para que no dependan de que el
+   JavaScript haya hidratado; `both` mantiene el estado inicial durante el
+   retardo y deja el final fijado al terminar. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.7s var(--ease-out-expo) both;
+}
+
+/* Entradas ligadas al scroll.
+ *
+ * Las clases se definen SOLO dentro de @supports: si el navegador no entiende
+ * `animation-timeline` no hereda ninguna animación y el contenido se pinta ya
+ * en su estado final. El peor caso es quedarse sin animación, nunca sin
+ * contenido, que es justo al revés de lo que pasa animando con JavaScript.
+ *
+ * El tramo va de `entry 0%` a `entry 100%`: la animación termina en cuanto el
+ * elemento ha entrado entero. Así, lo que ya se ve al cargar la página aparece
+ * opaco y no a medio camino, que es el defecto habitual de este tipo de
+ * animaciones. `--step` escalona a los hermanos retrasando su arranque.
+ *
+ * Ojo: `view()` se mide contra el ancestro con scroll más cercano, y
+ * `overflow: hidden` cuenta como tal. Dentro de un contenedor recortado el
+ * elemento está "siempre visible" y la animación se queda fija en su estado
+ * final. Por eso ninguna rejilla de este sitio recorta a sus celdas. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* El atajo `animation` reinicia animation-timeline y animation-range, así
+       que va primero. Y el escalonado se declara aparte, para que si el calc()
+       no se entiende solo se pierda el desfase y no el tramo entero. */
+    .reveal {
+      animation: rise-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+      animation-range-start: entry calc(var(--step, 0) * 10%);
+    }
+  }
+}
+
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sheet-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* ============================================================================
+   ACCESIBILIDAD
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    /* Sin esto el retardo se mantiene: las animaciones con `both` se quedan
+       congeladas en su estado inicial —es decir, invisibles— durante todo el
+       delay, que es justo lo contrario de lo que pide la preferencia. */
+    animation-delay: 0s !important;
+    transition-delay: 0s !important;
+  }
+}
+
+/* Solo opacidad: no crea un bloque de referencia para los elementos fijos
+   ni interfiere con el scroll y el foco administrados por Next.js. */
+@keyframes page-enter {
+  from { opacity: 0.65; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .page-enter { animation: page-enter 180ms ease-out; }
+}
+
+[data-hero] :where(a, button):focus-visible {
+  outline-color: white;
 }
