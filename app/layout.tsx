@@ -4,7 +4,6 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import WhatsAppFloat from "@/components/layout/WhatsAppFloat";
-import MotionProvider from "@/components/layout/Motion";
 import { siteConfig } from "@/content/site";
 
 /**
@@ -18,6 +17,12 @@ const sans = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
   display: "swap",
+  /* Next mide la fuente de respaldo y ajusta sus métricas a las de Montserrat,
+     de modo que el texto no se recoloca cuando la definitiva termina de
+     cargar. Declarar la pila explícitamente evita caer en la serif por defecto
+     durante ese intervalo. */
+  fallback: ["system-ui", "-apple-system", "Segoe UI", "Roboto", "sans-serif"],
+  adjustFontFallback: true,
 });
 
 export const viewport: Viewport = {
@@ -79,16 +84,14 @@ export default function RootLayout({
           Saltar al contenido
         </a>
 
-        <MotionProvider>
-          <Header />
-          {/* La barra es fija: este relleno evita que cualquier página sin héroe
-              quede por debajo. Los héroes lo compensan con un margen negativo. */}
-          <main id="contenido" className="flex-1 pt-[var(--header-h)]">
-            {children}
-          </main>
-          <Footer />
-          <WhatsAppFloat />
-        </MotionProvider>
+        <Header />
+        {/* La barra es fija: este relleno evita que cualquier página sin héroe
+            quede por debajo. Los héroes lo compensan con un margen negativo. */}
+        <main id="contenido" className="flex-1 pt-[var(--header-h)]">
+          {children}
+        </main>
+        <Footer />
+        <WhatsAppFloat />
       </body>
     </html>
   );

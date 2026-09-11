@@ -5,8 +5,12 @@ import { cn } from "@/lib/utils";
  *
  * Compuesto como en el tablero de marca: el isotipo, y al lado "CLÍNICA" en
  * versalitas muy espaciadas sobre "MONTALVO" en la serif. Va en texto real, así
- * que hereda las fuentes de la página, cambia de tono con una transición y no
- * cuesta ninguna petición.
+ * que hereda las fuentes de la página y no cuesta ninguna petición.
+ *
+ * `tone` se decide al renderizar y no cambia después, así que los tres
+ * `transition-colors` que llevaba no podían dispararse nunca: eran transiciones
+ * declaradas en cada aparición del logotipo —cabecera, pie y panel— sin ningún
+ * cambio de color al que reaccionar.
  */
 
 interface LogoProps {
@@ -53,7 +57,7 @@ export default function Logo({ tone = "color", className }: LogoProps) {
     <span className={cn("flex items-center gap-2.5", className)}>
       <LogoMark
         className={cn(
-          "h-9 w-9 shrink-0 transition-colors duration-300 lg:h-10 lg:w-10",
+          "h-9 w-9 shrink-0 lg:h-10 lg:w-10",
           light ? "text-white" : "text-primary"
         )}
       />
@@ -61,7 +65,7 @@ export default function Logo({ tone = "color", className }: LogoProps) {
       <span className="flex flex-col leading-none">
         <span
           className={cn(
-            "text-[8.5px] font-semibold tracking-[0.34em] transition-colors duration-300 lg:text-[9px]",
+            "text-[8.5px] font-semibold tracking-[0.34em] lg:text-[9px]",
             light ? "text-white/80" : "text-muted-foreground"
           )}
         >
@@ -69,7 +73,7 @@ export default function Logo({ tone = "color", className }: LogoProps) {
         </span>
         <span
           className={cn(
-            "mt-[3px] font-display text-[16px] font-bold leading-none tracking-[0.07em] transition-colors duration-300 lg:text-[18px]",
+            "mt-[3px] font-display text-[16px] font-bold leading-none tracking-[0.07em] lg:text-[18px]",
             light ? "text-white" : "text-foreground"
           )}
         >

@@ -1,15 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { motion } from "motion/react";
-import { roomsData } from "@/content/rooms";
+import { roomsData, type RoomSlug } from "@/content/rooms";
 import TierDot from "@/components/sections/TierDot";
-import { slide } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 interface RoomTabsProps {
-  activeSlug: string;
-  onSelectTab: (slug: string) => void;
+  activeSlug: RoomSlug;
+  onSelectTab: (slug: RoomSlug) => void;
 }
 
 /**
@@ -18,9 +16,43 @@ interface RoomTabsProps {
  * Era un control segmentado con fondo teñido, sombra interior, borde y una
  * píldora blanca deslizante: mucho cromo para elegir entre tres opciones. Ahora
  * son tres palabras sobre una línea, con un subrayado que se desplaza.
+ *
+ * El subrayado lo movía `layoutId` de Motion, que para animar dos números
+ * arrastraba el motor de proyección de layout de la librería entera. Aquí se
+ * miden la posición y el ancho de la pestaña activa —una vez por selección, no
+ * por fotograma— y se escriben como variables CSS; el recorrido lo interpola el
+ * compositor sin volver a pasar por JavaScript.
  */
 export default function RoomTabs({ activeSlug, onSelectTab }: RoomTabsProps) {
   const listRef = React.useRef<HTMLDivElement>(null);
+
+  // `useLayoutEffect` y no `useEffect`: la medida tiene que estar escrita antes
+  // de que el navegador pinte, o el subrayado parpadea en la posición anterior.
+  React.useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+
+    const measure = () => {
+      const tab = list.querySelector<HTMLElement>(`#tab-${activeSlug}`);
+      if (!tab) return;
+
+      list.style.setProperty("--tab-x", `${tab.offsetLeft}px`);
+      list.style.setProperty("--tab-w", `${tab.offsetWidth}px`);
+      // Solo a partir de la primera medida se permite la transición: si no, el
+      // subrayado se vería viajar desde el origen al cargar la página.
+      list.toggleAttribute("data-tabs-ready", true);
+    };
+
+    measure();
+
+    // Cubre el cambio de viewport, el zoom y —sobre todo— el momento en que
+    // Montserrat termina de cargar y las tres etiquetas cambian de ancho.
+    const observer = new ResizeObserver(measure);
+    for (const tab of list.querySelectorAll<HTMLElement>('[role="tab"]')) {
+      observer.observe(tab);
+    }
+    return () => observer.disconnect();
+  }, [activeSlug]);
 
   // Flechas izquierda/derecha entre pestañas, como espera un `tablist`.
   const onKeyDown = (event: React.KeyboardEvent) => {
@@ -43,13 +75,18 @@ export default function RoomTabs({ activeSlug, onSelectTab }: RoomTabsProps) {
 
   return (
     // Las pestañas permanecen inmediatamente debajo de la cabecera fija.
-    <div className="sticky top-[var(--header-bottom)] z-30 border-b border-border bg-background/95 backdrop-blur-md">
+    //
+    // Sin `backdrop-blur`: desenfocar el fondo de una barra pegajosa obliga al
+    // navegador a recomponer esa franja en cada fotograma mientras se hace
+    // scroll, que es justo cuando no hay presupuesto. Y se notaba poco: debajo
+    // de la barra solo pasa página blanca.
+    <div className="sticky top-[var(--header-bottom)] z-30 border-b border-border bg-background">
       <div
         ref={listRef}
         role="tablist"
         aria-label="Tipo de suite de internación"
         onKeyDown={onKeyDown}
-        className="mx-auto flex max-w-7xl items-center gap-7 px-5 sm:gap-9 sm:px-8"
+        className="relative mx-auto flex max-w-7xl items-center gap-7 px-5 sm:gap-9 sm:px-8"
       >
         {roomsData.map((room) => {
           const active = room.slug === activeSlug;
@@ -65,7 +102,7 @@ export default function RoomTabs({ activeSlug, onSelectTab }: RoomTabsProps) {
               tabIndex={active ? 0 : -1}
               onClick={() => onSelectTab(room.slug)}
               className={cn(
-                "relative flex items-center gap-2 py-4 text-sm font-medium transition-colors duration-200",
+                "flex items-center gap-2 py-4 text-sm font-medium transition-colors duration-200",
                 active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -77,18 +114,16 @@ export default function RoomTabs({ activeSlug, onSelectTab }: RoomTabsProps) {
                 )}
               />
               {room.tabLabel}
-
-              {active && (
-                <motion.span
-                  layoutId="room-tab-underline"
-                  transition={slide}
-                  aria-hidden="true"
-                  className="absolute inset-x-0 -bottom-px h-[2px] bg-primary"
-                />
-              )}
             </button>
           );
         })}
+
+        {/* Un solo subrayado para las tres pestañas, en lugar de uno por
+            pestaña apareciendo y desapareciendo. */}
+        <span
+          aria-hidden="true"
+          className="tab-indicator absolute -bottom-px left-0 h-[2px] bg-primary"
+        />
       </div>
     </div>
   );

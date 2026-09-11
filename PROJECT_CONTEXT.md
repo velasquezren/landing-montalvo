@@ -23,10 +23,10 @@
 | **Librería UI** | React | 19.2.8 | Con soporte completo para Server Components y Client Components optimizados. |
 | **Tipado** | TypeScript | 5.x | Tipado estricto en datos de contenido y componentes. |
 | **Estilos** | Tailwind CSS | 4.x (`@tailwindcss/postcss`) | Sintaxis moderna con directivas `@theme` en `app/globals.css`. |
-| **Animaciones UI** | Motion | 13.2.0 | Para transiciones de estado, tabs con `layoutId`, drawers y transiciones entre suites. |
+| **Animaciones** | CSS nativo | N/A | **No hay librería de animación.** Fotogramas y transiciones en `app/globals.css`: entradas al montar, paneles, subrayado deslizante y botón flotante. Corren en el hilo de composición y no esperan a la hidratación. |
 | **Animaciones Scroll** | CSS Nativo | N/A | `animation-timeline: view()` y `@supports` para animaciones reveal en scroll sin peso JS. |
-| **Primitivas UI** | Radix UI | 1.x | Acordeones accesibles (`@radix-ui/react-accordion`) y Sheet/Dialog (`@radix-ui/react-dialog`). |
-| **Galería / Carrusel** | Embla Carousel & Lightbox | 8.6 / 3.32 | `embla-carousel-react` en móviles y `yet-another-react-lightbox` para zoom fotográfico. |
+| **Primitivas UI** | Radix UI | 1.x | Acordeones accesibles (`@radix-ui/react-accordion`) y Sheet/Dialog (`@radix-ui/react-dialog`, en carga diferida). |
+| **Galería / Carrusel** | Anclaje de scroll nativo & Lightbox | N/A / 3.32 | Carrusel por `scroll-snap` en CSS, sin librería. `yet-another-react-lightbox` para zoom fotográfico, cargado bajo demanda. |
 | **Iconos** | Lucide React | 1.43 | Iconografía médica y utilitaria coherente de 1.5 a 1.75 stroke. |
 | **Gestor Paquetes**| pnpm | 11.24 | Configuración rápida con `pnpm-workspace.yaml`. |
 
@@ -96,11 +96,12 @@ app/
 * **`SocialIcons.tsx`**: SVGs limpios y accesibles para Facebook, Instagram, TikTok, YouTube y WhatsApp.
 
 ### Layout (`components/layout/`)
-* **`Header.tsx`**: Barra fija blanca con Inicio explícito, ruta activa accesible y reserva de cita. Mantiene posición y contraste al cambiar de página. Menú completo desde 1280px; drawer por debajo para evitar solapamientos. El logotipo enlaza a la portada real.
+* **`Header.tsx`**: **Componente de servidor.** Barra fija blanca con logotipo, navegación y reserva de cita. Menú completo desde 1280px; drawer por debajo. Solo delega en cliente las dos piezas que lo necesitan (`MainNav`, `MobileNav`).
+* **`MainNav.tsx`**: Enlaces de escritorio. Única parte de la cabecera que lee `usePathname`, y por tanto lo único que viaja como JavaScript. Exporta `isActivePath`, compartida con el drawer.
 * **`Footer.tsx`**: Pie de página institucional sobre fondo blanco con hairlines de 1px. Contiene el logotipo, enlaces a todas las páginas, datos de contacto, horarios y derechos.
-* **`MobileNav.tsx`**: Drawer lateral basado en Radix Dialog/Sheet. Ofrece navegación escalonada con Motion, botones rápidos para reservar cita o abrir chat de WhatsApp y datos de guardia.
-* **`Motion.tsx`**: `MotionConfig` con soporte automático para usuarios con preferencia de movimiento reducido (`reducedMotion="user"`).
-* **`WhatsAppFloat.tsx`**: Botón flotante accesible de WhatsApp. Aparece suavemente solo cuando el usuario pasa la zona del héroe (`>420px`).
+* **`MobileNav.tsx`**: Solo el botón de hamburguesa. Pide `MobileNavDrawer` en el primer hueco libre del hilo principal (`requestIdleCallback`), de modo que Radix Dialog no entra en el paquete inicial de ninguna página.
+* **`MobileNavDrawer.tsx`**: Drawer lateral sobre Radix Dialog/Sheet, controlado desde `MobileNav`. Navegación escalonada por CSS (`.stagger-item`), botones rápidos para cita o WhatsApp y datos de guardia. Se cierra al navegar.
+* **`WhatsAppFloat.tsx`**: Botón flotante accesible de WhatsApp. Un testigo de 420px al inicio del documento y un `IntersectionObserver` lo muestran al superar el héroe: el navegador avisa al cruzar el umbral, no en cada fotograma de scroll.
 
 ### Secciones (`components/sections/`)
 * **`PageHero.tsx`**: Encabezado visual de página de renderizado del lado servidor (RSC). Soporta fotografía editorial configurable o textura de marca, migas de pan y metadatos al pie. Mantiene alturas equivalentes con y sin imagen; el texto aparece sin retrasos individuales.
@@ -110,14 +111,15 @@ app/
   * Maneja el estado de la suite activa (`gold`, `silver`, `bronce`).
   * Se sincroniza automáticamente con el hash de la URL (`#gold`, `#silver`, `#bronce`).
   * Contiene las pestañas fijas (`RoomTabs`), el panel detallado (`RoomPanel`) y la comparativa (`RoomsComparison`).
-* **`RoomTabs.tsx`**: Selector de habitaciones pegajoso (`sticky top-[var(--header-bottom)]`). Subrayado animado con `layoutId="room-tab-underline"` y navegación completa con flechas de teclado.
+* **`RoomTabs.tsx`**: Selector de habitaciones pegajoso (`sticky top-[var(--header-bottom)]`). Sin `backdrop-blur`: desenfocar una barra pegajosa obliga a recomponer esa franja en cada fotograma de scroll. El subrayado deslizante se mide una vez por selección y se escribe como variables CSS (`--tab-x`, `--tab-w`); el recorrido lo interpola el compositor. Navegación completa con flechas de teclado.
 * **`RoomPanel.tsx`**: Muestra la información de la suite seleccionada (mote de categoría, titular, descripción, puntos destacados, especificaciones de m² o acompañantes si existen, botón a WhatsApp preconfigurado con el nombre de la suite y amenidades).
 * **`RoomGallery.tsx`**: Galería fotográfica inteligente:
   * En desktop: Mosaico asimétrico (1 imagen principal dominante + 2 secundarias con indicador `+N fotos más`).
-  * En móvil: Carrusel táctil con `Carousel` (Embla).
-  * Al hacer clic: Abre el visor a pantalla completa con `yet-another-react-lightbox`.
+  * En móvil: Carrusel táctil por anclaje de scroll nativo (`SnapCarousel`).
+  * Al hacer clic: Abre el visor a pantalla completa. El módulo del visor se carga bajo demanda y se adelanta al acercar el puntero o al tocar la pantalla; se guarda en estado, no con `next/dynamic`, para que no suspenda en el clic.
+* **`RoomLightbox.tsx`**: Envoltorio de `yet-another-react-lightbox` y su hoja de estilos, aislado en su propio módulo para poder quedar fuera del paquete inicial.
 * **`RoomAmenities.tsx`**: Lista en grilla de las prestaciones incluidas en la suite activa, con iconos Lucide específicos.
-* **`RoomsComparison.tsx`**: Tabla comparativa con las 15 amenidades para Gold, Silver y Bronce. Al pulsar sobre la cabecera de una suite, cambia activamente el panel principal.
+* **`RoomsComparison.tsx`**: Tabla comparativa con las 15 amenidades para Gold, Silver y Bronce. Al pulsar sobre la cabecera de una suite, cambia activamente el panel principal. El cuerpo de la tabla va en un subcomponente memoizado sin props: cambiar de suite no reconcilia sus 45 celdas.
 * **`InternacionFaq.tsx`**: Acordeón Radix desplegable con preguntas frecuentes de internación y llamada lateral a admisiones.
 * **`CtaBand.tsx`**: Franja de cierre de página en verde oscuro con titular personalizable, botón directo a WhatsApp y enlace de llamada telefónica.
 * **`SectionHeader.tsx`**: Encabezado estándar con numeración de sección (`01`, `02`), antetítulo en mayúsculas (`label`), titular y descripción.
@@ -125,12 +127,12 @@ app/
 * **`PagePlaceholder.tsx`**: Plantilla para secciones pendientes (`/staff-medico`, `/blog`), explicando qué contenido está en preparación y ofreciendo vías de contacto alternativas para no perder al visitante.
 
 ### UI Primitivas (`components/ui/`)
-* **`button.tsx`**: Botón polimórfico (`asChild` vía `@radix-ui/react-slot`) con variantes (`default`, `inverse`, `inverseOutline`, `ghost`) y tamaños calibrados.
+* **`button.tsx`**: Botón polimórfico (`asChild` vía `@radix-ui/react-slot`) con variantes (`default`, `inverse`, `inverseOutline`, `ghost`) y tamaños calibrados. Es componente de servidor: no usa estado ni APIs del navegador, así que en las páginas que no hidratan nada se resuelve en el servidor.
 * **`reveal.tsx`**: 
   * `Reveal`: Envoltura que aplica clases CSS de revelado por scroll sin Javascript.
 * **`accordion.tsx`**: Implementación accesible de Radix Accordion con transiciones de apertura y cierre por CSS keyframes.
 * **`sheet.tsx`**: Modal tipo panel lateral deslizante (Drawer).
-* **`carousel.tsx`**: Envoltorio declarativo para Embla Carousel adaptado a React 19.
+* **`snap-carousel.tsx`**: Carrusel por anclaje de scroll nativo. El desplazamiento lo lleva el navegador en el hilo de composición —sin bucle de `rAF` ni escucha táctil en JavaScript—, así que el arrastre no puede dar tirones aunque el hilo principal esté ocupado. Un `IntersectionObserver` mantiene el contador.
 
 ---
 
@@ -149,9 +151,11 @@ app/
 
 ## 7. Módulos Auxiliares (`lib/`)
 
+> Las curvas de animación ya no viven en TypeScript: son tokens CSS
+> (`--ease-out-expo`, `--ease-out-quart`, `--ease-smooth`) en `app/globals.css`.
+
 * **[links.ts](file:///home/httpreen/Documentos/Clinica%20Montalvo/montalvo/montalvo/lib/links.ts)**: Lógica defensiva para el botón "Reservar cita". Si `siteConfig.appointmentUrl` aún no tiene una URL externa válida, redirige automáticamente a WhatsApp solicitando cita.
 * **[whatsapp.ts](file:///home/httpreen/Documentos/Clinica%20Montalvo/montalvo/montalvo/lib/whatsapp.ts)**: Generador centralizado de URLs `wa.me/59175031306` con mensajes contextuales predefinidos (general, por habitación o por especialidad).
-* **[motion.ts](file:///home/httpreen/Documentos/Clinica%20Montalvo/montalvo/montalvo/lib/motion.ts)**: Curvas de animación unificadas (`EASE_OUT`, `EASE_SMOOTH`, `slide` tipo spring).
 * **[utils.ts](file:///home/httpreen/Documentos/Clinica%20Montalvo/montalvo/montalvo/lib/utils.ts)**: Combinador de clases CSS `cn()` con `clsx` y `tailwind-merge`.
 
 ---
@@ -213,3 +217,84 @@ Para cuando el cliente suministre material definitivo:
 Referencias de implementación: documentación local de Next 16.3.4 (`template`, navegación, `Image`); https://nextjs.org/docs/app/getting-started/linking-and-navigating y https://www.w3.org/WAI/WCAG21/Techniques/css/C39.html.
 
 * Inspección visual de los WebP: contienen instrucciones de producción, no fotos. Quedan fuera de la interfaz y metadatos sociales. `images: []` en las suites muestra un panel de marca y activa automáticamente la galería al cargar fotografías reales.
+
+---
+
+## 12. Pasada de rendimiento — 11 de septiembre de 2026
+
+Objetivo: bajar el coste de arranque y quitar de en medio todo lo que compite
+por el hilo principal mientras el usuario se desplaza o interactúa. Sin cambios
+de diseño ni de contenido.
+
+### Medido, antes y después (`next build`, peso que pide el HTML generado)
+
+| Ruta | Antes | Después | |
+| :--- | ---: | ---: | ---: |
+| `/`, `/blog`, `/sobre-nosotros`… | 248 KB gz | **190 KB gz** | −23% |
+| `/servicios` | 278 KB gz | **208 KB gz** | −25% |
+
+| Interacción | Antes | Después |
+| :--- | ---: | ---: |
+| Clic en pestaña → suite visible | ~590 ms por diseño | **6–39 ms** |
+| Clic en foto → visor abierto | 810 ms | **51 ms** |
+
+### Qué se quitó y por qué
+
+1. **Motion (librería de animación), eliminada.** `MotionConfig` envolvía el
+   layout raíz, así que entraba en el paquete compartido de las once rutas,
+   incluidas las que son solo texto. Sus cuatro usos se rehicieron en CSS:
+   entradas del drawer, cambio de panel, subrayado de pestañas y botón
+   flotante. Ver el bloque «ANIMACIONES CSS» de `app/globals.css`.
+2. **Embla Carousel, eliminada.** Sustituida por `scroll-snap` nativo
+   (`components/ui/snap-carousel.tsx`). Además se inicializaba también en
+   escritorio, donde el carrusel está oculto.
+3. **`AnimatePresence mode="wait"` en el cambio de suite.** Encadenaba 140 ms de
+   salida y 450 ms de entrada: casi 600 ms entre el clic y ver lo pedido.
+4. **`useScroll` en el botón flotante.** Ejecutaba una comparación en cada
+   fotograma de scroll durante toda la visita. Ahora, un `IntersectionObserver`.
+5. **`backdrop-blur` en las pestañas pegajosas y en el velo del drawer.**
+   Desenfocar obliga a recomponer esa región en cada fotograma, justo cuando no
+   hay presupuesto. Contra una página blanca no se distinguía.
+6. **`text-rendering: optimizeLegibility` en `body`.** Fuerza kerning y
+   ligaduras en todo el texto y retrasa el primer pintado.
+
+### Qué se movió fuera del arranque
+
+* **El visor de fotografías** (`yet-another-react-lightbox`, ~45 KB + 5 KB de
+  CSS) vive en `RoomLightbox.tsx` y se carga al acercar el puntero o al tocar la
+  galería. Hoy, con `images: []`, no se descarga nunca.
+* **Radix Dialog** (~43 KB) sale del paquete inicial de todas las páginas:
+  `MobileNav` es solo el botón y pide el drawer en el primer hueco libre del
+  hilo principal.
+
+> **Nota sobre Suspense.** El visor se guarda en estado y no con `next/dynamic`.
+> Un componente perezoso suspende la primera vez que se dibuja, y React espera
+> 300 ms antes de revelar el contenido para que no parpadee; como ese primer
+> dibujo caía en el clic, esos 300 ms se cobraban al abrir (324 ms medidos con
+> el módulo ya en caché). Es la diferencia entre 810 ms y 51 ms.
+
+### Qué pasó a resolverse en el servidor
+
+* `Header.tsx` y `button.tsx` dejaron de ser componentes de cliente. La cabecera
+  entera —isotipo SVG incluido— viajaba como JavaScript por leer `usePathname`
+  en un sitio; ahora eso vive aislado en `MainNav.tsx`.
+
+### Configuración
+
+* `next.config.ts`: AVIF antes que WebP, anchos de dispositivo acotados a los
+  tamaños que el diseño pide de verdad, caché de imagen de un año,
+  `poweredByHeader: false`, `reactStrictMode`.
+* `tsconfig.json`: `target` de ES2017 a ES2022 — deja de transpilar `async`,
+  generadores y campos de clase a máquinas de estado.
+
+### Verificado
+
+Build, `eslint` y `tsc --noEmit` limpios. Comprobado en navegador real
+(Chromium) sin errores de consola ni de hidratación: posición y recorrido del
+subrayado, cambio de suite, sincronía con el hash, flechas de teclado en el
+`tablist`, aparición y ocultado del flotante, apertura y cierre del drawer en
+móvil y su cierre al navegar, carrusel con anclaje y contador, visor con teclado,
+y todo el contenido visible con `prefers-reduced-motion: reduce`.
+
+La galería se probó inyectando temporalmente las maquetas WebP en
+`content/rooms.ts`, ya que las suites siguen con `images: []`.

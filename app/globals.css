@@ -107,7 +107,6 @@ body {
   line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -198,7 +197,11 @@ body {
 
 /* ============================================================================
    ANIMACIONES CSS
-   Todo lo demás se anima con Motion; aquí solo lo que Radix controla por data-state.
+   Todo el movimiento del sitio vive aquí. No hay ninguna librería de animación
+   en el paquete: lo que antes resolvía Motion en JavaScript (entradas, paneles,
+   subrayado deslizante, botón flotante) son fotogramas y transiciones CSS, que
+   corren en el hilo de composición y no dependen de que la página haya
+   hidratado.
    ========================================================================== */
 
 @keyframes accordion-down {
@@ -295,6 +298,133 @@ body {
   }
   to {
     transform: translateX(100%);
+  }
+}
+
+/* --- Entradas al montar -----------------------------------------------------
+ *
+ * Radix monta el contenido del panel lateral al abrirlo, así que basta con que
+ * la animación esté declarada: se reproduce sola en ese momento. `--i` escalona
+ * a los hermanos sin necesidad de calcular retardos en JavaScript. */
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    translate: 14px 0;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+
+.stagger-item {
+  animation: slide-in-right 0.32s var(--ease-out-quart) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+
+/* Cambio de suite. Sustituye al `AnimatePresence mode="wait"`, que encadenaba
+ * salida (140 ms) y entrada (450 ms): casi 600 ms entre el clic y ver la suite
+ * pedida. Aquí el panel anterior desaparece en el mismo fotograma del clic y el
+ * nuevo entra en 300 ms, de modo que la respuesta es inmediata.
+ *
+ * Se reproduce porque React remonta el panel al cambiar su `key`. */
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    translate: 0 10px;
+  }
+  to {
+    opacity: 1;
+    translate: none;
+  }
+}
+
+.panel-enter {
+  animation: panel-enter 0.3s var(--ease-out-quart) both;
+}
+
+/* --- Subrayado deslizante de las pestañas -----------------------------------
+ *
+ * Lo que hacía `layoutId` de Motion, sin su motor de proyección de layout. La
+ * posición y el ancho del tramo activo se escriben una sola vez por selección
+ * como variables CSS; el desplazamiento lo interpola el compositor.
+ *
+ * `translate` y `width` van como propiedades independientes para no chocar con
+ * ninguna utilidad `transform-*` de Tailwind sobre el mismo elemento. */
+.tab-indicator {
+  width: var(--tab-w, 0);
+  translate: var(--tab-x, 0) 0;
+}
+
+/* La transición se habilita solo después de la primera medición: si no, el
+   subrayado se vería viajar desde el origen al cargar la página. */
+[data-tabs-ready] .tab-indicator {
+  transition:
+    translate 0.34s var(--ease-out-quart),
+    width 0.34s var(--ease-out-quart);
+}
+
+/* --- Acceso flotante --------------------------------------------------------
+ *
+ * Antes lo gobernaba `useScroll` de Motion, que ejecutaba una función en cada
+ * fotograma de scroll durante toda la visita. Ahora lo conmuta un
+ * IntersectionObserver, que solo dispara al cruzar el umbral, y el movimiento
+ * es esta transición.
+ *
+ * `visibility` se interpola a saltos y en el sentido correcto: aparece al
+ * instante al mostrarse y espera a que termine el desvanecido al ocultarse. De
+ * paso saca el botón del orden de tabulación mientras no se ve. */
+.float-action {
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 8px;
+  scale: 0.92;
+  transition:
+    opacity 0.28s var(--ease-out-quart),
+    translate 0.28s var(--ease-out-quart),
+    scale 0.28s var(--ease-out-quart),
+    visibility 0.28s,
+    color 0.15s var(--ease-smooth),
+    background-color 0.15s var(--ease-smooth),
+    border-color 0.15s var(--ease-smooth);
+}
+
+.float-action[data-visible] {
+  opacity: 1;
+  visibility: visible;
+  translate: none;
+  scale: none;
+}
+
+/* --- Carrusel por anclaje nativo --------------------------------------------
+ *
+ * Sustituye a Embla. El desplazamiento lo lleva el propio navegador en el hilo
+ * de composición: no hay bucle de rAF ni escucha táctil en JavaScript, así que
+ * arrastrar no puede producir tirones por mucho que el hilo principal esté
+ * ocupado. El indicador de posición lo resuelve un IntersectionObserver. */
+.snap-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  /* La barra sobra: hay contador y botones. */
+  scrollbar-width: none;
+}
+
+.snap-track::-webkit-scrollbar {
+  display: none;
+}
+
+.snap-track > * {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snap-track {
+    scroll-behavior: auto;
   }
 }
 

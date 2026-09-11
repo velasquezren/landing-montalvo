@@ -16,7 +16,6 @@ import { cn } from "@/lib/utils";
 
 const Sheet = DialogPrimitive.Root;
 const SheetTrigger = DialogPrimitive.Trigger;
-const SheetClose = DialogPrimitive.Close;
 
 const SheetContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
@@ -25,7 +24,11 @@ const SheetContent = React.forwardRef<
   <DialogPrimitive.Portal>
     <DialogPrimitive.Overlay
       className={cn(
-        "fixed inset-0 z-50 bg-primary-dark/40 backdrop-blur-[2px]",
+        // Sin `backdrop-blur`: el velo aparece a la vez que el panel entra
+        // deslizándose, así que desenfocar obliga a recomponer la pantalla
+        // entera durante toda la animación. Es la causa habitual de que un
+        // cajón lateral se abra a trompicones en un teléfono de gama media.
+        "fixed inset-0 z-50 bg-primary-dark/50",
         "data-[state=open]:animate-[overlay-in_0.3s_var(--ease-smooth)]",
         "data-[state=closed]:animate-[overlay-in_0.2s_var(--ease-smooth)_reverse]"
       )}
@@ -84,7 +87,6 @@ function SheetCloseButton({ className }: { className?: string }) {
 export {
   Sheet,
   SheetTrigger,
-  SheetClose,
   SheetContent,
   SheetTitle,
   SheetDescription,

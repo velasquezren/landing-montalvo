@@ -21,11 +21,14 @@ export type RoomImage = {
   role: "principal" | "galeria" | "detalle";
 };
 
+/** Identificador de suite. Es también el ancla de la URL (/servicios#gold). */
+export type RoomSlug = "gold" | "silver" | "bronce";
+
 export type Room = {
-  slug: "gold" | "silver" | "bronce";
+  slug: RoomSlug;
   tabLabel: string; // "Gold"
   name: string; // "Gold Deluxe Suite"
-  tier: "gold" | "silver" | "bronce";
+  tier: RoomSlug;
   tagline: string;
   description: string[];
   highlights: string[];
@@ -144,3 +147,20 @@ export const roomsData: Room[] = [
     // [COMPLETAR: areaM2, companions, priceFrom si la clínica decide publicarlos]
   }
 ];
+
+/** La primera suite de la lista: la que se muestra si la URL no pide otra. */
+export const defaultRoomSlug: RoomSlug = roomsData[0].slug;
+
+/**
+ * Acceso por slug. Evita recorrer el array en cada render y, sobre todo, hace
+ * que leer el ancla de la URL sea una comprobación de pertenencia en vez de una
+ * búsqueda seguida de una comparación.
+ */
+export const roomsBySlug = new Map<RoomSlug, Room>(
+  roomsData.map((room) => [room.slug, room])
+);
+
+/** Comprueba que una cadena arbitraria —un hash— nombra una suite real. */
+export function isRoomSlug(value: string): value is RoomSlug {
+  return roomsBySlug.has(value as RoomSlug);
+}

@@ -1,14 +1,15 @@
 "use client";
 
+import * as React from "react";
 import { Reveal } from "@/components/ui/reveal";
 import { amenitiesCatalog } from "@/content/amenities";
-import { roomsData } from "@/content/rooms";
+import { roomsData, type RoomSlug } from "@/content/rooms";
 import TierDot from "@/components/sections/TierDot";
 import { cn } from "@/lib/utils";
 
 interface RoomsComparisonProps {
-  activeSlug: string;
-  onSelectRoom: (slug: string) => void;
+  activeSlug: RoomSlug;
+  onSelectRoom: (slug: RoomSlug) => void;
 }
 
 /**
@@ -60,7 +61,7 @@ export default function RoomsComparison({
                         <TierDot tier={room.tier} />
                         <span
                           className={cn(
-                            "text-sm font-semibold transition-colors",
+                            "text-sm font-semibold transition-colors duration-200",
                             active
                               ? "text-primary"
                               : "text-foreground group-hover:text-primary"
@@ -72,7 +73,7 @@ export default function RoomsComparison({
                       <span
                         aria-hidden="true"
                         className={cn(
-                          "h-[2px] w-8 transition-colors",
+                          "h-[2px] w-8 transition-colors duration-200",
                           active ? "bg-primary" : "bg-transparent"
                         )}
                       />
@@ -83,50 +84,58 @@ export default function RoomsComparison({
             </tr>
           </thead>
 
-          <tbody>
-            {amenitiesCatalog.map((amenity) => (
-              <tr key={amenity.key} className="border-t border-border">
-                <th
-                  scope="row"
-                  className="py-3.5 pr-4 text-sm font-normal text-foreground"
-                >
-                  {amenity.label}
-                </th>
-
-                {roomsData.map((room) => {
-                  const included = room.amenities.includes(amenity.key);
-
-                  return (
-                    <td key={room.slug} className="py-3.5 text-center">
-                      {included ? (
-                        <>
-                          <span
-                            aria-hidden="true"
-                            className="inline-block h-1.5 w-1.5 rounded-full bg-primary"
-                          />
-                          <span className="sr-only">
-                            Incluido en {room.name}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <span
-                            aria-hidden="true"
-                            className="inline-block h-px w-3 bg-border-strong align-middle"
-                          />
-                          <span className="sr-only">
-                            No disponible en {room.name}
-                          </span>
-                        </>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
+          <ComparisonRows />
         </table>
       </div>
     </div>
   );
 }
+
+/**
+ * El cuerpo de la tabla: quince prestaciones por tres suites, todo leído de
+ * `content/`. No depende de la suite activa ni de ninguna otra propiedad, así
+ * que `memo` sobre un componente sin props equivale a montarlo una vez y no
+ * volver a tocarlo: cambiar de suite ya no reconcilia cuarenta y cinco celdas
+ * que siempre dicen lo mismo.
+ */
+const ComparisonRows = React.memo(function ComparisonRows() {
+  return (
+    <tbody>
+      {amenitiesCatalog.map((amenity) => (
+        <tr key={amenity.key} className="border-t border-border">
+          <th
+            scope="row"
+            className="py-3.5 pr-4 text-sm font-normal text-foreground"
+          >
+            {amenity.label}
+          </th>
+
+          {roomsData.map((room) => {
+            const included = room.amenities.includes(amenity.key);
+
+            return (
+              <td key={room.slug} className="py-3.5 text-center">
+                {included ? (
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-1.5 w-1.5 rounded-full bg-primary"
+                  />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="inline-block h-px w-3 bg-border-strong align-middle"
+                  />
+                )}
+                <span className="sr-only">
+                  {included
+                    ? `Incluido en ${room.name}`
+                    : `No disponible en ${room.name}`}
+                </span>
+              </td>
+            );
+          })}
+        </tr>
+      ))}
+    </tbody>
+  );
+});

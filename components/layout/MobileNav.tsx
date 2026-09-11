@@ -1,149 +1,60 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
-import { Menu, Phone, MessageCircle, Clock } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-  SheetCloseButton,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import Logo from "@/components/brand/Logo";
-import { Button } from "@/components/ui/button";
-import { siteConfig } from "@/content/site";
-import { buildWhatsAppUrl } from "@/lib/whatsapp";
-import { getAppointmentLink } from "@/lib/links";
-import { EASE_OUT } from "@/lib/motion";
-import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
+import { Menu } from "lucide-react";
 
-interface MobileNavProps {
-  /** La barra está sobre el héroe oscuro, así que el disparador va en blanco. */
-  light?: boolean;
-}
+/**
+ * Disparador del menú móvil.
+ *
+ * El panel en sí —y con él Radix Dialog entero: portal, trampa de foco,
+ * bloqueo de scroll— está en un módulo aparte que no entra en el paquete
+ * inicial. Eran 43 KB de JavaScript que toda página descargaba, analizaba e
+ * hidrataba por un botón que en la mayoría de las visitas nadie llega a pulsar,
+ * y que en páginas de solo texto era lo único que hidrataba.
+ *
+ * El módulo se pide en el primer hueco libre del hilo principal, ya pintada y
+ * utilizable la página. Para cuando alguien toca el botón, hace rato que está
+ * en memoria: el panel abre sin esperar a la red.
+ */
+const loadDrawer = () => import("@/components/layout/MobileNavDrawer");
+const MobileNavDrawer = dynamic(loadDrawer);
 
-export default function MobileNav({ light = false }: MobileNavProps) {
+export default function MobileNav() {
+  /** Cierto desde que el panel se ha montado una vez. No vuelve a ser falso:
+   *  desmontarlo al cerrar se saltaría su animación de salida. */
+  const [mounted, setMounted] = React.useState(false);
   const [open, setOpen] = React.useState(false);
-  const pathname = usePathname();
-  const appointment = getAppointmentLink();
+
+  React.useEffect(() => {
+    const schedule =
+      window.requestIdleCallback ??
+      ((callback: IdleRequestCallback) => window.setTimeout(callback, 200));
+    const cancel = window.cancelIdleCallback ?? window.clearTimeout;
+
+    const handle = schedule(() => {
+      void loadDrawer().then(() => setMounted(true));
+    });
+    return () => cancel(handle);
+  }, []);
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <button
-          aria-label="Abrir menú"
-          className={cn(
-            "inline-flex h-11 w-11 items-center justify-center rounded-xs transition-colors duration-150 xl:hidden",
-            light
-              ? "text-white hover:bg-white/10"
-              : "text-foreground hover:bg-wash hover:text-primary"
-          )}
-        >
-          <Menu className="h-5 w-5" strokeWidth={1.75} />
-        </button>
-      </SheetTrigger>
+    <>
+      <button
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => {
+          setMounted(true);
+          setOpen(true);
+        }}
+        className="inline-flex h-11 w-11 items-center justify-center rounded-xs text-foreground transition-colors duration-150 hover:bg-wash hover:text-primary xl:hidden"
+      >
+        <Menu className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+      </button>
 
-      <SheetContent aria-describedby="mobile-nav-desc">
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <Logo />
-          <SheetCloseButton />
-        </div>
-
-        <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
-        <SheetDescription id="mobile-nav-desc" className="sr-only">
-          Secciones del sitio y datos de contacto de {siteConfig.name}.
-        </SheetDescription>
-
-        <nav aria-label="Navegación móvil" className="flex-1 overflow-y-auto px-5 py-2">
-          {siteConfig.navigation.map((item, i) => {
-            const active =
-              pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
-
-            return (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, x: 16 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2, delay: i * 0.015, ease: EASE_OUT }}
-              >
-                <Link
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex items-baseline gap-3 border-b border-border py-4 transition-colors",
-                    active ? "text-primary" : "text-foreground hover:text-primary"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "label w-5 shrink-0",
-                      active ? "text-primary" : "text-muted-foreground"
-                    )}
-                  >
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="text-[17px] font-medium tracking-[-0.01em]">
-                    {item.label}
-                  </span>
-                </Link>
-              </motion.div>
-            );
-          })}
-        </nav>
-
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3, ease: EASE_OUT }}
-          className="border-t border-border px-5 py-5"
-        >
-          <div className="grid grid-cols-2 gap-2">
-            <Button asChild size="md">
-              <a
-                href={appointment.href}
-                target={appointment.external ? "_blank" : undefined}
-                rel={appointment.external ? "noopener noreferrer" : undefined}
-              >
-                Reservar cita
-              </a>
-            </Button>
-            <Button asChild size="md">
-              <a
-                href={buildWhatsAppUrl("Hola, deseo realizar una consulta.")}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
-                WhatsApp
-              </a>
-            </Button>
-          </div>
-
-          <dl className="mt-5 space-y-2.5 text-[13px]">
-            <div className="flex items-center gap-2.5">
-              <Phone className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={1.75} />
-              <dt className="sr-only">Teléfono</dt>
-              <dd>
-                <a href={siteConfig.phoneTel} className="font-medium hover:text-primary">
-                  {siteConfig.phone}
-                </a>
-              </dd>
-            </div>
-            <div className="flex items-center gap-2.5 text-muted-foreground">
-              <Clock className="h-3.5 w-3.5 shrink-0 text-primary" strokeWidth={1.75} />
-              <dt className="sr-only">Horario</dt>
-              <dd>
-                {siteConfig.schedule} · {siteConfig.emergencies}
-              </dd>
-            </div>
-          </dl>
-        </motion.div>
-      </SheetContent>
-    </Sheet>
+      {mounted && <MobileNavDrawer open={open} onOpenChange={setOpen} />}
+    </>
   );
 }

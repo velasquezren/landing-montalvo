@@ -1,36 +1,46 @@
 "use client";
 
 import * as React from "react";
-import { AnimatePresence, motion } from "motion/react";
-import { roomsData, type Room } from "@/content/rooms";
+import {
+  defaultRoomSlug,
+  isRoomSlug,
+  roomsBySlug,
+  type RoomSlug,
+} from "@/content/rooms";
 import SectionHeader from "@/components/sections/SectionHeader";
 import RoomTabs from "@/components/sections/RoomTabs";
 import RoomPanel from "@/components/sections/RoomPanel";
 import RoomsComparison from "@/components/sections/RoomsComparison";
-import { EASE_OUT, EASE_SMOOTH } from "@/lib/motion";
+
+/** Lee el ancla de la URL y devuelve la suite que nombra, si nombra alguna. */
+function readSlugFromHash(): RoomSlug | null {
+  const hash = window.location.hash.slice(1).toLowerCase();
+  return isRoomSlug(hash) ? hash : null;
+}
 
 export default function RoomsSection() {
-  const [activeSlug, setActiveSlug] = React.useState<string>("gold");
+  const [activeSlug, setActiveSlug] = React.useState<RoomSlug>(defaultRoomSlug);
 
   // Enlaces directos del tipo /servicios#gold.
   React.useEffect(() => {
-    const readHash = () => {
-      const hash = window.location.hash.replace("#", "").toLowerCase();
-      if (roomsData.some((room) => room.slug === hash)) setActiveSlug(hash);
+    const sync = () => {
+      const slug = readSlugFromHash();
+      if (slug) setActiveSlug(slug);
     };
 
-    readHash();
-    window.addEventListener("hashchange", readHash);
-    return () => window.removeEventListener("hashchange", readHash);
+    sync();
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
   }, []);
 
-  const selectTab = (slug: string) => {
+  // Estable entre renders: `RoomsComparison` está memoizado y una función
+  // nueva en cada render lo obligaría a redibujar sus cuarenta y cinco celdas.
+  const selectTab = React.useCallback((slug: RoomSlug) => {
     setActiveSlug(slug);
     window.history.replaceState(null, "", `#${slug}`);
-  };
+  }, []);
 
-  const activeRoom: Room =
-    roomsData.find((room) => room.slug === activeSlug) ?? roomsData[0];
+  const activeRoom = roomsBySlug.get(activeSlug) ?? roomsBySlug.get(defaultRoomSlug)!;
 
   return (
     <section id="habitaciones" aria-labelledby="internacion-heading">
@@ -50,24 +60,20 @@ export default function RoomsSection() {
         <div
           id="suite-panel"
           role="tabpanel"
-          aria-labelledby={`tab-${activeRoom.slug}`}
+          aria-labelledby={`tab-${activeSlug}`}
           tabIndex={0}
         >
-          {/* `initial={false}` evita que el panel entre animado en la primera
-              carga: así se pinta con el HTML y solo se anima al cambiar de suite. */}
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={activeRoom.slug}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              // La salida es corta a propósito: con `mode="wait"` el usuario
-              // espera exit + enter antes de ver la suite que acaba de pedir.
-              exit={{ opacity: 0, y: -6, transition: { duration: 0.14, ease: EASE_SMOOTH } }}
-              transition={{ duration: 0.45, ease: EASE_OUT }}
-            >
-              <RoomPanel room={activeRoom} />
-            </motion.div>
-          </AnimatePresence>
+          {/* Cambiar la `key` remonta el panel, y con el montaje se reproduce
+              la animación de entrada declarada en CSS.
+              
+              Antes esto era un `AnimatePresence mode="wait"`: la suite anterior
+              se desvanecía durante 140 ms y solo entonces empezaba la entrada
+              de 450 ms de la nueva. Casi 600 ms de espera para ver lo que uno
+              acababa de pedir. Ahora el relevo es inmediato y la entrada dura
+              300 ms. */}
+          <div key={activeSlug} className="panel-enter">
+            <RoomPanel room={activeRoom} />
+          </div>
         </div>
 
         <RoomsComparison activeSlug={activeSlug} onSelectRoom={selectTab} />
