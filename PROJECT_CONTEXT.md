@@ -70,7 +70,11 @@ app/
 │   ├── globals.css            # Tokens Tailwind v4, animaciones CSS scroll-timeline, estilos base
 │   ├── not-found.tsx          # Página 404 estilizada con listado de rutas disponibles
 │   ├── robots.ts              # Reglas de indexación SEO
-│   └── sitemap.ts             # Sitemap XML dinámico
+│   ├── sitemap.ts             # Sitemap XML dinámico
+│   ├── manifest.ts            # Manifiesto de aplicación web
+│   ├── favicon.ico            # 16/32/48/64, cada tamaño con su propio dibujo
+│   ├── icon.svg               # Icono de pestaña, vectorial
+│   └── apple-icon.png         # 180px, a sangre y opaco (iOS recorta él)
 ├── servicios/
 │   └── page.tsx               # Página estrella: Hero, Grid de Servicios, Sección Habitaciones, FAQs y CTA
 ├── especialidades/
@@ -163,6 +167,9 @@ app/
 ## 8. Recursos Estáticos (`public/`)
 
 * `/images/logo/isotipo.svg`: Isotipo vectorial original de Clínica Montalvo.
+  Es la fuente de la que derivan todos los iconos de aplicación.
+* `/icons/icon-192.png`, `/icons/icon-512.png`: Iconos del manifiesto.
+* `/icons/icon-maskable-512.png`: Variante a sangre para el recorte de Android.
 * `/images/servicios/hero.webp`: Maqueta de referencia; no publicar como fotografía.
 * `/images/habitaciones/gold/`: 7 maquetas en WebP de la suite Gold.
 * `/images/habitaciones/silver/`: 4 maquetas en WebP de la suite Silver.
@@ -298,3 +305,54 @@ y todo el contenido visible con `prefers-reduced-motion: reduce`.
 
 La galería se probó inyectando temporalmente las maquetas WebP en
 `content/rooms.ts`, ya que las suites siguen con `images: []`.
+
+---
+
+## 13. Iconos de aplicación — 11 de septiembre de 2026
+
+El sitio venía con el `favicon.ico` de la plantilla de Next: el triángulo negro
+de Vercel. Se sustituyó por el isotipo de marca, siguiendo el juego de iconos
+del CRM de la clínica (`frontend-crm-montalvo`), con dos correcciones.
+
+### Tamaño óptico
+
+El isotipo son medias lunas finas: a 16 px el punto y la coma no se distinguen y
+solo emborronan el conjunto. Por eso no hay un único dibujo reescalado, sino dos
+versiones de la misma marca:
+
+* **Pestaña** (`icon.svg`, y las cuatro entradas de `favicon.ico`): las dos
+  medias lunas exteriores, que son los trazos gruesos. Es lo que se lee a 16 px.
+* **Iconos grandes** (`apple-icon.png`, manifiesto 192 y 512): la marca
+  completa, con el punto y la coma. A partir de 96 px el detalle sí aporta y es
+  lo que la identifica.
+
+`favicon.ico` lleva entradas de 16, 32, 48 y 64 px generadas una a una, no una
+imagen reducida cuatro veces.
+
+### Marca calada en blanco sobre baldosa verde
+
+En el CRM el isotipo va en verde `#006156` sobre fondo transparente. Sobre una
+pestaña oscura —el modo por defecto de mucha gente— eso es verde oscuro sobre
+casi negro: el icono desaparece. Aquí la marca va calada en blanco sobre una
+baldosa del verde corporativo, que se distingue igual en pestaña clara y oscura
+y además hace el icono localizable de un vistazo en una tira de pestañas.
+
+### Dos defectos del juego del CRM que aquí no se repiten
+
+1. Su `apple-touch-icon.png` es transparente. iOS compone los iconos sobre negro,
+   así que el isotipo verde oscuro queda ilegible en la pantalla de inicio. El de
+   aquí va opaco y a sangre; el redondeo lo pone iOS.
+2. No tenía variante `maskable`. Android recorta el icono con la forma del
+   sistema —círculo, cuadrado redondeado, gota— y se comía los bordes de la
+   marca. `icon-maskable-512.png` va a sangre y con la marca dentro de la zona
+   segura del 80%.
+
+### Manifiesto
+
+`app/manifest.ts` genera `/manifest.webmanifest`. Va con `display: "browser"` a
+propósito: esto es un portal informativo, no una aplicación, y abrirlo sin barra
+de direcciones le quitaría al visitante ver dónde está y poder compartirlo.
+
+Los PNG se rasterizaron desde el SVG con el motor de Chromium, que es el mismo
+que los pinta. Para rehacerlos basta con volver a exportar desde
+`public/images/logo/isotipo.svg` con los encuadres descritos arriba.
