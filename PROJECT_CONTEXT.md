@@ -599,3 +599,34 @@ Referencias consultadas: la guía de view transitions de Next 16
 (`node_modules/next/dist/docs/01-app/02-guides/view-transitions.md`), la nota de
 Bram Van Damme sobre interactividad durante una transición, y las
 recomendaciones de duración recogidas en corewebvitals.io y talkingtech.io.
+
+---
+
+## 18. Pedido fotográfico — 11 de septiembre de 2026
+
+`public/images/README.md` es ahora un encargo completo para Marketing, no una
+nota técnica: **13 fotografías más 3 galerías**, con nombre de archivo y carpeta
+exactos, medidas mínimas, indicaciones de encuadre, tratamiento visual, lo que
+no sirve, orden de prioridad y cómo se activa cada foto en `content/`.
+
+Las medidas del documento están **tomadas del sitio construido** a 1920, 1440 y
+412 px, no estimadas. Las dos que condicionan el encargo:
+
+* **Cabecera de página**: 1920 × 395 en escritorio y 412 × 392 en móvil. La
+  misma fotografía se ve panorámica en un ordenador y casi cuadrada en un
+  teléfono, y lleva el titular sobre la mitad izquierda. De ahí las tres reglas
+  del encargo: sujeto a la derecha, aire arriba y abajo, y que sobreviva a un
+  recorte cuadrado.
+* **Fotografía de portada**: 640 × 630 en escritorio y 412 × 258 en móvil. Pasa
+  de 1:1 a 16:10, así que necesita margen por los cuatro lados.
+
+Se pide **JPG o PNG sin comprimir**, no WebP: el sitio genera AVIF y WebP en
+todos los tamaños, y recomprimir un WebP pierde calidad dos veces.
+
+Se añadió `2560` a `images.deviceSizes` en `next.config.ts`. Las cabeceras van a
+sangre, y en una pantalla de 1440 px a doble densidad el navegador pide 2880: con
+el tope anterior de 1920 la fotografía se ampliaba y se veía blanda. Por eso el
+documento pide 2560 px de ancho para las cabeceras.
+
+Carpetas creadas y listas: `public/images/cabeceras/` y `public/images/portada/`,
+además de las tres de `habitaciones/` que ya existían.
