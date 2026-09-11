@@ -537,6 +537,19 @@ body {
   animation: none;
 }
 
+/* Y además la cabecera tiene que ir por encima.
+ *
+ * Dentro de la capa de transición los grupos se apilan por orden de captura, no
+ * por el `z-index` que tenían en la página: el `z-50` del <header> no se hereda.
+ * Como el héroe es un grupo con nombre propio —se transforma entre páginas— y
+ * en las interiores sube por debajo de la barra con `-mt-[var(--header-h)]`,
+ * acababa pintándose encima. Medido con fotogramas del compositor: la franja de
+ * la cabecera se quedaba en verde sólido unos 250 ms en cada navegación y luego
+ * volvía de golpe. Eso es el parpadeo. */
+::view-transition-group(site-header) {
+  z-index: 100;
+}
+
 ::view-transition-old(site-header),
 ::view-transition-old(site-footer) {
   /* Sin esto, la instantánea vieja y la nueva se ven a la vez un instante. */

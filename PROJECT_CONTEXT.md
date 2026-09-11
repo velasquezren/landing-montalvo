@@ -498,3 +498,39 @@ reinstaló desde cero con pnpm: el árbol pasó de 1,0 GB mezclado a 492 MB, y
 manifiesto— desaparecieron.
 
 **Usar siempre `pnpm install` en este proyecto, no `npm install`.**
+
+---
+
+## 16. El parpadeo de la cabecera al navegar — 11 de septiembre de 2026
+
+Tercer fallo de la misma familia que los de la sección 15, y el que de verdad se
+notaba al usar el sitio: **al cambiar de página, la barra desaparecía bajo el
+héroe verde durante unos 250 ms y volvía de golpe.**
+
+Anclar la cabecera con `animation: none` no basta. Dentro de la capa de
+transición los grupos se apilan **por orden de captura, no por el `z-index` que
+tenían en la página**: el `z-50` del `<header>` no se hereda. Y como el héroe es
+un grupo con nombre propio —`page-hero`, porque se transforma entre páginas— y
+en las páginas interiores sube por debajo de la barra con
+`-mt-[var(--header-h)]`, acababa pintándose encima de ella.
+
+La corrección es una línea: `z-index: 100` en
+`::view-transition-group(site-header)`.
+
+### Cómo se midió
+
+Los fotogramas no se pueden capturar con `page.screenshot()`: no recoge la capa
+de transición y además fuerza un repintado, de modo que las quince capturas
+salían idénticas y el fallo parecía no existir. Hay que pedirle los fotogramas
+al compositor por CDP (`Page.startScreencast`) y medir el color medio de la
+franja donde vive la barra.
+
+Con eso el fallo era inequívoco: quince fotogramas seguidos con la franja en
+verde sólido `(1, 97, 86)` en lugar de blanco. Tras la corrección, **351
+fotogramas reales de ocho navegaciones —escritorio y móvil— sin un solo
+fotograma con la cabecera comprometida.**
+
+> **Regla general para elementos anclados en una view transition**: no basta con
+> darles nombre y quitarles la animación. Hay que darles también un `z-index`
+> dentro de la capa de transición, o cualquier otro grupo con nombre puede
+> quedar por encima.
