@@ -329,13 +329,21 @@ versiones de la misma marca:
 `favicon.ico` lleva entradas de 16, 32, 48 y 64 px generadas una a una, no una
 imagen reducida cuatro veces.
 
-### Marca calada en blanco sobre baldosa verde
+### Marca calada en blanco sobre disco verde
 
 En el CRM el isotipo va en verde `#006156` sobre fondo transparente. Sobre una
 pestaña oscura —el modo por defecto de mucha gente— eso es verde oscuro sobre
-casi negro: el icono desaparece. Aquí la marca va calada en blanco sobre una
-baldosa del verde corporativo, que se distingue igual en pestaña clara y oscura
-y además hace el icono localizable de un vistazo en una tira de pestañas.
+casi negro: el icono desaparece. Aquí la marca va calada en blanco sobre un
+disco del verde corporativo, que se distingue igual en pestaña clara y oscura y
+además hace el icono localizable de un vistazo en una tira de pestañas.
+
+**El contenedor es un círculo, no una baldosa redondeada.** El isotipo son
+medias lunas concéntricas: meterlo en una caja repetía la contradicción que el
+sitio ya corrige con el arco de marca (sección 14), y además en una tira de
+pestañas todos los iconos vecinos son cuadrados, así que un disco destaca. A
+16 px se probaron cuadrado, squircle y círculo con uno y con dos arcos: con dos
+arcos, el exterior y el borde del círculo se empastan; **el único que se lee
+nítido es el disco con un solo arco**, que es el que va en la pestaña.
 
 ### Dos defectos del juego del CRM que aquí no se repiten
 
