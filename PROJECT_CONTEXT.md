@@ -534,3 +534,60 @@ fotograma con la cabecera comprometida.**
 > darles nombre y quitarles la animación. Hay que darles también un `z-index`
 > dentro de la capa de transición, o cualquier otro grupo con nombre puede
 > quedar por encima.
+
+---
+
+## 17. La navegación parecía lenta — 11 de septiembre de 2026
+
+La transición entre páginas se estaba leyendo como lentitud. Tres causas, y la
+solución de fondo de las tres resultó ser la misma pieza: la cabecera.
+
+### El héroe se transformaba de una página a otra
+
+Era el mayor responsable. El morfeo de elemento compartido comunica continuidad
+cuando las dos cosas son **la misma** —una miniatura que se agranda hasta ser la
+foto—, pero los héroes de dos páginas distintas no lo son: transformar uno en
+otro se lee como que la página se está recolocando. Retirado.
+
+### La salida esperaba a la entrada
+
+La instantánea vieja se desvanecía durante 140 ms y solo entonces empezaba la
+entrada de 220 ms: **360 ms** hasta ver la página pedida, y un bajón de opacidad
+a mitad de camino.
+
+Ahora la vieja se queda quieta y opaca debajo mientras la nueva aparece encima,
+de modo que el compuesto nunca baja de opaco, y el total son **180 ms**. Por
+encima de 400 ms una transición empieza a leerse como espera; el valor por
+defecto del navegador es 250 ms.
+
+Y nada se mueve: **solo opacidad**. Un `translate` sobre la raíz arrastraría
+también a la cabecera, y una barra que se desplaza en cada navegación es lo que
+más delata a una web como lenta.
+
+### La cabecera: de `fixed` a `sticky`
+
+Este es el cambio de fondo. Un elemento `position: fixed` **no entra en la
+instantánea** que la API toma del documento, así que la capa de transición lo
+tapa —el «z-index issue» conocido de esta API—. La salida habitual es darle
+`view-transition-name`, pero entonces se sustituye por una instantánea, deja de
+dibujarse y **deja de recibir clics**.
+
+Medido, ese era el precio: con la cabecera nombrada, **300 ms sin responder en
+cada navegación**; sin nombre, la franja se veía verde.
+
+`sticky` participa del flujo, así que entra en la instantánea y transita con la
+página. Sin nombre, sin taparse y sin dejar de responder. De paso, `<main>` ya
+no necesita `pt-[var(--header-h)]` ni los héroes su margen negativo: la cabecera
+ocupa su sitio de forma natural, y la maquetación queda más simple que antes.
+
+| | Antes | Después |
+| :--- | ---: | ---: |
+| Cabecera sin responder, por navegación | 300 ms | **20 ms** |
+| Fotogramas con la cabecera tapada | 15 seguidos | **0 de 304** |
+| Transición completa | 360 ms | **180 ms** |
+| Contenido nuevo visible | — | **16–35 ms** |
+
+Referencias consultadas: la guía de view transitions de Next 16
+(`node_modules/next/dist/docs/01-app/02-guides/view-transitions.md`), la nota de
+Bram Van Damme sobre interactividad durante una transición, y las
+recomendaciones de duración recogidas en corewebvitals.io y talkingtech.io.

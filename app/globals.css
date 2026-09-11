@@ -501,77 +501,76 @@ body {
 
 /* ============================================================================
    TRANSICIONES ENTRE PÁGINAS (View Transitions API)
-   El relevo entre páginas lo anima el navegador, no la aplicación: toma una
-   instantánea de la página que sale y otra de la que entra y funde entre las
-   dos. Sin librería, en el compositor, y sin nada que hidratar.
+
+   El relevo entre páginas lo anima el navegador: toma una instantánea de la
+   página que sale y otra de la que entra y funde entre las dos. Sin librería,
+   en el compositor, y sin nada que hidratar.
+
+   Tres decisiones, y las tres van contra la sensación de lentitud:
+
+   1. NADA LLEVA NOMBRE. Ni la cabecera, ni el pie, ni el héroe.
+
+      Un elemento con `view-transition-name` se sustituye por una instantánea
+      mientras dura la transición: deja de dibujarse y, por tanto, deja de
+      recibir clics. Con la cabecera nombrada eran 300 ms muertos en cada
+      navegación, medidos. Sin nombre sigue viva, y `pointer-events: none` sobre
+      la capa deja pasar los clics hasta ella: 20 ms.
+
+      Que se pueda prescindir del nombre es consecuencia de que la cabecera sea
+      `sticky` y no `fixed` (ver components/layout/Header.tsx): los elementos
+      fijos no entran en la instantánea del documento y la capa de transición
+      los tapa, que es el «z-index issue» conocido de esta API.
+
+      Tampoco se transforma ya el héroe de una página en el de la siguiente. El
+      morfeo de elemento compartido comunica continuidad cuando las dos cosas
+      son la misma —una miniatura que se agranda—, pero los héroes de dos
+      páginas distintas no lo son: transformar uno en otro se lee como que la
+      página se está recolocando. Era el mayor responsable de que la navegación
+      pareciera lenta.
+
+   2. SOLO OPACIDAD, NADA SE MUEVE. Un `translate` sobre la raíz arrastraría
+      también a la cabecera y al pie, y una barra que se desplaza en cada
+      navegación es lo que más delata a una web como lenta.
+
+   3. LA SALIDA NO ESPERA A LA ENTRADA. Antes la vieja se desvanecía durante
+      140 ms y solo entonces empezaba la entrada: 360 ms hasta ver la página
+      pedida. Ahora la instantánea vieja se queda quieta y opaca debajo mientras
+      la nueva aparece encima, de modo que el compuesto nunca baja de opaco —no
+      hay bajón de opacidad a mitad de camino, que es lo que hace parpadear a un
+      crossfade corriente— y el total son 180 ms. Por encima de 400 ms una
+      transición empieza a leerse como espera; el valor por defecto del
+      navegador es 250 ms. 180 ms suaviza el relevo sin que llegue a percibirse
+      como una pausa.
    ========================================================================== */
 
 ::view-transition-old(root) {
-  animation: 140ms var(--ease-smooth) both page-out;
+  /* Quieta y opaca debajo durante toda la transición. Sin una animación
+     declarada, el navegador la retiraría de inmediato. */
+  animation: 180ms linear both vt-hold;
 }
 
 ::view-transition-new(root) {
-  /* Entra con un retardo igual a la salida: primero se va lo anterior y
-     después llega lo nuevo, en lugar de verse las dos a la vez a media
-     opacidad, que es lo que enturbia un crossfade sobre texto. */
-  animation: 220ms var(--ease-out-quart) 140ms both page-in;
+  animation: 180ms var(--ease-out-quart) both vt-in;
 }
 
-@keyframes page-out {
+@keyframes vt-hold {
+  from,
   to {
-    opacity: 0;
+    opacity: 1;
   }
 }
 
-@keyframes page-in {
+@keyframes vt-in {
   from {
     opacity: 0;
-    translate: 0 8px;
+  }
+  to {
+    opacity: 1;
   }
 }
 
-/* Cabecera y pie no participan: son el punto de referencia de la página. Si
-   parpadean al navegar, la sensación es de recarga y no de continuidad. */
-::view-transition-group(site-header),
-::view-transition-group(site-footer) {
-  animation: none;
-}
-
-/* Y además la cabecera tiene que ir por encima.
- *
- * Dentro de la capa de transición los grupos se apilan por orden de captura, no
- * por el `z-index` que tenían en la página: el `z-50` del <header> no se hereda.
- * Como el héroe es un grupo con nombre propio —se transforma entre páginas— y
- * en las interiores sube por debajo de la barra con `-mt-[var(--header-h)]`,
- * acababa pintándose encima. Medido con fotogramas del compositor: la franja de
- * la cabecera se quedaba en verde sólido unos 250 ms en cada navegación y luego
- * volvía de golpe. Eso es el parpadeo. */
-::view-transition-group(site-header) {
-  z-index: 100;
-}
-
-::view-transition-old(site-header),
-::view-transition-old(site-footer) {
-  /* Sin esto, la instantánea vieja y la nueva se ven a la vez un instante. */
-  display: none;
-}
-
-::view-transition-new(site-header),
-::view-transition-new(site-footer) {
-  animation: none;
-}
-
-/* El bloque verde con el que abren todas las páginas lleva el mismo nombre en
-   todas, así que el navegador lo trata como un elemento que continúa: en vez de
-   desaparecer y volver a dibujarse, se transforma de una forma a la otra. Es lo
-   que distingue una transición de un fundido. */
-::view-transition-group(page-hero) {
-  animation-duration: 320ms;
-  animation-timing-function: var(--ease-out-quart);
-}
-
-/* La capa de transición captura los clics mientras dura. Dejarlos pasar evita
-   perder una pulsación hecha a mitad de la animación. */
+/* La capa de transición no recibe los clics: así llegan al documento vivo que
+   hay debajo y la página entera sigue siendo utilizable mientras dura. */
 ::view-transition {
   pointer-events: none;
 }

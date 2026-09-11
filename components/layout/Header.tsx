@@ -17,17 +17,20 @@ export default function Header() {
   const appointment = getAppointmentLink();
 
   return (
-    // El nombre de transición va en el propio <header> y nunca en una
-    // envoltura. `view-transition-name` convierte al elemento en bloque
-    // contenedor de sus descendientes `position: fixed` y le crea un contexto
-    // de apilamiento: puesto en un <div> envolvente —que aquí mide 0 px de alto,
-    // porque su único hijo está fuera de flujo— la cabecera quedaba atrapada en
-    // ese contexto y <main>, que va después, se pintaba encima. La barra
-    // desaparecía al navegar.
-    <header
-      style={{ viewTransitionName: "site-header" }}
-      className="fixed inset-x-0 top-0 z-50 h-[var(--header-h)] border-b border-border bg-background"
-    >
+    // `sticky` y no `fixed`, y esa diferencia no es de estilo.
+    //
+    // Un elemento `fixed` no entra en la instantánea que la View Transitions
+    // API toma del documento, así que la capa de transición lo tapaba: la
+    // franja de la barra se veía verde en cada navegación. La forma de
+    // esquivarlo era darle `view-transition-name`, pero entonces se sustituye
+    // por una instantánea, deja de dibujarse y deja de recibir clics: 300 ms
+    // muertos en cada navegación, medidos.
+    //
+    // `sticky` participa del flujo, así que entra en la instantánea y transita
+    // con la página. Sin nombre, sin taparse y sin dejar de responder: la
+    // ventana muerta baja de 300 ms a 20 ms. El comportamiento visible es el
+    // mismo, y `<main>` ya no necesita compensar con relleno superior.
+    <header className="sticky top-0 z-50 h-[var(--header-h)] border-b border-border bg-background">
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
         <Link
           href="/"

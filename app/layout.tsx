@@ -85,9 +85,7 @@ export default function RootLayout({
         </a>
 
         <Header />
-        {/* La barra es fija: este relleno evita que cualquier página sin héroe
-            quede por debajo. Los héroes lo compensan con un margen negativo. */}
-        <main id="contenido" className="flex-1 pt-[var(--header-h)]">
+        <main id="contenido" className="flex-1">
           {children}
         </main>
         <Footer />

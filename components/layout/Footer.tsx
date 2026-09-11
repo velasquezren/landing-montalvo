@@ -30,7 +30,6 @@ export default function Footer() {
   return (
     <footer
       aria-labelledby="footer-heading"
-      style={{ viewTransitionName: "site-footer" }}
       className="border-t border-border bg-background"
     >
       <h2 id="footer-heading" className="sr-only">

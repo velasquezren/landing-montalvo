@@ -30,11 +30,7 @@ export default function PageHero({
   return (
     <section
       data-hero=""
-      // Mismo nombre que el héroe de la portada: al navegar, el navegador
-      // reconoce el bloque verde como un elemento que continúa y lo transforma
-      // de una forma a la otra. Ver la nota en app/globals.css.
-      style={{ viewTransitionName: "page-hero" }}
-      className="arc-end relative -mt-[var(--header-h)] overflow-hidden bg-primary text-white"
+      className="arc-end relative overflow-hidden bg-primary text-white"
     >
       {src ? (
         <HeroBackdrop src={src} alt={image?.alt ?? ""} position={image?.position} />
@@ -45,8 +41,8 @@ export default function PageHero({
       <div
         className={cn(
           "relative mx-auto max-w-7xl px-5 sm:px-8",
-          "pt-[calc(var(--header-h)+3.5rem)] pb-16 sm:pb-20",
-          "lg:pt-[calc(var(--header-h)+4rem)] lg:pb-16"
+          "pt-14 pb-16 sm:pb-20",
+          "lg:pt-16 lg:pb-16"
         )}
       >
         <nav aria-label="Ruta de navegación">
