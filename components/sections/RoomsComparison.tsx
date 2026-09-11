@@ -33,7 +33,22 @@ export default function RoomsComparison({
         </p>
       </Reveal>
 
-      <div className="overflow-x-auto">
+      {/* `contain: layout` además de `overflow-x`.
+          
+          La tabla pide 34rem (544 px) de ancho mínimo para que las quince
+          prestaciones no se partan en tres líneas, y por debajo de ese ancho se
+          recorre en horizontal, que es lo normal en una comparativa. Pero el
+          recorte visual no bastaba: ese ancho mínimo seguía propagándose al
+          área desplazable del documento, así que en un teléfono de 412 px la
+          página entera pasaba a medir 505 y el navegador la alejaba para que
+          cupiera. El síntoma era una cabecera encogida y todo el texto más
+          pequeño, solo en esta página.
+          
+          `contain: layout` declara que lo que pase aquí dentro no afecta al
+          layout de fuera, que es exactamente el caso. Es la contención mínima
+          que lo resuelve: `paint` o `content` también sirven, pero prometen más
+          de lo necesario. */}
+      <div className="overflow-x-auto [contain:layout]">
         <table className="w-full min-w-[34rem] border-collapse text-left">
           <caption className="sr-only">
             Equipamiento incluido en las suites Gold, Silver y Bronce

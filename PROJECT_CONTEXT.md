@@ -443,3 +443,58 @@ siendo la vía para eso.
 El relleno de la franja de cierre se reequilibró (`pt-16 pb-24`, `lg:pt-24
 lg:pb-32`) para que el contenido no parezca deslizarse dentro de la curva. No
 reduce su altura: compensa el área que el arco quita por abajo.
+
+---
+
+## 15. Dos correcciones de maquetación — 11 de septiembre de 2026
+
+### La cabecera desaparecía al navegar
+
+Introducido al anclar la cabecera para las transiciones de página (sección 14):
+el nombre de transición se puso en un `<div>` envolvente en lugar de en el
+propio `<header>`.
+
+`view-transition-name` convierte al elemento en **bloque contenedor de sus
+descendientes `position: fixed`** y le crea un contexto de apilamiento. Esa
+envoltura medía 0 px de alto —su único hijo estaba fuera de flujo—, así que la
+cabecera quedaba atrapada en su contexto de apilamiento y `<main>`, que va
+después en el orden del documento, se pintaba encima. En las páginas interiores,
+donde el héroe sube con `-mt-[var(--header-h)]`, la tapaba por completo.
+
+**Regla**: el nombre de transición va siempre en el elemento real, nunca en una
+envoltura, y con más motivo si el elemento es fijo o absoluto.
+
+### `/servicios` se veía alejada en el móvil
+
+Fallo anterior a todo este trabajo: está presente en `af58efb`, el primer commit
+del portal. Se localizó buscando el origen del desbordamiento, no revisando el
+código.
+
+La tabla comparativa pide `min-w-[34rem]` (544 px) para que las quince
+prestaciones no se partan en tres líneas, y por debajo de ese ancho se recorre en
+horizontal. El contenedor la recortaba visualmente —`clientWidth` 372 sobre
+`scrollWidth` 544—, pero ese ancho mínimo seguía propagándose al área desplazable
+del documento: en un teléfono de 412 px la página entera medía 505 y el navegador
+la alejaba para que cupiera. El síntoma era una cabecera encogida y todo el texto
+más pequeño, **solo en esta página**.
+
+Se resuelve con `contain: layout` sobre el contenedor, que declara que su layout
+interno no afecta al de fuera. Es la contención mínima que funciona: `paint` y
+`content` también sirven, pero prometen más de lo necesario.
+
+> **Cómo medir esto.** Un viewport con emulación móvil se auto-expande para
+> encajar el contenido que desborda, de modo que `scrollWidth` y `innerWidth`
+> crecen a la vez y la comprobación habitual —`scrollWidth > innerWidth`— no
+> detecta nada. Hay que usar un viewport de ancho fijo **sin** emulación móvil,
+> que no se expande, y entonces el desbordamiento sí aparece.
+
+### Gestor de paquetes
+
+El repositorio tenía `pnpm-lock.yaml` y un `package-lock.json` sin seguimiento, y
+`node_modules` mezclaba las dos instalaciones. `package.json` declara
+`packageManager: pnpm@11.24.0`, así que se retiró el `package-lock.json` y se
+reinstaló desde cero con pnpm: el árbol pasó de 1,0 GB mezclado a 492 MB, y
+`motion` y `embla-carousel-react` —que seguían en disco pese a no estar ya en el
+manifiesto— desaparecieron.
+
+**Usar siempre `pnpm install` en este proyecto, no `npm install`.**

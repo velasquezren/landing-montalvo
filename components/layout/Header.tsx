@@ -17,7 +17,17 @@ export default function Header() {
   const appointment = getAppointmentLink();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 h-[var(--header-h)] border-b border-border bg-background">
+    // El nombre de transición va en el propio <header> y nunca en una
+    // envoltura. `view-transition-name` convierte al elemento en bloque
+    // contenedor de sus descendientes `position: fixed` y le crea un contexto
+    // de apilamiento: puesto en un <div> envolvente —que aquí mide 0 px de alto,
+    // porque su único hijo está fuera de flujo— la cabecera quedaba atrapada en
+    // ese contexto y <main>, que va después, se pintaba encima. La barra
+    // desaparecía al navegar.
+    <header
+      style={{ viewTransitionName: "site-header" }}
+      className="fixed inset-x-0 top-0 z-50 h-[var(--header-h)] border-b border-border bg-background"
+    >
       <div className="mx-auto flex h-full max-w-7xl items-center justify-between gap-4 px-5 sm:px-8">
         <Link
           href="/"
