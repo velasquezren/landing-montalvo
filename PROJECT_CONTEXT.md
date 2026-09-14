@@ -637,3 +637,14 @@ documento pide 2560 px de ancho para las cabeceras.
 
 Carpetas creadas y listas: `public/images/cabeceras/` y `public/images/portada/`,
 además de las tres de `habitaciones/` que ya existían.
+
+---
+
+## 19. Despliegue de producción — 14 de septiembre de 2026
+
+Se consolida y despliega como versión definitiva de producción la arquitectura de
+transición fluida de esta máquina:
+* **Transición de opacidad pura en 180 ms** (`::view-transition-old(root)` / `::view-transition-new(root)`), sin deslizamientos ni traslaciones laterales del lienzo que entorpezcan la lectura o la cabecera.
+* **Cabecera sticky fija**: no se oculta ni pierde interactividad.
+* Se descartan los experimentos de traslación horizontal de páginas y navegación direccional forzada.
+
