@@ -60,6 +60,15 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <a
+                  href="https://resultados.107.175.132.15.nip.io/"
+                  className="inline-flex min-h-11 items-center transition-colors hover:text-primary"
+                  rel="noreferrer"
+                >
+                  Acceso para médicos
+                </a>
+              </li>
             </ul>
           </nav>
 
