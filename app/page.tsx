@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Stethoscope, BedDouble, ClipboardList } from "lucide-react";
 import EditorialPhoto from "@/components/sections/EditorialPhoto";
-import SplitHero from "@/components/sections/SplitHero";
+import HeroBackdrop from "@/components/sections/HeroBackdrop";
 import CtaBand from "@/components/sections/CtaBand";
 import { Button } from "@/components/ui/button";
 import { editorialImages } from "@/content/images";
@@ -25,7 +25,15 @@ export default function HomePage() {
   const appointment = getAppointmentLink();
   return (
     <>
-      <SplitHero headingId="inicio-heading" image={editorialImages.inicio} preload>
+      {/* Mismo tratamiento que las cabeceras interiores: fotografía a sangre bajo
+          el velo verde, con el titular sobre la parte opaca. La foto es de la
+          propia clínica —una suite—, así que la primera imagen del sitio ya
+          enseña el lugar y no una promesa genérica. */}
+      <section data-hero="" aria-labelledby="inicio-heading" className="arc-end relative overflow-hidden bg-primary text-white">
+        {editorialImages.inicio.src && (
+          <HeroBackdrop src={editorialImages.inicio.src} alt={editorialImages.inicio.alt} position={editorialImages.inicio.position} />
+        )}
+        <div className="relative mx-auto max-w-7xl px-5 pt-16 pb-20 sm:px-8 sm:pt-20 sm:pb-24 lg:pt-28 lg:pb-32">
             <p className="label leading-relaxed text-white/75">Clínica Montalvo · Santa Cruz de la Sierra</p>
             <h1 id="inicio-heading" className="display mt-6 max-w-xl">Su salud, con atención cercana.</h1>
             <p className="lead mt-6 max-w-lg text-white/85">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>
@@ -35,8 +43,9 @@ export default function HomePage() {
               </Button>
               <Button asChild variant="inverseOutline" size="lg"><Link href="/servicios">Explorar servicios</Link></Button>
             </div>
-            <p className="mt-10 border-t border-white/20 pt-5 text-sm text-white/80">Pioneros en reproducción asistida en Bolivia.</p>
-      </SplitHero>
+            <p className="mt-10 max-w-xl border-t border-white/20 pt-5 text-sm text-white/80">Pioneros en reproducción asistida en Bolivia.</p>
+        </div>
+      </section>
 
       <section aria-labelledby="orientacion-heading" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

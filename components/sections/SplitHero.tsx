@@ -14,8 +14,8 @@ interface SplitHeroProps {
 /**
  * Cabecera partida: texto sobre verde a un lado y fotografía al otro.
  *
- * La usan la portada y la página del Dr. Montalvo. Vive aquí, y no copiada en
- * las dos páginas, por la lógica del arco, que es fácil de romper:
+ * La usa la página del Dr. Montalvo. Vive como componente, y no escrita en la
+ * página, por la lógica del arco, que es fácil de romper:
  *
  * El arco cambia de dueño según el ancho. En escritorio la cabecera son dos
  * columnas y el borde inferior lo comparten: el arco va en la sección y recorta
@@ -23,8 +23,8 @@ interface SplitHeroProps {
  * un arco en la sección quedaría al pie de ella, contra blanco y sin contraste.
  * Apilado lo lleva la columna verde, que es la que de verdad termina.
  *
- * En móvil la fotografía va en 4:3 y no en 16:10: las dos que se usan aquí son
- * retratos, y 16:10 dejaba una franja en la que solo cabía la cara a medias.
+ * En móvil la fotografía va en 4:3 y no en 16:10: aquí van retratos, y 16:10
+ * dejaba una franja en la que solo cabía la cara a medias.
  */
 export default function SplitHero({ headingId, image, preload = false, children }: SplitHeroProps) {
   return (

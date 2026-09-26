@@ -736,10 +736,11 @@ facilitado por Dirección, y este proyecto no atribuye cargos por inferencia.
 
 ### Dónde va cada una
 
-* **Portada** → el retrato del Dr. Montalvo con la medalla. El hueco de la
-  derecha de la cabecera era un marcador vacío con el isotipo de marca de agua:
-  lo primero que veía cualquier visitante. Un rostro sonriente es la imagen que
-  mejor sostiene «Su salud, con atención cercana».
+* **Portada** → `gold/principal-2.jpg`, a sangre bajo el velo verde, con el
+  mismo tratamiento que las cabeceras interiores (cambio pedido el 26/09: la
+  portada enseña la clínica, no al doctor). Es la vista más amplia de suite
+  —ventanal y zona de estar a la derecha—. **El original es de 1280 px**: bajo
+  el velo apenas se nota, pero conviene pedir uno mayor.
 * **Página del Dr. Montalvo** → la fotografía con el diploma y la medalla del
   reconocimiento de la Cámara de Diputados. Antes su cara quedaba por debajo del
   pliegue y arriba solo había un bloque verde con un nombre.
@@ -751,7 +752,7 @@ Cada fotografía se usa en un solo sitio destacado.
 
 ### `SplitHero`
 
-Portada y página del doctor comparten ahora `components/sections/SplitHero.tsx`:
+La página del doctor usa `components/sections/SplitHero.tsx`:
 texto sobre verde a un lado y fotografía al otro. Se extrajo en lugar de copiar
 el marcado porque la lógica del arco es fácil de romper —en escritorio lo lleva
 la sección, apilado lo lleva la columna verde (§14)—. En móvil la fotografía va
