@@ -1,6 +1,7 @@
 import { editorialImages } from "@/content/images";
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import PageHero from "@/components/sections/PageHero";
 import SectionHeader from "@/components/sections/SectionHeader";
 import CtaBand from "@/components/sections/CtaBand";
@@ -51,8 +52,30 @@ export default function DrMontalvoPage() {
           id="trayectoria"
         />
 
-        <div className="mt-12 grid gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-16">
-          <Reveal className="lg:col-span-7">
+        <div className="mt-12 grid gap-10 lg:mt-16 lg:grid-cols-12 lg:gap-16">
+          {/* El retrato es 4:5, la proporción natural de un retrato vertical, y
+              la columna se la reserva entera: encajarlo en la cabecera de la
+              página —1920 × 395 en escritorio— habría dejado una franja en la
+              que no se le reconoce. */}
+          {doctor.photo && (
+            <Reveal className="lg:col-span-5">
+              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-wash">
+                <Image
+                  src={doctor.photo}
+                  alt={doctor.photoAlt}
+                  fill
+                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  className="object-cover"
+                  priority={false}
+                />
+              </div>
+              <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
+                Reconocimiento de la Cámara de Diputados de Bolivia.
+              </p>
+            </Reveal>
+          )}
+
+          <Reveal step={2} className="lg:col-span-7">
             {hasBio ? (
               <div className="space-y-5 text-[15px] leading-relaxed text-muted-foreground">
                 {doctor.bio.map((paragraph, i) => (
@@ -66,9 +89,8 @@ export default function DrMontalvoPage() {
                 la disponibilidad de atención.
               </p>
             )}
-          </Reveal>
 
-          <Reveal step={2} className="lg:col-span-5">
+            <div className="mt-10">
             <ol className="border-t border-border-strong">
               {milestones.map((milestone) => (
                 <li key={milestone.year} className="border-b border-border py-5">
@@ -86,6 +108,7 @@ export default function DrMontalvoPage() {
             <Button asChild size="sm" className="mt-6">
               <Link href="/staff-medico">Ver el equipo médico</Link>
             </Button>
+            </div>
           </Reveal>
         </div>
       </section>

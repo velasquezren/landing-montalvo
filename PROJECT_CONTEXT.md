@@ -705,10 +705,28 @@ El bloque de internación ya no es un marcador: usa
 
 * **Confirmar el reparto de fotografías por suite** con Dirección.
 * Silver solo tiene dos fotografías; conviene pedir baño y detalles.
-* En `FOTOS DE HAB CLINICA/` llegaron además **retratos del Dr. Montalvo**
-  recibiendo un reconocimiento de la Cámara de Diputados. No se han publicado:
-  llevan el logotipo incrustado y son verticales (1639 × 2048), mientras que la
-  cabecera de página es 1920 × 395. Necesitan versión sin logotipo y un bloque
-  propio, no la cabecera.
+* El **retrato del Dr. Montalvo** ya está publicado (ver más abajo), pero
+  **conviene pedir el original sin el logotipo incrustado**.
 * La carpeta de origen queda fuera de git y del linter (`.gitignore`,
   `eslint.config.mjs`): es material en bruto, no código del proyecto.
+
+### El retrato del Dr. Montalvo
+
+Publicado en `/dr-montalvo`, en `public/images/equipo/dr-montalvo.jpg`. El
+original es **1639 × 2048, es decir 4:5 exacto**, la proporción natural de un
+retrato vertical, así que se reduce a 1200 × 1500 sin recortar nada.
+
+**No va en la cabecera de la página**, que es 1920 × 395 en escritorio: ahí
+habría quedado una franja en la que no se le reconoce. Va en su propia columna
+dentro de «Trayectoria», junto a los hitos, y renderiza a 0,80 —la proporción
+del original— sin recorte alguno.
+
+**Lleva el logotipo de la clínica incrustado** en la esquina superior derecha, y
+no se puede quitar recortando: medido sobre el original, el logotipo ocupa del
+58% al 99% del ancho y la cabeza llega hasta el 59%, de modo que cualquier
+recorte que lo excluya corta el retrato. Se publica así por decisión expresa;
+conviene pedir a la clínica el original sin logotipo y sustituirlo.
+
+El cargo sigue vacío en `content/institucional.ts`. En la propia bata se lee
+«GINECÓLOGO OBSTETRA», pero eso es una lectura de la fotografía, no un dato
+facilitado por Dirección, y este proyecto no atribuye cargos por inferencia.

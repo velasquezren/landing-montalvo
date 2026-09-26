@@ -84,8 +84,15 @@ export const doctor = {
   role: "",
   // [COMPLETAR: reseña biográfica facilitada por la clínica]
   bio: [] as readonly string[],
-  // [COMPLETAR: retrato en /public/images/equipo/]
-  photo: ""
+  photo: "/images/equipo/dr-montalvo.jpg",
+  /**
+   * La fotografía la facilitó la clínica y lleva su logotipo incrustado en la
+   * esquina superior derecha. No se puede recortar: el logotipo ocupa del 58%
+   * al 99% del ancho y la cabeza llega hasta el 59%, así que quitarlo obliga a
+   * cortar el retrato. Conviene pedir el original sin logotipo.
+   */
+  photoAlt:
+    "El Dr. Juan Carlos Montalvo con bata blanca y la medalla de reconocimiento de la Cámara de Diputados de Bolivia"
 };
 
 /** VERIFICADO — hito científico que recoge la propia web. */
