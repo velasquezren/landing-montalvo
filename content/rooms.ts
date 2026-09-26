@@ -19,6 +19,14 @@ export type RoomImage = {
   src: string;
   alt: string; // descripción real de la foto, en español
   role: "principal" | "galeria" | "detalle";
+  /**
+   * Punto de interés, en la sintaxis de `object-position`.
+   *
+   * Las fichas de la galería son apaisadas y varias fotografías son
+   * verticales: sin esto, el recorte centrado se come el motivo. Solo hace
+   * falta declararlo cuando el centro geométrico no es el centro de atención.
+   */
+  position?: string;
 };
 
 /** Identificador de suite. Es también el ancla de la URL (/servicios#gold). */
@@ -75,7 +83,29 @@ export const roomsData: Room[] = [
       "lujo-confort"
     ],
     // Añadir fotografías reales siguiendo public/images/README.md.
-    images: [],
+    images: [
+      { src: "/images/habitaciones/gold/principal-1.jpg",
+        alt: "Suite Gold Deluxe con sala de estar, sofá de tres plazas, mesa de centro y cuna junto a la cama",
+        role: "principal" },
+      { src: "/images/habitaciones/gold/principal-2.jpg",
+        alt: "Vista general de la suite Gold Deluxe con televisor, mueblería de madera y salida a la terraza",
+        role: "principal" },
+      { src: "/images/habitaciones/gold/galeria-1.jpg",
+        alt: "Baño de la suite Gold con encimera de mármol, ducha independiente y toallas bordadas",
+        role: "galeria" },
+      { src: "/images/habitaciones/gold/galeria-2.jpg",
+        alt: "Baño de la suite Gold con espejo de cuerpo entero y orquídeas sobre el mármol",
+        role: "galeria", position: "center 62%" },
+      { src: "/images/habitaciones/gold/galeria-3.jpg",
+        alt: "Albornoz y zapatillas con el logotipo de Clínica Montalvo sobre la cama",
+        role: "detalle" },
+      { src: "/images/habitaciones/gold/galeria-4.jpg",
+        alt: "Set de aseo de Maternidad Privada Montalvo sobre la encimera de mármol",
+        role: "detalle" },
+      { src: "/images/habitaciones/gold/galeria-5.jpg",
+        alt: "Orquídea sobre la mesa de la suite, con la cama y el sofá al fondo",
+        role: "detalle", position: "center 45%" },
+    ],
     order: 1
     // [COMPLETAR: areaM2, companions, priceFrom si la clínica decide publicarlos]
   },
@@ -109,7 +139,14 @@ export const roomsData: Room[] = [
       "parqueo-gratis"
     ],
     // Añadir fotografías reales siguiendo public/images/README.md.
-    images: [],
+    images: [
+      { src: "/images/habitaciones/silver/principal-1.jpg",
+        alt: "Suite Silver con sala de estar, televisor y balcón con ventanales de suelo a techo",
+        role: "principal" },
+      { src: "/images/habitaciones/silver/principal-2.jpg",
+        alt: "Suite Silver con sofá para el acompañante y ventanales triangulares con vista al jardín",
+        role: "principal" },
+    ],
     order: 2
     // [COMPLETAR: areaM2, companions, priceFrom si la clínica decide publicarlos]
   },
@@ -142,7 +179,20 @@ export const roomsData: Room[] = [
       "parqueo-gratis"
     ],
     // Añadir fotografías reales siguiendo public/images/README.md.
-    images: [],
+    images: [
+      { src: "/images/habitaciones/bronce/principal-1.jpg",
+        alt: "Suite Bronce individual con cama, armario de madera y frigobar",
+        role: "principal" },
+      { src: "/images/habitaciones/bronce/principal-2.jpg",
+        alt: "Suite Bronce con banco para el acompañante, aire acondicionado y televisor",
+        role: "principal" },
+      { src: "/images/habitaciones/bronce/galeria-1.jpg",
+        alt: "Suite Bronce vista desde la entrada, con zona de descanso junto a la ventana",
+        role: "galeria" },
+      { src: "/images/habitaciones/bronce/galeria-2.jpg",
+        alt: "Baño independiente de la suite Bronce con ducha y lavabo",
+        role: "galeria", position: "center 55%" },
+    ],
     order: 3
     // [COMPLETAR: areaM2, companions, priceFrom si la clínica decide publicarlos]
   }

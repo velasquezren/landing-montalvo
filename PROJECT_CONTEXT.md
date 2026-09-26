@@ -171,9 +171,9 @@ app/
 * `/icons/icon-192.png`, `/icons/icon-512.png`: Iconos del manifiesto.
 * `/icons/icon-maskable-512.png`: Variante a sangre para el recorte de Android.
 * `/images/servicios/hero.webp`: Maqueta de referencia; no publicar como fotografía.
-* `/images/habitaciones/gold/`: 7 maquetas en WebP de la suite Gold.
-* `/images/habitaciones/silver/`: 4 maquetas en WebP de la suite Silver.
-* `/images/habitaciones/bronce/`: 6 maquetas en WebP de la suite Bronce.
+* `/images/habitaciones/gold/`: 7 fotografías reales de la suite Gold.
+* `/images/habitaciones/silver/`: 2 fotografías reales de la suite Silver.
+* `/images/habitaciones/bronce/`: 4 fotografías reales de la suite Bronce.
 
 ---
 
@@ -648,3 +648,67 @@ transición fluida de esta máquina:
 * **Cabecera sticky fija**: no se oculta ni pierde interactividad.
 * Se descartan los experimentos de traslación horizontal de páginas y navegación direccional forzada.
 
+---
+
+## 20. Las fotografías de habitación, en producción — 26 de septiembre de 2026
+
+Llegó el primer material fotográfico real: 18 archivos del cliente, 13 únicos
+tras descartar duplicados. Las maquetas WebP con notas de producción se
+retiraron.
+
+### Proceso
+
+HEIC y JPG de origen (hasta 5184 × 3456 y 9 MB) reducidos a 2000 px las
+principales y 1600 px las de galería, JPEG al 82%. **Sin ampliar nunca**: dos
+originales eran más pequeños que el tope y se conservan a su tamaño real; forzar
+el tope solo habría añadido peso sin detalle. El reencodado descarta EXIF y GPS.
+Total en disco: 4,7 MB, de los que Next sirve variantes AVIF y WebP al tamaño
+que cada pantalla pide.
+
+### Reparto por suite
+
+Asignadas **por inspección visual** de cada fotografía contra la descripción de
+cada suite en `content/rooms.ts`: Gold 7 —dos vistas generales, dos baños de
+mármol y tres detalles de amenidades de marca—, Silver 2 y Bronce 4. **Es una
+inferencia, no un dato del cliente**: conviene que Dirección confirme la
+correspondencia antes de darla por buena.
+
+### Tres correcciones de maquetación que solo podían verse con fotos
+
+1. **La retícula no salía de la proporción de las fotografías.** `h-[30rem]` se
+   eligió cuando no había fotos; medida contra el ancho real de la columna,
+   dejaba las fichas del mosaico en **0,86 —verticales— mientras que las
+   fotografías son 4:3**, de modo que se recortaba el 35% del ancho de cada una
+   y las habitaciones no se reconocían. Ahora la altura sale de la proporción
+   del contenedor: `aspect-[2/1]` para el mosaico de 8+4 y `aspect-[8/3]` para
+   dos fichas. **Todas las fichas caen en 1,33 a cualquier ancho**, medido.
+2. **Con dos fotografías la columna de apoyo dejaba media rejilla en blanco**, y
+   al estirar esa única ficha para rellenarla, una fotografía apaisada quedaba
+   recortada a una franja vertical. Con dos, ahora se reparten a lo ancho.
+3. **El aviso de «+N fotos más» era un velo verde sobre la última ficha**, es
+   decir, tapaba una fotografía entera para anunciar que había más fotografías.
+   Ahora es un distintivo en la esquina.
+
+### Encuadre por fotografía
+
+`RoomImage` acepta `position` opcional (sintaxis de `object-position`). Cuatro
+fotografías son verticales y las fichas son apaisadas: sin esto el recorte
+centrado se comía el motivo. Solo se declara cuando el centro geométrico no es
+el centro de atención.
+
+### Portada
+
+El bloque de internación ya no es un marcador: usa
+`/images/habitaciones/gold/principal-1.jpg`, que es 4:3 y encaja con el hueco.
+
+### Pendiente
+
+* **Confirmar el reparto de fotografías por suite** con Dirección.
+* Silver solo tiene dos fotografías; conviene pedir baño y detalles.
+* En `FOTOS DE HAB CLINICA/` llegaron además **retratos del Dr. Montalvo**
+  recibiendo un reconocimiento de la Cámara de Diputados. No se han publicado:
+  llevan el logotipo incrustado y son verticales (1639 × 2048), mientras que la
+  cabecera de página es 1920 × 395. Necesitan versión sin logotipo y un bloque
+  propio, no la cabecera.
+* La carpeta de origen queda fuera de git y del linter (`.gitignore`,
+  `eslint.config.mjs`): es material en bruto, no código del proyecto.

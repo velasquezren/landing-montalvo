@@ -19,8 +19,8 @@ export const editorialImages = {
     position: "center 38%",
   },
   habitaciones: {
-    src: null,
-    alt: "",
+    src: "/images/habitaciones/gold/principal-1.jpg",
+    alt: "Sala de estar de una suite de internación, con sofá y cuna junto a la cama",
     position: "center",
   },
   especialidades: { src: null, alt: "", position: "center" },

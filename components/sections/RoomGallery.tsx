@@ -69,7 +69,7 @@ export default function RoomGallery({ images, roomName }: RoomGalleryProps) {
       <EditorialPhoto
         image={{ src: null, alt: "", position: "center" }}
         sizes="(min-width: 1024px) 58vw, 100vw"
-        className="aspect-[4/3] w-full lg:aspect-auto lg:h-[30rem] xl:h-[33rem]"
+        className="aspect-[4/3] w-full"
       />
     );
   }
@@ -101,27 +101,69 @@ export default function RoomGallery({ images, roomName }: RoomGalleryProps) {
             aria-label={`Ampliar foto ${i + 1} de ${images.length} de ${roomName}`}
             className="relative block aspect-[4/3] w-full overflow-hidden rounded-lg bg-wash"
           >
-            <Image src={img.src} alt={img.alt} fill sizes="100vw" className="object-cover" />
+            <Image
+              src={img.src}
+              alt={img.alt}
+              fill
+              sizes="100vw"
+              className="object-cover"
+              style={{ objectPosition: img.position }}
+            />
           </button>
         ))}
       </SnapCarousel>
 
-      {/* Escritorio: una imagen que manda y dos de apoyo. */}
-      <div className="hidden h-[30rem] grid-cols-12 gap-2 lg:grid xl:h-[33rem]">
+      {/* Escritorio.
+
+          La retícula sale de la proporción de las fotografías, no de una altura
+          fija. Con `h-[30rem]` —elegida cuando aún no había fotos— las fichas
+          del mosaico quedaban a 0,86, es decir verticales, mientras que las
+          fotografías son 4:3: se recortaba el 35% del ancho de cada una y las
+          habitaciones no se reconocían.
+
+          Dando al contenedor la proporción adecuada, cada ficha cae en 4:3 sola
+          y a cualquier ancho: 2/1 reparte el mosaico de 8+4 en tres fichas de
+          4:3, y 8/3 reparte dos fichas de 4:3 una al lado de otra.
+
+          El reparto cambia según cuántas fotografías haya porque una sola
+          retícula no sirve para las tres suites. */}
+      {side.length === 0 ? (
         <Tile
           image={main}
           roomName={roomName}
           index={0}
           onOpen={openPhoto}
-          sizes="(min-width: 1024px) 42vw, 100vw"
-          className={side.length ? "col-span-8" : "col-span-12"}
+          sizes="(min-width: 1024px) 48vw, 100vw"
+          className="hidden aspect-[4/3] w-full lg:block"
         >
           <span className="label absolute bottom-4 left-4 rounded-xs bg-primary-dark/85 px-2.5 py-1.5 text-white">
             1 / {images.length}
           </span>
         </Tile>
+      ) : side.length === 1 ? (
+        <div className="hidden aspect-[8/3] grid-cols-2 gap-2 lg:grid">
+          <Tile image={main} roomName={roomName} index={0} onOpen={openPhoto} sizes="(min-width: 1024px) 24vw, 100vw">
+            <span className="label absolute bottom-4 left-4 rounded-xs bg-primary-dark/85 px-2.5 py-1.5 text-white">
+              1 / {images.length}
+            </span>
+          </Tile>
+          <Tile image={side[0]} roomName={roomName} index={1} onOpen={openPhoto} sizes="(min-width: 1024px) 24vw, 100vw" />
+        </div>
+      ) : (
+        <div className="hidden aspect-[2/1] grid-cols-12 gap-2 lg:grid">
+          <Tile
+            image={main}
+            roomName={roomName}
+            index={0}
+            onOpen={openPhoto}
+            sizes="(min-width: 1024px) 32vw, 100vw"
+            className="col-span-8"
+          >
+            <span className="label absolute bottom-4 left-4 rounded-xs bg-primary-dark/85 px-2.5 py-1.5 text-white">
+              1 / {images.length}
+            </span>
+          </Tile>
 
-        {side.length > 0 && (
           <div className="col-span-4 grid grid-rows-2 gap-2">
             {side.map((img, i) => (
               <Tile
@@ -130,23 +172,21 @@ export default function RoomGallery({ images, roomName }: RoomGalleryProps) {
                 roomName={roomName}
                 index={i + 1}
                 onOpen={openPhoto}
-                sizes="(min-width: 1024px) 20vw, 100vw"
+                sizes="(min-width: 1024px) 16vw, 100vw"
               >
+                {/* Distintivo en una esquina, no un velo sobre toda la ficha:
+                    tapar la última fotografía para anunciar que hay más
+                    fotografías es lo contrario de lo que se pretende. */}
                 {i === side.length - 1 && remaining > 0 && (
-                  <span className="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-primary-dark/70 text-white transition-colors duration-300 group-hover:bg-primary-dark/80">
-                    <span className="font-display text-2xl font-bold leading-none">
-                      +{remaining}
-                    </span>
-                    <span className="label text-white/80">
-                      {remaining === 1 ? "foto más" : "fotos más"}
-                    </span>
+                  <span className="label absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-xs bg-primary-dark/85 px-2.5 py-1.5 text-white transition-colors duration-200 group-hover:bg-primary">
+                    +{remaining} {remaining === 1 ? "foto" : "fotos"}
                   </span>
                 )}
               </Tile>
             ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <button
         type="button"
@@ -189,6 +229,9 @@ function Tile({
         alt={image.alt}
         fill
         sizes={sizes}
+        // Varias fotografías son verticales y la ficha es apaisada: sin esto,
+        // el recorte centrado se come el motivo.
+        style={{ objectPosition: image.position }}
         className="object-cover transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-[1.02]"
       />
       {children}

@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Material fotográfico en bruto entregado por el cliente: fotos y páginas
+    // guardadas con su JavaScript. No es código del proyecto y llenaba el
+    // informe de avisos sobre archivos minificados de terceros.
+    "FOTOS*/**",
   ]),
 ]);
 
