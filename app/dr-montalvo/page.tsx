@@ -34,20 +34,14 @@ export default function DrMontalvoPage() {
 
   return (
     <>
-      {/* En la página de una persona, la cara va arriba. Con la cabecera a lo
-          ancho de las demás páginas el retrato quedaba por debajo del pliegue y
-          lo primero que se veía era un bloque verde con un nombre. */}
       <SplitHero
         headingId="doctor-heading"
         image={editorialImages.doctor}
         preload
-        caption={<><span className="block font-semibold">Reconocimiento a su trayectoria</span><span className="text-muted-foreground">Cámara de Diputados de Bolivia</span></>}
       >
         <nav aria-label="Ruta de navegación">
           <ol className="label flex items-center gap-2 text-white/75">
-            <li>
-              <Link href="/" className="transition-colors hover:text-white">Inicio</Link>
-            </li>
+            <li><Link href="/" className="transition-colors hover:text-white">Inicio</Link></li>
             <li aria-hidden="true" className="text-white/30">/</li>
             <li aria-current="page" className="text-white">Dr. Montalvo</li>
           </ol>

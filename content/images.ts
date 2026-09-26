@@ -33,8 +33,8 @@ export const editorialImages = {
   nosotros: { src: null, alt: "", position: "center" },
   pacientes: { src: null, alt: "", position: "center" },
   doctor: {
-    src: "/images/equipo/dr-montalvo-reconocimiento.jpg",
-    alt: "El Dr. Juan Carlos Montalvo sostiene el diploma y la medalla del reconocimiento de la Cámara de Diputados de Bolivia",
-    position: "center 20%",
+    src: "/images/equipo/dr-montalvo-retrato.jpg",
+    alt: "Retrato del Dr. Juan Carlos Montalvo con bata blanca y medalla de reconocimiento",
+    position: "center 22%",
   },
 } satisfies Record<string, EditorialImage>;

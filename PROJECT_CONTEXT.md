@@ -741,9 +741,10 @@ facilitado por Dirección, y este proyecto no atribuye cargos por inferencia.
   portada enseña la clínica, no al doctor). Es la vista más amplia de suite
   —ventanal y zona de estar a la derecha—. **El original es de 1280 px**: bajo
   el velo apenas se nota, pero conviene pedir uno mayor.
-* **Página del Dr. Montalvo** → la fotografía con el diploma y la medalla del
-  reconocimiento de la Cámara de Diputados. Antes su cara quedaba por debajo del
-  pliegue y arriba solo había un bloque verde con un nombre.
+* **Página del Dr. Montalvo** → el retrato vertical del doctor, integrado en
+  una cabecera partida de texto y fotografía. El reconocimiento queda
+  documentado en la sección de trayectoria, sin convertir la cabecera en una
+  tarjeta independiente.
 * **Cabecera de Servicios** → `silver/principal-1.jpg`. Elegida entre las cuatro
   vistas generales de suite más anchas porque es la única cuyo punto de interés
   —el ventanal— cae a la derecha, donde el velo verde es más transparente.
@@ -801,12 +802,13 @@ necesita más resolución que el ancho visible de la pantalla. Inicio reserva
 640 px por debajo de 640 px. `next.config.ts` permite las calidades 75 y 85;
 las demás fotografías conservan 75.
 
-La página del doctor conserva el reconocimiento como fotografía principal,
-pero `SplitHero` muestra ahora su proporción original **4:5** a un máximo de
-416 × 520 px. El marco está dentro del arco, con bordes suaves y pie de foto;
-no corta la cabeza, las manos ni el diploma en móvil o escritorio. Se precarga
-a calidad 85. El texto tiene accesos a consulta y trayectoria, sin atribuir
-cargos o formación pendientes de confirmación.
+La página del doctor usa una cabecera partida de `SplitHero`, con el retrato
+vertical completo en una columna derecha y el titular, migas y CTA en la
+izquierda. El marco de la foto no lleva una tarjeta blanca ni recorta el rostro;
+la composición conserva el arco, el verde de marca y la escala editorial del
+resto del sitio. La sección de trayectoria queda debajo con el hito del
+reconocimiento y el CTA institucional. No se atribuyen cargos o formación
+pendientes de confirmación.
 
 Verificación: ESLint y TypeScript correctos; inicio, Servicios y doctor en
 320, 390, 768, 1024, 1440 y 1920 px, con densidad 2, sin desbordes, imágenes
