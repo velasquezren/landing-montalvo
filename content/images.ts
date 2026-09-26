@@ -9,12 +9,12 @@ export type EditorialImage = {
 
 export const editorialImages = {
   inicio: {
-    // La vista más amplia de una suite: ventanal y zona de estar caen a la
-    // derecha, donde el velo es más transparente. Es un original de 1280 px;
-    // bajo el velo apenas se nota, pero conviene sustituirlo por uno mayor.
-    src: "/images/habitaciones/gold/principal-2.jpg",
-    alt: "Suite de internación amplia con zona de estar, sofás y ventanal",
-    position: "center 55%",
+    // Fachada de la clínica. El archivo recibido es de 382 × 510 px: va en la
+    // columna de foto de la cabecera partida, donde menos se amplía. A sangre
+    // se vería borrosa. Pedir el original a mayor resolución.
+    src: "/images/portada/fachada.jpg",
+    alt: "Fachada de Clínica Montalvo, reproducción asistida, con palmeras en la entrada",
+    position: "center 35%",
   },
   servicios: {
     // Elegida entre las cuatro vistas generales de suite más anchas: es la
