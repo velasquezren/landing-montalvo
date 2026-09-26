@@ -1,6 +1,7 @@
 import { editorialImages } from "@/content/images";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowDown, ArrowUpRight } from "lucide-react";
 import SplitHero from "@/components/sections/SplitHero";
 import SectionHeader from "@/components/sections/SectionHeader";
 import CtaBand from "@/components/sections/CtaBand";
@@ -8,6 +9,7 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/content/site";
 import { doctor, milestones } from "@/content/institucional";
+import { getAppointmentLink } from "@/lib/links";
 
 export const metadata: Metadata = {
   title: "Dr. Montalvo",
@@ -19,8 +21,7 @@ export const metadata: Metadata = {
 /**
  * Página del Dr. Montalvo.
  *
- * De él solo está publicado el hito de 2017; el cargo, la reseña y el retrato
- * los tiene que facilitar la clínica. La página está montada para recibirlos:
+ * El cargo y la reseña los tiene que facilitar la clínica. La página está montada para recibirlos:
  * en cuanto `doctor.role` y `doctor.bio` tengan contenido en
  * content/institucional.ts, aparecen solos y el aviso desaparece.
  *
@@ -29,13 +30,19 @@ export const metadata: Metadata = {
  */
 export default function DrMontalvoPage() {
   const hasBio = doctor.bio.length > 0;
+  const appointment = getAppointmentLink();
 
   return (
     <>
       {/* En la página de una persona, la cara va arriba. Con la cabecera a lo
           ancho de las demás páginas el retrato quedaba por debajo del pliegue y
           lo primero que se veía era un bloque verde con un nombre. */}
-      <SplitHero headingId="doctor-heading" image={editorialImages.doctor}>
+      <SplitHero
+        headingId="doctor-heading"
+        image={editorialImages.doctor}
+        preload
+        caption={<><span className="block font-semibold">Reconocimiento a su trayectoria</span><span className="text-muted-foreground">Cámara de Diputados de Bolivia</span></>}
+      >
         <nav aria-label="Ruta de navegación">
           <ol className="label flex items-center gap-2 text-white/75">
             <li>
@@ -45,13 +52,24 @@ export default function DrMontalvoPage() {
             <li aria-current="page" className="text-white">Dr. Montalvo</li>
           </ol>
         </nav>
-        <h1 id="doctor-heading" className="display mt-6 max-w-xl">{doctor.name}</h1>
+        <h1 id="doctor-heading" className="display mt-6 max-w-xl text-balance">{doctor.name}</h1>
         <p className="lead mt-6 max-w-lg text-white/85">
           {doctor.role || `Clínica Montalvo · ${siteConfig.city}`}
         </p>
-        <p className="mt-10 border-t border-white/20 pt-5 text-sm text-white/80">
-          Reconocido por la Cámara de Diputados de Bolivia.
+        <p className="mt-6 max-w-md text-base leading-relaxed text-white/80">
+          Conozca su trayectoria y su aportación a la investigación médica.
+          Nuestro equipo le orientará para coordinar una consulta.
         </p>
+        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+          <Button asChild variant="inverse" size="lg">
+            <a href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>
+              Solicitar una consulta <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+            </a>
+          </Button>
+          <a href="#trayectoria" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-white hover:underline">
+            Ver trayectoria <ArrowDown aria-hidden="true" className="h-4 w-4" />
+          </a>
+        </div>
       </SplitHero>
 
       <section

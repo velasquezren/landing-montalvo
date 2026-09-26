@@ -9,12 +9,11 @@ export type EditorialImage = {
 
 export const editorialImages = {
   inicio: {
-    // Fachada de la clínica. El archivo recibido es de 382 × 510 px: va en la
-    // columna de foto de la cabecera partida, donde menos se amplía. A sangre
-    // se vería borrosa. Pedir el original a mayor resolución.
-    src: "/images/portada/fachada.jpg",
-    alt: "Fachada de Clínica Montalvo, reproducción asistida, con palmeras en la entrada",
-    position: "center 35%",
+    // La fachada disponible solo tiene 382 × 510 px. Usamos la fotografía
+    // de 2000 × 1500 px de Servicios hasta recibir un original más grande.
+    src: "/images/habitaciones/silver/principal-1.jpg",
+    alt: "Suite de Clínica Montalvo con amplios ventanales y espacio para acompañantes",
+    position: "center 55%",
   },
   servicios: {
     // Elegida entre las cuatro vistas generales de suite más anchas: es la

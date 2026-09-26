@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
     /* AVIF primero: pesa entre un 20% y un 30% menos que WebP a igual calidad,
        y el navegador que no lo entienda recibe WebP por content negotiation. */
     formats: ["image/avif", "image/webp"],
+    qualities: [75, 85],
 
     /* Los anchos por defecto de Next llegan a 3840px, que aquí no se usa nunca.
        El tope son 2560 por las cabeceras, que van a sangre: en una pantalla de

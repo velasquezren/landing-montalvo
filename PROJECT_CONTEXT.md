@@ -783,3 +783,34 @@ nombre del archivo**; si no, quien ya la vio la seguirá viendo vieja hasta un a
 Las tres cabeceras cargan su fotografía con texto alternativo en escritorio y
 móvil; 8 rutas por 3 anchos sin errores ni desbordes; galerías intactas; visor
 en 93 ms. El paquete sigue en 190 KB gz.
+
+---
+
+## 22. Nitidez de portada y presentación del doctor — 26 de septiembre de 2026
+
+La portada pasó posteriormente a una fachada de **382 × 510 px**, ampliada a
+640 × 630 px en escritorio. Para resolver la falta de detalle, ahora utiliza
+la misma fotografía real de **2000 × 1500 px** que Servicios
+(`silver/principal-1.jpg`), con `HeroBackdrop`, velo verde y arco a todo el ancho.
+La fachada sigue disponible, pendiente de un original de mayor resolución.
+Esta composición sustituye las asignaciones de portada descritas en §21.
+
+`HeroBackdrop` sirve calidad 85 y admite `sizes`: el recorte vertical en móvil
+necesita más resolución que el ancho visible de la pantalla. Inicio reserva
+900 px de ancho de imagen por debajo de 1024 px; las cabeceras interiores,
+640 px por debajo de 640 px. `next.config.ts` permite las calidades 75 y 85;
+las demás fotografías conservan 75.
+
+La página del doctor conserva el reconocimiento como fotografía principal,
+pero `SplitHero` muestra ahora su proporción original **4:5** a un máximo de
+416 × 520 px. El marco está dentro del arco, con bordes suaves y pie de foto;
+no corta la cabeza, las manos ni el diploma en móvil o escritorio. Se precarga
+a calidad 85. El texto tiene accesos a consulta y trayectoria, sin atribuir
+cargos o formación pendientes de confirmación.
+
+Verificación: ESLint y TypeScript correctos; inicio, Servicios y doctor en
+320, 390, 768, 1024, 1440 y 1920 px, con densidad 2, sin desbordes, imágenes
+rotas ni errores de consola. Proporción del retrato y enlaces comprobados.
+Se repitieron las vistas móviles tras ajustar `sizes`. Compilación de
+producción correcta con `next build --webpack`; Turbopack falló en este entorno
+por `Operation not permitted` al abrir un puerto para procesar CSS.
