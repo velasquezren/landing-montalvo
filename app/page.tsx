@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Stethoscope, BedDouble, ClipboardList } from "lucide-react";
 import EditorialPhoto from "@/components/sections/EditorialPhoto";
+import SplitHero from "@/components/sections/SplitHero";
 import CtaBand from "@/components/sections/CtaBand";
 import { Button } from "@/components/ui/button";
 import { editorialImages } from "@/content/images";
@@ -24,15 +25,7 @@ export default function HomePage() {
   const appointment = getAppointmentLink();
   return (
     <>
-      {/* El arco cambia de dueño según el ancho. En escritorio el héroe son dos
-          columnas —verde y fotografía— y el borde inferior lo comparten las
-          dos: el arco va en la sección y las recorta juntas. Apilado, la última
-          pieza es la fotografía, así que un arco en la sección quedaría al pie
-          de ella, contra blanco y sin contraste. Apilado lo lleva la columna
-          verde, que es la que de verdad termina. */}
-      <section data-hero="" aria-labelledby="inicio-heading" className="overflow-hidden text-white lg:arc-end lg:bg-primary">
-        <div className="mx-auto grid max-w-7xl lg:grid-cols-2">
-          <div className="arc-end bg-primary px-5 py-14 sm:px-8 sm:py-20 lg:rounded-none lg:bg-transparent lg:py-24 lg:pr-12">
+      <SplitHero headingId="inicio-heading" image={editorialImages.inicio} preload>
             <p className="label leading-relaxed text-white/75">Clínica Montalvo · Santa Cruz de la Sierra</p>
             <h1 id="inicio-heading" className="display mt-6 max-w-xl">Su salud, con atención cercana.</h1>
             <p className="lead mt-6 max-w-lg text-white/85">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>
@@ -43,10 +36,7 @@ export default function HomePage() {
               <Button asChild variant="inverseOutline" size="lg"><Link href="/servicios">Explorar servicios</Link></Button>
             </div>
             <p className="mt-10 border-t border-white/20 pt-5 text-sm text-white/80">Pioneros en reproducción asistida en Bolivia.</p>
-          </div>
-          <EditorialPhoto image={editorialImages.inicio} preload sizes="(min-width: 1280px) 640px, (min-width: 1024px) 50vw, 100vw" className="aspect-[16/10] lg:aspect-auto lg:min-h-full" />
-        </div>
-      </section>
+      </SplitHero>
 
       <section aria-labelledby="orientacion-heading" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">

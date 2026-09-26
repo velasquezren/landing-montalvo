@@ -705,8 +705,7 @@ El bloque de internación ya no es un marcador: usa
 
 * **Confirmar el reparto de fotografías por suite** con Dirección.
 * Silver solo tiene dos fotografías; conviene pedir baño y detalles.
-* El **retrato del Dr. Montalvo** ya está publicado (ver más abajo), pero
-  **conviene pedir el original sin el logotipo incrustado**.
+* El **retrato del Dr. Montalvo** ya está publicado y sin logotipo (§21).
 * La carpeta de origen queda fuera de git y del linter (`.gitignore`,
   `eslint.config.mjs`): es material en bruto, no código del proyecto.
 
@@ -730,3 +729,56 @@ conviene pedir a la clínica el original sin logotipo y sustituirlo.
 El cargo sigue vacío en `content/institucional.ts`. En la propia bata se lee
 «GINECÓLOGO OBSTETRA», pero eso es una lectura de la fotografía, no un dato
 facilitado por Dirección, y este proyecto no atribuye cargos por inferencia.
+
+---
+
+## 21. Las fotografías en su sitio — 26 de septiembre de 2026
+
+### Dónde va cada una
+
+* **Portada** → el retrato del Dr. Montalvo con la medalla. El hueco de la
+  derecha de la cabecera era un marcador vacío con el isotipo de marca de agua:
+  lo primero que veía cualquier visitante. Un rostro sonriente es la imagen que
+  mejor sostiene «Su salud, con atención cercana».
+* **Página del Dr. Montalvo** → la fotografía con el diploma y la medalla del
+  reconocimiento de la Cámara de Diputados. Antes su cara quedaba por debajo del
+  pliegue y arriba solo había un bloque verde con un nombre.
+* **Cabecera de Servicios** → `silver/principal-1.jpg`. Elegida entre las cuatro
+  vistas generales de suite más anchas porque es la única cuyo punto de interés
+  —el ventanal— cae a la derecha, donde el velo verde es más transparente.
+
+Cada fotografía se usa en un solo sitio destacado.
+
+### `SplitHero`
+
+Portada y página del doctor comparten ahora `components/sections/SplitHero.tsx`:
+texto sobre verde a un lado y fotografía al otro. Se extrajo en lugar de copiar
+el marcado porque la lógica del arco es fácil de romper —en escritorio lo lleva
+la sección, apilado lo lleva la columna verde (§14)—. En móvil la fotografía va
+en 4:3 y no en 16:10: son retratos, y 16:10 dejaba la cara a medias.
+
+### El logotipo incrustado, retirado
+
+Las dos fotografías del doctor traían el logotipo de la clínica en la esquina
+superior derecha. No se podía recortar: se solapa con la cabeza en horizontal y
+en vertical. Pero detrás hay una pared **desenfocada y lisa**, que es el caso más
+favorable para rellenar.
+
+Se midió fila a fila el hueco entre la cabeza y el isotipo —el isotipo empieza
+en x=959 y la cabeza no pasa de x=937 en esa franja— y se rellenó el rectángulo
+del logotipo con un **parche de Coons**, que interpola desde los cuatro bordes y
+coincide con el fondo en todos ellos, así que no deja costura. Los bordes solo
+se toman donde son pared: el pelo gris de la sien, que el filtro de piel no
+reconoce, se colaba como una línea oscura. El retrato no se toca.
+
+**Aviso de caché.** Al sustituir el archivo con el mismo nombre, la web siguió
+mostrando la versión con logotipo: el optimizador de Next indexa por URL y
+`minimumCacheTTL` es de un año. Por eso el retrato pasó a llamarse
+`dr-montalvo-retrato.jpg`. **Regla: al cambiar una fotografía, cambiar también el
+nombre del archivo**; si no, quien ya la vio la seguirá viendo vieja hasta un año.
+
+### Verificado
+
+Las tres cabeceras cargan su fotografía con texto alternativo en escritorio y
+móvil; 8 rutas por 3 anchos sin errores ni desbordes; galerías intactas; visor
+en 93 ms. El paquete sigue en 190 KB gz.

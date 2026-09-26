@@ -1,8 +1,7 @@
 import { editorialImages } from "@/content/images";
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import PageHero from "@/components/sections/PageHero";
+import SplitHero from "@/components/sections/SplitHero";
 import SectionHeader from "@/components/sections/SectionHeader";
 import CtaBand from "@/components/sections/CtaBand";
 import { Reveal } from "@/components/ui/reveal";
@@ -33,12 +32,27 @@ export default function DrMontalvoPage() {
 
   return (
     <>
-      <PageHero
-        image={editorialImages.doctor}
-        title={doctor.name}
-        subtitle={doctor.role || `Clínica Montalvo · ${siteConfig.city}`}
-        breadcrumbCurrent="Dr. Montalvo"
-      />
+      {/* En la página de una persona, la cara va arriba. Con la cabecera a lo
+          ancho de las demás páginas el retrato quedaba por debajo del pliegue y
+          lo primero que se veía era un bloque verde con un nombre. */}
+      <SplitHero headingId="doctor-heading" image={editorialImages.doctor}>
+        <nav aria-label="Ruta de navegación">
+          <ol className="label flex items-center gap-2 text-white/75">
+            <li>
+              <Link href="/" className="transition-colors hover:text-white">Inicio</Link>
+            </li>
+            <li aria-hidden="true" className="text-white/30">/</li>
+            <li aria-current="page" className="text-white">Dr. Montalvo</li>
+          </ol>
+        </nav>
+        <h1 id="doctor-heading" className="display mt-6 max-w-xl">{doctor.name}</h1>
+        <p className="lead mt-6 max-w-lg text-white/85">
+          {doctor.role || `Clínica Montalvo · ${siteConfig.city}`}
+        </p>
+        <p className="mt-10 border-t border-white/20 pt-5 text-sm text-white/80">
+          Reconocido por la Cámara de Diputados de Bolivia.
+        </p>
+      </SplitHero>
 
       <section
         aria-labelledby="trayectoria"
@@ -52,30 +66,8 @@ export default function DrMontalvoPage() {
           id="trayectoria"
         />
 
-        <div className="mt-12 grid gap-10 lg:mt-16 lg:grid-cols-12 lg:gap-16">
-          {/* El retrato es 4:5, la proporción natural de un retrato vertical, y
-              la columna se la reserva entera: encajarlo en la cabecera de la
-              página —1920 × 395 en escritorio— habría dejado una franja en la
-              que no se le reconoce. */}
-          {doctor.photo && (
-            <Reveal className="lg:col-span-5">
-              <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-wash">
-                <Image
-                  src={doctor.photo}
-                  alt={doctor.photoAlt}
-                  fill
-                  sizes="(min-width: 1024px) 40vw, 100vw"
-                  className="object-cover"
-                  priority={false}
-                />
-              </div>
-              <p className="mt-3 text-[13px] leading-relaxed text-muted-foreground">
-                Reconocimiento de la Cámara de Diputados de Bolivia.
-              </p>
-            </Reveal>
-          )}
-
-          <Reveal step={2} className="lg:col-span-7">
+        <div className="mt-12 grid gap-12 lg:mt-16 lg:grid-cols-12 lg:gap-16">
+          <Reveal className="lg:col-span-7">
             {hasBio ? (
               <div className="space-y-5 text-[15px] leading-relaxed text-muted-foreground">
                 {doctor.bio.map((paragraph, i) => (
@@ -89,8 +81,10 @@ export default function DrMontalvoPage() {
                 la disponibilidad de atención.
               </p>
             )}
+          </Reveal>
 
-            <div className="mt-10">
+          <Reveal step={2} className="lg:col-span-5">
+            <div>
             <ol className="border-t border-border-strong">
               {milestones.map((milestone) => (
                 <li key={milestone.year} className="border-b border-border py-5">
