@@ -2,7 +2,11 @@ import Image from "next/image";
 import type { EditorialImage } from "@/content/images";
 import { cn } from "@/lib/utils";
 
-/** La proporción se reserva incluso mientras llega la fotografía definitiva. */
+/**
+ * Fotografía del contenido. La proporción se reserva incluso mientras llega la
+ * fotografía definitiva, y al entrar en pantalla se descubre con la cortina
+ * común a todas las fotos del sitio (`.photo-reveal`, app/globals.css).
+ */
 export default function EditorialPhoto({ image, className, sizes, preload = false, quality = 75 }: {
   image: EditorialImage;
   className?: string;
@@ -11,7 +15,7 @@ export default function EditorialPhoto({ image, className, sizes, preload = fals
   quality?: 75 | 85;
 }) {
   return (
-    <div className={cn("relative overflow-hidden bg-wash", className)}>
+    <div className={cn("relative overflow-hidden rounded-lg bg-wash [--photo-radius:var(--radius-lg)]", image.src && "photo-reveal", className)}>
       {image.src ? (
         <Image src={image.src} alt={image.alt} fill sizes={sizes} preload={preload} quality={quality} className="object-cover" style={{ objectPosition: image.position }} />
       ) : (

@@ -16,11 +16,12 @@ export const editorialImages = {
     position: "center 55%",
   },
   servicios: {
-    // Elegida entre las cuatro vistas generales de suite más anchas. Va a todo
-    // el ancho en franja panorámica; a 55% el recorte conserva cama y ventanal.
-    src: "/images/habitaciones/silver/principal-1.jpg",
-    alt: "Suite de internación amplia con ventanal de suelo a techo y sala de estar",
-    position: "center 55%",
+    // Cada foto se usa en un solo sitio destacado: la portada lleva la otra
+    // vista de la suite Silver. Esta tiene los ventanales triangulares con el
+    // jardín, que en la mitad derecha de la cabecera se ven enteros.
+    src: "/images/habitaciones/silver/principal-2.jpg",
+    alt: "Suite Silver con sofá para el acompañante y ventanales triangulares con vista al jardín",
+    position: "center 40%",
   },
   habitaciones: {
     src: "/images/habitaciones/gold/principal-1.jpg",
@@ -33,6 +34,6 @@ export const editorialImages = {
   doctor: {
     src: "/images/equipo/dr-montalvo-retrato.jpg",
     alt: "Retrato del Dr. Juan Carlos Montalvo con bata blanca y medalla de reconocimiento",
-    position: "center 22%",
+    position: "center 12%",
   },
 } satisfies Record<string, EditorialImage>;

@@ -222,7 +222,7 @@ function Tile({
       type="button"
       onClick={() => onOpen(index)}
       aria-label={`Ampliar foto ${index + 1} de ${roomName}`}
-      className={cn("group relative block overflow-hidden rounded-lg bg-wash", className)}
+      className={cn("photo-reveal photo-hover group relative block overflow-hidden rounded-lg bg-wash [--photo-radius:var(--radius-lg)]", className)}
     >
       <Image
         src={image.src}
@@ -232,7 +232,9 @@ function Tile({
         // Varias fotografías son verticales y la ficha es apaisada: sin esto,
         // el recorte centrado se come el motivo.
         style={{ objectPosition: image.position }}
-        className="object-cover transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:scale-[1.02]"
+        // Cortina al entrar y acercamiento al pasar el puntero: los mismos que
+        // el resto de fotos del sitio (`.photo-reveal`, `.photo-hover`).
+        className="object-cover"
       />
       {children}
     </button>

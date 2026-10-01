@@ -56,8 +56,9 @@ Dos fotografías. Es la página que más se ve.
 
 ### 01 · `portada/principal.jpg` — **2560 × 1440 px (16:9)**
 
-Ocupa **todo el ancho de la pantalla**, debajo del titular *«Su salud, con
-atención cercana»*. Lleva una tarjeta blanca en la esquina inferior izquierda.
+Es **el fondo entero de la apertura**, detrás del titular *«Su salud, con
+atención cercana»*, que va a la izquierda. Lleva una tarjeta blanca en la
+esquina inferior derecha.
 
 **Qué mostrar:** atención cercana y trato humano. Una persona siendo atendida,
 una consulta real. No una sala vacía.
@@ -65,17 +66,16 @@ una consulta real. No una sala vacía.
 **Encuadre — es la foto más exigente del pedido:**
 
 ```
-   ESCRITORIO 1440–1920 px                     MÓVIL 390 px
+   ESCRITORIO 1440 × 736 px                    MÓVIL 390 × 304 px
    ┌──────────────────────────────────────┐    ┌─────────────┐
-   │              FRANJA                  │    │             │
-   │ ┌──────────┐ PANORÁMICA              │    │  APAISADA   │
-   │ │ tarjeta  │                         │    │             │
-   └─┴──────────┴─────────────────────────┘    └─────────────┘
-    de 2,8:1 a 3,3:1                            1,4:1
+   │ titular ░░░▒▒     MOTIVO             │    │   MOTIVO    │
+   │ texto   ░░░▒▒                        │    │ ▒▒▒▒▒▒▒▒▒▒▒ │ ← se funde
+   │ botones ░░░▒▒           ┌─────────┐  │    └─────────────┘
+   └─────────────────────────┴─tarjeta─┴──┘
 ```
 
-Sujeto centrado, con aire arriba y abajo: en escritorio solo se ve la franja
-central. Nada importante en la esquina inferior izquierda, que tapa la tarjeta.
+Motivo en la mitad derecha, con aire abajo. La mitad izquierda va bajo el texto
+y la esquina inferior derecha la tapa la tarjeta.
 
 ### 06 · `portada/internacion.jpg` — **1600 × 1200 px (4:3)**
 
@@ -178,35 +178,34 @@ y portadas de artículo.
 
 # Cómo se recorta una cabecera
 
-Las cabeceras con foto (05, 11, 12, 13) van **a todo el ancho de la pantalla**,
-debajo del titular, en una franja panorámica. Sin velo y sin texto encima: la
-foto se ve tal cual.
+La foto va **detrás del texto**, sin velo verde. Un velo del color claro de la
+página cubre la zona del texto y se desvanece hacia la foto.
 
 ```
-   ESCRITORIO 1440 px                         MÓVIL 390 px
-   ┌──────────────────────────────────────┐   ┌──────────┐
-   │ TITULAR               entradilla     │   │ TITULAR  │
-   ├──────────────────────────────────────┤   │ texto    │
-   │                                      │   ├──────────┤
-   │        FOTO A TODO EL ANCHO          │   │   FOTO   │
-   │                                      │   ├──────────┤
-   └──────────────────────────────────────┘   └──────────┘
-    1440 × 430–480 px  ← unos 3:1               390 × 240 px  ← 1,6:1
+   PORTADA (01) — la foto es todo el fondo     INTERIORES (05, 10–13)
+   ┌──────────────────────────────────────┐    ┌──────────────────────────────────────┐
+   │ TITULAR ░░░░░▒▒▒▒                    │    │ TITULAR        ░▒▒                   │
+   │ texto   ░░░░░▒▒▒▒     FOTO LIMPIA    │    │ texto          ░▒▒   FOTO (54%)      │
+   │ botones ░░░░░▒▒▒▒                    │    │                ░▒▒                   │
+   └──────────────────────────────────────┘    └──────────────────────────────────────┘
+     velo claro bajo el texto → foto nítida       la foto empieza donde acaba el texto
+
+   MÓVIL (todas): la foto arriba, fundida hacia abajo; el titular entra encima.
 ```
 
-**Tres reglas:**
+**Cuatro reglas:**
 
-1. **Sujeto en el centro, con aire arriba y abajo.** La misma foto se ve muy
-   panorámica en escritorio y casi 16:10 en móvil: solo sobrevive la franja
-   central. Componga holgado.
-2. **Grande.** Ocupa toda la pantalla de ancho; en un portátil con pantalla de
-   alta densidad el navegador pide más de 2500 px. Entregue 2560 px.
-3. **Con su luz natural.** No lleva velo ni degradado: una foto oscura o
-   sobreexpuesta se verá oscura o sobreexpuesta.
+1. **El motivo, en la mitad derecha.** La izquierda queda bajo el texto y se
+   desdibuja: ahí basta pared, techo o suelo.
+2. **Nada importante en la franja inferior.** En el móvil la foto se funde con
+   el fondo por abajo para dar paso al titular.
+3. **Apaisada, 3:2 o 16:9, y grande** (2560 px). La portada ocupa toda la
+   pantalla de ancho.
+4. **Con su luz natural y clara.** El velo es claro: una foto luminosa se funde
+   con él sin costura; una oscura deja un corte visible.
 
-Al cargar, la foto se abre desde un recorte con esquinas redondeadas hasta el
-borde de la pantalla, y al desplazarse se acerca un 10%. Ninguna de las dos
-animaciones recorta más que esa franja central.
+Al cargar, la foto se asienta desde un 5% más cerca, y al desplazarse se acerca
+un 10%. Ninguna de las dos animaciones descubre los bordes.
 
 ---
 

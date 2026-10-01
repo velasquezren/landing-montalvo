@@ -254,35 +254,91 @@ body {
   animation: rise-in 0.7s var(--ease-out-expo) both;
 }
 
-/* --- Fotografía de cabecera a sangre ----------------------------------------
+/* --- Fotografía de cabecera, detrás del texto ------------------------------
  *
- * Dos movimientos, y ninguno necesita JavaScript:
+ * VELO CLARO. El texto va encima de la foto, y texto sobre foto necesita algo
+ * debajo para llegar al contraste mínimo (4,5:1). Ese algo no es verde —fue lo
+ * que se retiró por invasivo— sino el propio fondo de la página: el velo es
+ * `--color-wash` opaco bajo el texto y se desvanece hacia la derecha, donde la
+ * foto queda limpia. Así la foto parece salir del fondo en vez de taparlo.
  *
- * 1. APERTURA, al cargar. La foto aparece recogida —un poco más estrecha que la
- *    página y con las esquinas redondeadas— y se abre hasta ocupar todo el
- *    ancho en 1,2 s. Es un recorte (`clip-path`), no una transparencia: la
- *    imagen se pinta desde el primer fotograma, así que no retrasa el LCP.
+ * La rampa tiene paradas intermedias en S: de opaco a transparente en línea
+ * recta, el ojo marca el punto donde termina el velo como una raya.
  *
- * 2. ACERCAMIENTO, al desplazarse. Mientras la página baja el primer alto de
- *    pantalla, la foto se acerca un 10% y se desplaza un poco más despacio que
- *    el texto: la sensación de entrar en la habitación. Va ligado al scroll
- *    con `animation-timeline`, que lo resuelve el compositor sin escuchar un
- *    solo evento. El desplazamiento (4%) nunca supera el margen que deja la
- *    escala (5% por lado), de modo que el borde de la foto no asoma.
+ * En móvil el texto no cabe al lado de la foto: la foto va arriba y el velo la
+ * funde hacia abajo, donde entra el titular.
  *
- * La apertura va sobre el marco y el acercamiento sobre la <img>, porque el
- * marco es el que recorta: así la escala nunca se sale de él. */
-@keyframes hero-open {
+ * El color va en rgb() y no como variable porque necesita canal alfa: es
+ * #f5fbfa, el mismo `--color-wash`. */
+.hero-scrim {
+  background: linear-gradient(
+    to bottom,
+    rgb(245 251 250 / 0) 30%,
+    rgb(245 251 250 / 0.45) 52%,
+    rgb(245 251 250 / 0.9) 70%,
+    rgb(245 251 250) 82%
+  );
+}
+
+@media (min-width: 1024px) {
+  /* El velo no se mide en porcentaje de la pantalla sino desde donde termina el
+     texto: margen del contenedor (centrado en 80rem) + relleno + columna de
+     36rem. Con porcentajes fijos, en una pantalla de 1024 px la columna de
+     texto ocupa el 59% del ancho y la entradilla salía del velo (1,56:1,
+     medido). Así el texto cae siempre sobre velo casi opaco, a cualquier
+     ancho, y la foto queda limpia a partir de ahí. */
+  .hero-scrim {
+    --text-end: calc(max((100% - 80rem) / 2, 0px) + 2rem + 36rem);
+    background: linear-gradient(
+      to right,
+      rgb(245 251 250) 0%,
+      rgb(245 251 250 / 0.97) calc(var(--text-end) - 6rem),
+      rgb(245 251 250 / 0.93) var(--text-end),
+      rgb(245 251 250 / 0.7) calc(var(--text-end) + 5%),
+      rgb(245 251 250 / 0.35) calc(var(--text-end) + 12%),
+      rgb(245 251 250 / 0.1) calc(var(--text-end) + 20%),
+      rgb(245 251 250 / 0) calc(var(--text-end) + 27%)
+    );
+  }
+
+  /* El retrato ocupa la parte derecha: solo hay que fundir su borde izquierdo
+     con el fondo para que no se lea como una foto pegada al lado del texto. */
+  .hero-scrim--side {
+    background: linear-gradient(
+      to right,
+      rgb(245 251 250) 0%,
+      rgb(245 251 250 / 0.75) 12%,
+      rgb(245 251 250 / 0.3) 24%,
+      rgb(245 251 250 / 0) 36%
+    );
+  }
+}
+
+/* MOVIMIENTO. Dos, y ninguno necesita JavaScript:
+ *
+ * 1. ASENTAMIENTO, al cargar: la foto llega un 5% más cerca y se asienta en
+ *    1,8 s, como una cámara que termina su movimiento. Solo escala: la imagen
+ *    se pinta desde el primer fotograma y no retrasa el LCP.
+ *
+ * 2. ACERCAMIENTO, al desplazarse: mientras la página baja el primer alto de
+ *    pantalla, la foto se acerca un 10% y baja un poco más despacio que el
+ *    texto. Va ligado al scroll con `animation-timeline`, que lo resuelve el
+ *    compositor. El desplazamiento (4%) nunca supera el margen que deja la
+ *    escala (5% por lado): el borde de la foto no asoma.
+ *
+ * El asentamiento va sobre el marco y el acercamiento sobre la <img>, para que
+ * las dos escalas no se pisen. */
+@keyframes hero-settle {
   from {
-    clip-path: inset(6% 4% 0 4% round var(--radius-3xl));
+    scale: 1.05;
   }
   to {
-    clip-path: inset(0 round 0);
+    scale: none;
   }
 }
 
 .hero-media {
-  animation: hero-open 1.2s var(--ease-out-expo) both;
+  animation: hero-settle 1.8s var(--ease-out-expo) both;
 }
 
 @keyframes hero-approach {
@@ -294,6 +350,49 @@ body {
     scale: 1.1;
     translate: 0 4%;
   }
+}
+
+/* --- Fotografías del contenido ----------------------------------------------
+ *
+ * Toda foto fuera de la cabecera se descubre igual al entrar en pantalla: una
+ * cortina que sube desde abajo mientras la imagen se asienta desde un 8% más
+ * cerca. Es la misma idea que la cabecera, a escala de sección, y es lo que hace
+ * que todas las fotos del sitio se lean como una sola serie.
+ *
+ * `--photo-radius` deja la cortina con las mismas esquinas que la ficha.
+ *
+ * La imagen no puede usar `view()` por sí misma: su marco recorta, y un ancestro
+ * con `overflow: hidden` cuenta como contenedor de desplazamiento (ver «Entradas
+ * ligadas al scroll»). Por eso el marco publica una línea de tiempo con nombre
+ * (`--photo`) y la imagen la sigue. */
+@keyframes photo-curtain {
+  from {
+    clip-path: inset(16% 0 0 0 round var(--photo-radius, 0px));
+  }
+  to {
+    clip-path: inset(0 round var(--photo-radius, 0px));
+  }
+}
+
+@keyframes photo-settle {
+  from {
+    scale: 1.08;
+  }
+  to {
+    scale: 1;
+  }
+}
+
+/* Al pasar el puntero, la foto se acerca. Va con `transform` y no con `scale`:
+   son propiedades distintas que se componen, así que no choca con el
+   asentamiento de arriba, que anima `scale`. */
+.photo-hover img {
+  transition: transform 0.7s var(--ease-out-expo);
+}
+
+.photo-hover:hover img,
+.photo-hover:focus-visible img {
+  transform: scale(1.04);
 }
 
 /* Testigo de "abierto": un aro que se expande y se desvanece. Solo escala y
@@ -345,6 +444,19 @@ body {
       animation: hero-approach linear both;
       animation-timeline: scroll(root);
       animation-range: 0 100vh;
+    }
+
+    .photo-reveal {
+      view-timeline: --photo block;
+      animation: photo-curtain linear both;
+      animation-timeline: --photo;
+      animation-range: entry 0% cover 35%;
+    }
+
+    .photo-reveal img {
+      animation: photo-settle linear both;
+      animation-timeline: --photo;
+      animation-range: entry 0% cover 50%;
     }
   }
 }

@@ -109,9 +109,10 @@ app/
 * **`WhatsAppFloat.tsx`**: Botón flotante accesible de WhatsApp. Un testigo de 420px al inicio del documento y un `IntersectionObserver` lo muestran al superar el héroe: el navegador avisa al cruzar el umbral, no en cada fotograma de scroll.
 
 ### Secciones (`components/sections/`)
-* **`PageHero.tsx`**: Encabezado de página, claro (`bg-wash`), de renderizado del lado servidor (RSC). Con fotografía, titular y entradilla en dos columnas y la foto debajo a todo el ancho (`HeroMedia`); sin ella, una columna y las circunferencias de `Rings`. Migas de pan y metadatos al pie.
-* **`SplitHero.tsx`**: Cabecera partida: texto a la izquierda y el retrato llenando la mitad derecha de arriba abajo y hasta el borde (página del doctor).
-* **`HeroMedia.tsx`**: Fotografía de cabecera a sangre. Se abre al cargar (`clip-path`) y se acerca al desplazarse (`animation-timeline: scroll(root)`), sin JavaScript.
+* **`PageHero.tsx`**: Encabezado de página, claro (`bg-wash`), de renderizado del lado servidor (RSC). Con fotografía, la foto ocupa la parte derecha de arriba abajo y se funde con el fondo detrás del texto (`HeroMedia`, modo "side"); sin ella, las circunferencias de `Rings`. Migas de pan y metadatos al pie.
+* **`SplitHero.tsx`**: Cabecera de la página del doctor: texto a la izquierda y el retrato detrás, a la derecha, fundido con el fondo.
+* **`HeroMedia.tsx`**: Fotografía de cabecera detrás del texto, con velo claro (`.hero-scrim`). Modo "full" (portada: la foto es todo el fondo) o "side" (interiores y retrato: la foto empieza donde acaba el texto). Se asienta al cargar y se acerca al desplazarse, sin JavaScript. Exporta `SIDE_TEXT`, el ancho de columna que garantiza que texto y foto no se pisen.
+* **`EditorialPhoto.tsx`**: Foto de contenido con proporción reservada, esquinas `rounded-lg` y la cortina común al entrar en pantalla (`.photo-reveal`).
 * **`ServicesGrid.tsx`**: Grilla de 4 columnas en desktop con hairlines perimetrales de 1px. No usa `overflow: hidden` para permitir animaciones CSS scroll nativas escalonadas mediante `--step`.
 * **`RoomsSection.tsx`**: Bloque interactivo de internación:
   * Maneja el estado de la suite activa (`gold`, `silver`, `bronce`).
@@ -970,4 +971,66 @@ mayor.
 `tsc --noEmit`, `eslint` y `next build --webpack` correctos. Portada, Servicios,
 Dr. Montalvo y Sobre nosotros en 1920 × 1080, 1440 × 900, 1440 × 780, 820 × 1180 y
 390 × 844: sin desbordes ni errores de consola.
+
+---
+
+## 26. La foto detrás del texto, y todas las fotos como una serie — 1 de octubre de 2026
+
+El cliente vio §25 en producción: **«está horrible que la foto esté por debajo
+del texto»**. Pidió la foto **detrás del texto** y que **todas las fotos** del
+sitio se vean lo más estéticas posible al navegar. Sustituye §25.
+
+### Cabeceras
+
+* **Portada** (`HeroMedia` "full"): la foto es todo el fondo de la apertura, de
+  `clamp(34rem, 100svh − cabecera, 46rem)` de alto. El texto va a la izquierda
+  sobre un **velo claro** —el propio `--color-wash`, no verde— que se desvanece
+  hacia la derecha, donde el ventanal queda nítido. La tarjeta de emergencias
+  pasa a la esquina inferior derecha.
+* **Interiores y doctor** (`HeroMedia` "side"): la foto ocupa la parte derecha
+  de arriba abajo y su borde izquierdo se funde con el fondo. Empieza donde
+  acaba la columna de texto (`SIDE_TEXT`: 28rem en `lg`, 32rem desde `xl`;
+  foto desde el 50% y el 46%): **el texto nunca queda encima de la imagen** a
+  ningún ancho, y la foto se ve casi entera. En Servicios se ven completos los
+  ventanales triangulares con el jardín, que con la foto a todo el fondo
+  quedaban bajo el velo.
+* **Móvil**: la foto arriba, fundida hacia abajo con el fondo, y el titular
+  entra encima de la zona fundida (`-mt-16`/`-mt-24`).
+* **Servicios** cambia a `silver/principal-2.jpg` (ventanales triangulares):
+  compartía foto con la portada, contra la regla de §21 de una foto por sitio.
+* Retrato del doctor: encuadre `center 12%`, para dejar aire sobre la cabeza.
+
+### El velo, medido
+
+El velo de la portada **no se mide en porcentaje de la pantalla sino desde
+donde termina el texto** (`--text-end` en `.hero-scrim`): con porcentajes fijos,
+a 1024 px la columna ocupaba el 59% del ancho y la entradilla salía del velo
+(**1,56:1**, medido). Rampa con paradas en S para que no se vea dónde acaba.
+
+Contraste medido **contra los píxeles reales de la foto** (captura con el texto
+oculto, percentil 2 del fondo bajo cada línea), en 1920, 1440, 1280, 1024 y
+390 px: el peor texto da **5,12:1** (mínimo 4,5). El gris secundario sobre
+fondo liso da 5,6:1, así que la foto apenas resta.
+
+### Todas las fotos, como una serie (`app/globals.css`)
+
+* **`.photo-reveal`**: al entrar en pantalla, cortina que sube (`clip-path`,
+  16% → 0, con las esquinas de la ficha vía `--photo-radius`) mientras la
+  imagen se asienta desde 1,08. Va en `EditorialPhoto` y en las fichas de la
+  galería. Usa una línea de tiempo con nombre (`--photo`) porque la imagen,
+  dentro de un marco recortado, no puede usar `view()` por sí misma.
+* **`.photo-hover`**: al pasar el puntero, la foto se acerca a 1,04 en 0,7 s.
+  Con `transform`, no con `scale`, para componerse con el asentamiento sin
+  pisarlo. Sustituye al `group-hover:scale-[1.02]` de la galería.
+* Las fotos de contenido llevan `rounded-lg`, como ya las fichas de la galería.
+* Cabecera: asentamiento al cargar (escala 1,05 → 1 en 1,8 s; sin opacidad, no
+  retrasa el LCP) y el acercamiento al desplazarse de §25.
+
+Movimiento reducido: todo quieto y visible, comprobado. Se retiró `hero-open`.
+
+### Verificado
+
+`tsc --noEmit`, `eslint` y `next build --webpack` correctos. Nueve rutas en
+1920 × 1080, 1440 × 900, 1440 × 780, 820 × 1180, 390 × 844 y 320 × 640: sin
+desbordes, imágenes rotas ni errores de consola.
 
