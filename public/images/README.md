@@ -15,7 +15,7 @@ una).**
 
 | Tipo de foto | Ancho a entregar | Proporción |
 | :--- | ---: | :--- |
-| Cabecera de página | **2000 px** (mínimo 1600) | 2000 × 1600 (5:4) |
+| Cabecera de página | **2000 px** (mínimo 1600) | 2000 × 1500 (4:3) |
 | Portada, foto principal | **1600 px** | 1600 × 1600 (cuadrada) |
 | Portada, internación | **1600 px** | 1600 × 1200 (4:3) |
 | Habitación, foto principal | **2000 px** | 2000 × 1500 (4:3) |
@@ -92,7 +92,7 @@ sin distorsión de gran angular.
 La página más importante después de la portada, y la que más material necesita:
 **una cabecera y tres galerías completas**.
 
-### 05 · `cabeceras/servicios.jpg` — **2000 × 1600 px (5:4)**
+### 05 · `cabeceras/servicios.jpg` — **2000 × 1500 px (4:3)**
 
 **Qué mostrar:** escena de atención médica real — consulta, sala de espera,
 pasillo clínico.
@@ -136,7 +136,7 @@ pantalla completa al ampliarlas.
 
 ## `/dr-montalvo` — Dr. Montalvo
 
-### 10 · `cabeceras/dr-montalvo.jpg` — **2000 × 1600 px (5:4)**
+### 10 · `cabeceras/dr-montalvo.jpg` — **2000 × 1500 px (4:3)**
 
 **Retrato ambiental**, no primer plano: el Dr. Montalvo en su consulta o junto al
 equipo. En este formato tan apaisado un primer plano vertical no cabe.
@@ -148,7 +148,7 @@ izquierda.
 
 ## `/especialidades` — Especialidades
 
-### 11 · `cabeceras/especialidades.jpg` — **2000 × 1600 px (5:4)**
+### 11 · `cabeceras/especialidades.jpg` — **2000 × 1500 px (4:3)**
 
 Consulta médica; profesional atendiendo. Sujeto a la derecha.
 
@@ -156,7 +156,7 @@ Consulta médica; profesional atendiendo. Sujeto a la derecha.
 
 ## `/sobre-nosotros` — Sobre nosotros
 
-### 12 · `cabeceras/sobre-nosotros.jpg` — **2000 × 1600 px (5:4)**
+### 12 · `cabeceras/sobre-nosotros.jpg` — **2000 × 1500 px (4:3)**
 
 Equipo médico o fachada e instalaciones. Sujeto a la derecha.
 
@@ -164,7 +164,7 @@ Equipo médico o fachada e instalaciones. Sujeto a la derecha.
 
 ## `/atencion-al-paciente` — Atención al paciente
 
-### 13 · `cabeceras/atencion-al-paciente.jpg` — **2000 × 1600 px (5:4)**
+### 13 · `cabeceras/atencion-al-paciente.jpg` — **2000 × 1500 px (4:3)**
 
 Recepción, admisión o bienvenida. Sujeto a la derecha.
 
@@ -181,27 +181,27 @@ y portadas de artículo.
 # Cómo se recorta una cabecera
 
 Las cabeceras (05, 10, 11, 12, 13) ya **no van a sangre bajo un velo verde**:
-la fotografía ocupa su propio marco en arco, a la derecha del titular, sobre un
-fondo claro. Eso las hace más fáciles de entregar que antes.
+la fotografía se ve **entera**, en 4:3, a la derecha del titular y sobre un fondo
+claro, con los bordes difuminados hacia el fondo. Eso las hace más fáciles de
+entregar que antes.
 
 ```
    ESCRITORIO                               MÓVIL
    ┌──────────────────────────────┐        ┌──────────┐
-   │  TITULAR        ╭────────╮   │        │ TITULAR  │
+   │  TITULAR        ┌────────┐   │        │ TITULAR  │
    │  texto          │ FOTO   │   │        │ texto    │
-   │                 └────────┘   │        │  ╭────╮  │
+   │                 └────────┘   │        │  ┌────┐  │
    └──────────────────────────────┘        │  │FOTO│  │
-    marco 5:4 con la parte superior        │  └────┘  │
-    redondeada (arco de ventana)           └──────────┘
+    marco 4:3, la foto completa y          │  └────┘  │
+    con los bordes difuminados             └──────────┘
 ```
 
 **Tres reglas:**
 
-1. **Proporción 5:4 (apaisada), sujeto en el centro.** El marco es casi
-   cuadrado en escritorio y en móvil: ya no hay franja panorámica.
-2. **Las dos esquinas superiores se recortan en curva.** Deje aire arriba: el
-   techo, una pared o un fondo desenfocado. Nada importante en las esquinas
-   superiores.
+1. **Proporción 4:3 (apaisada), sujeto en el centro.** Se muestra entera, sin
+   recorte, igual en escritorio y en móvil.
+2. **Los bordes se funden con el fondo**: el 10 % de cada lado pierde opacidad
+   poco a poco. Deje aire alrededor del sujeto; nada importante pegado al borde.
 3. **Entregue la foto con su luz natural.** Ya no lleva velo: se muestra tal
    cual, así que una foto oscura o sobreexpuesta se verá oscura o sobreexpuesta.
 

@@ -21,8 +21,8 @@ interface PageHeroProps {
  * de modo que el titular ya está pintado antes de que hidrate nada.
  *
  * Es clara: el verde sólido a sangre pesaba más que el contenido que presentaba.
- * La marca queda en la etiqueta y en el botón; con fotografía, ésta va en su
- * propio marco en arco, y sin ella, las circunferencias del isotipo.
+ * La marca queda en la etiqueta y en las circunferencias del isotipo. La
+ * fotografía, si la hay, se ve entera en 4:3 y se funde con el fondo.
  */
 export default function PageHero({
   title,
@@ -87,13 +87,13 @@ export default function PageHero({
         </div>
 
         {image?.src && (
-          <div className="relative mx-auto w-full max-w-sm sm:max-w-md lg:max-w-none">
-            <Rings className="-bottom-14 -right-16 w-[110%]" />
+          <div className="relative mx-auto w-full max-w-md lg:max-w-[32rem]">
+            <Rings className="left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 lg:w-[125%]" />
             <EditorialPhoto
               image={image}
               quality={85}
-              sizes="(min-width: 1024px) 760px, (min-width: 640px) 576px, 520px"
-              className="arch relative aspect-[5/4] shadow-lg"
+              sizes="(min-width: 1024px) 512px, (min-width: 488px) 448px, calc(100vw - 40px)"
+              className="feather hero-photo relative aspect-[4/3]"
             />
           </div>
         )}

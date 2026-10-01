@@ -14,8 +14,8 @@ interface SplitHeroProps {
 }
 
 /**
- * Cabecera editorial con retrato 4:5, completo en todos los tamaños.
- * El arco recorta solo las esquinas superiores, que en el retrato son pared.
+ * Cabecera editorial con retrato 4:5, completo en todos los tamaños: la
+ * proporción del marco es la del original y los bordes se funden con el fondo.
  */
 export default function SplitHero({ headingId, image, preload = false, caption, children }: SplitHeroProps) {
   return (
@@ -27,22 +27,20 @@ export default function SplitHero({ headingId, image, preload = false, caption, 
         <div>
           {children}
         </div>
-        <figure className="relative mx-auto w-full max-w-[26rem]">
-          <Rings className="-bottom-16 -right-24 w-[130%]" />
-          <div className="arch relative overflow-hidden bg-wash shadow-lg">
-            <EditorialPhoto
-              image={image}
-              preload={preload}
-              quality={85}
-              sizes="(min-width: 456px) 416px, calc(100vw - 40px)"
-              className="aspect-[4/5]"
-            />
-            {caption && (
-              <figcaption className="bg-background px-5 py-4 text-sm leading-relaxed text-primary-dark">
-                {caption}
-              </figcaption>
-            )}
-          </div>
+        <figure className="relative mx-auto w-full max-w-xs lg:max-w-[22rem]">
+          <Rings className="left-1/2 top-1/2 w-[120%] -translate-x-1/2 -translate-y-1/2 lg:w-[150%]" />
+          <EditorialPhoto
+            image={image}
+            preload={preload}
+            quality={85}
+            sizes="(min-width: 1024px) 352px, 320px"
+            className="feather hero-photo relative aspect-[4/5]"
+          />
+          {caption && (
+            <figcaption className="relative mt-4 text-center text-sm leading-relaxed text-muted-foreground">
+              {caption}
+            </figcaption>
+          )}
         </figure>
       </div>
     </section>

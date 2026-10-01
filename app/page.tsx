@@ -39,9 +39,9 @@ export default function HomePage() {
             </div>
             <p className="mt-10 max-w-xl border-t border-border-strong pt-5 text-sm text-muted-foreground">Pioneros en reproducción asistida en Bolivia.</p>
           </div>
-          <div className="relative mx-auto w-full max-w-sm sm:max-w-md lg:max-w-none">
-            <Rings className="-bottom-16 -right-20 w-[120%]" />
-            <EditorialPhoto image={editorialImages.inicio} preload quality={85} sizes="(min-width: 1024px) 840px, (min-width: 640px) 640px, 560px" className="arch relative aspect-[4/5] shadow-lg" />
+          <div className="relative mx-auto w-full max-w-md lg:max-w-[34rem]">
+            <Rings className="left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 lg:w-[125%]" />
+            <EditorialPhoto image={editorialImages.inicio} preload quality={85} sizes="(min-width: 1024px) 544px, (min-width: 488px) 448px, calc(100vw - 40px)" className="feather hero-photo relative aspect-[4/3]" />
           </div>
         </div>
       </section>

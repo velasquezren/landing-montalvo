@@ -109,8 +109,8 @@ app/
 * **`WhatsAppFloat.tsx`**: Botón flotante accesible de WhatsApp. Un testigo de 420px al inicio del documento y un `IntersectionObserver` lo muestran al superar el héroe: el navegador avisa al cruzar el umbral, no en cada fotograma de scroll.
 
 ### Secciones (`components/sections/`)
-* **`PageHero.tsx`**: Encabezado de página, claro (`bg-wash`), de renderizado del lado servidor (RSC). Con fotografía, la coloca en un marco en arco a la derecha; sin ella, dibuja las circunferencias de `Rings`. Migas de pan y metadatos al pie.
-* **`SplitHero.tsx`**: Cabecera partida de texto y retrato 4:5 en marco en arco (página del doctor).
+* **`PageHero.tsx`**: Encabezado de página, claro (`bg-wash`), de renderizado del lado servidor (RSC). Con fotografía, la muestra entera en 4:3 a la derecha, con bordes difuminados (`feather`) y animación de entrada (`hero-photo`); sin ella, dibuja las circunferencias de `Rings`. Migas de pan y metadatos al pie.
+* **`SplitHero.tsx`**: Cabecera partida de texto y retrato 4:5 completo con bordes difuminados (página del doctor).
 * **`ServicesGrid.tsx`**: Grilla de 4 columnas en desktop con hairlines perimetrales de 1px. No usa `overflow: hidden` para permitir animaciones CSS scroll nativas escalonadas mediante `--step`.
 * **`RoomsSection.tsx`**: Bloque interactivo de internación:
   * Maneja el estado de la suite activa (`gold`, `silver`, `bronce`).
@@ -864,3 +864,42 @@ El verde de fondo no se recomienda en cabeceras: era lo que se retiró.
 `tsc --noEmit` y `eslint` limpios. Portada, Servicios, Dr. Montalvo y Sobre
 nosotros revisadas en 1440 y 390 px: sin desbordes horizontales ni errores de
 consola.
+
+---
+
+## 24. Fotografía de cabecera: entera, más pequeña y fundida con el fondo — 1 de octubre de 2026
+
+Tras ver §23 en producción, el cliente pidió la foto **más pequeña**, **completa**
+y con los **bordes degradados**, y algo de animación. Esto sustituye el arco de
+§23: el arco recortaba las esquinas, y la foto debía verse entera.
+
+### Qué cambió
+
+* **Tamaño.** Portada: foto de 544 × 408 (antes 560 × 700 en 4:5); héroe de
+  **559 px de alto, antes unos 800**. Servicios: 512 × 384. Doctor: 352 × 440.
+* **Completa.** El marco toma la proporción del original —4:3 las habitaciones,
+  4:5 el retrato—, así que `object-cover` ya no recorta nada.
+* **Bordes difuminados**: `@utility feather` en `app/globals.css`. Máscara de dos
+  degradados intersecados (uno por eje) con rampa en S (smoothstep): con una
+  rampa lineal se veía una banda gris alrededor de la foto. Ancho ajustable con
+  `--feather` (10 % por defecto). Lleva el prefijo `-webkit-` a mano: el dev
+  server no lo añade y Chrome < 120 lo necesita.
+* **Animación** (`.hero-photo`): entrada de 1,1 s (opacidad y escala desde
+  1,04), y después una deriva muy lenta de la `<img>` hasta 1,06 y vuelta,
+  26 s por tramo. Solo `opacity` y `scale`: las hace el compositor. Movimiento
+  reducido las anula.
+* **Circunferencias centradas** detrás de la foto, como un halo; en móvil al
+  100 % del ancho para que no crucen el texto de encima.
+* Se eliminó `@utility arch`. `figcaption` de `SplitHero` pasa a texto bajo la foto.
+
+### Detalle conocido
+
+La foto de portada (`silver/principal-1.jpg`) tiene un foco de techo en la
+esquina superior izquierda; la máscara lo deja como un rastro tenue. Es contenido
+de la foto, no un defecto de la máscara. Con un original nuevo desaparece.
+
+### Verificado
+
+`tsc --noEmit`, `eslint` y `next build --webpack` correctos. Portada, Servicios,
+Dr. Montalvo y Sobre nosotros en 1440 y 390 px: sin desbordes ni errores de consola.
+
