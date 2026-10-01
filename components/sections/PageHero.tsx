@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Rings from "@/components/brand/Rings";
-import EditorialPhoto from "@/components/sections/EditorialPhoto";
+import HeroMedia from "@/components/sections/HeroMedia";
 import type { EditorialImage } from "@/content/images";
 import { cn } from "@/lib/utils";
 
@@ -21,8 +21,9 @@ interface PageHeroProps {
  * de modo que el titular ya está pintado antes de que hidrate nada.
  *
  * Es clara: el verde sólido a sangre pesaba más que el contenido que presentaba.
- * La marca queda en la etiqueta y en las circunferencias del isotipo. La
- * fotografía, si la hay, se ve entera en 4:3 y se funde con el fondo.
+ * Con fotografía, el texto se reparte en dos columnas —titular a un lado,
+ * entradilla al otro— y la foto va debajo a todo el ancho de la sección. Sin
+ * ella, una columna y las circunferencias del isotipo.
  */
 export default function PageHero({
   title,
@@ -31,25 +32,23 @@ export default function PageHero({
   image,
   meta,
 }: PageHeroProps) {
-  const hasPhoto = Boolean(image?.src);
+  const src = image?.src;
   return (
-    <section
-      className="relative overflow-hidden border-b border-border bg-wash"
-    >
-      {!hasPhoto && (
+    <section className="relative overflow-hidden border-b border-border bg-wash">
+      {!src && (
         <Rings className="-right-40 -top-40 w-[28rem] sm:-right-32 sm:w-[34rem] lg:-right-20 lg:-top-48 lg:w-[44rem]" />
       )}
 
       <div
         className={cn(
           "relative mx-auto max-w-7xl px-5 sm:px-8",
-          "pt-10 pb-12 sm:pt-14 sm:pb-16 lg:pt-16",
-          hasPhoto
-            ? "grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:pb-16"
-            : "lg:pb-20"
+          "pt-10 sm:pt-14 lg:pt-16",
+          src
+            ? "pb-10 sm:pb-12 lg:grid lg:grid-cols-12 lg:items-end lg:gap-16 lg:pb-14"
+            : "pb-12 sm:pb-16 lg:pb-20"
         )}
       >
-        <div>
+        <div className={cn(src && "lg:col-span-7")}>
           <nav aria-label="Ruta de navegación">
             <ol className="label flex items-center gap-2 text-muted-foreground">
               <li>
@@ -67,11 +66,18 @@ export default function PageHero({
           </nav>
 
           <h1 className="display mt-6 max-w-4xl">{title}</h1>
+        </div>
 
-          <p className="lead measure mt-6">{subtitle}</p>
+        <div className={cn(src && "lg:col-span-5")}>
+          <p className={cn("lead measure mt-6", src && "lg:mt-0")}>{subtitle}</p>
 
           {meta && meta.length > 0 && (
-            <ul className="label mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border-strong pt-5 text-muted-foreground lg:mt-12">
+            <ul
+              className={cn(
+                "label mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-border-strong pt-5 text-muted-foreground",
+                src ? "lg:mt-6" : "lg:mt-12"
+              )}
+            >
               {meta.map((item) => (
                 // El separador es un ::after del propio elemento: así no puede
                 // caer solo al principio de una línea cuando la fila se parte.
@@ -85,19 +91,16 @@ export default function PageHero({
             </ul>
           )}
         </div>
-
-        {image?.src && (
-          <div className="relative mx-auto w-full max-w-md lg:max-w-[32rem]">
-            <Rings className="left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 lg:w-[125%]" />
-            <EditorialPhoto
-              image={image}
-              quality={85}
-              sizes="(min-width: 1024px) 512px, (min-width: 488px) 448px, calc(100vw - 40px)"
-              className="feather hero-photo relative aspect-[4/3]"
-            />
-          </div>
-        )}
       </div>
+
+      {src && image && (
+        <HeroMedia
+          image={{ ...image, src }}
+          preload
+          sizes="100vw"
+          className="h-[clamp(15rem,min(34vw,calc(100svh_-_23rem)),30rem)]"
+        />
+      )}
     </section>
   );
 }

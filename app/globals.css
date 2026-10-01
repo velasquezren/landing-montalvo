@@ -205,58 +205,6 @@ body {
   }
 }
 
-/* Bordes difuminados: la fotografía se funde con el fondo en lugar de cortarse
-   contra él. Se ve entera —sin recorte de forma— y solo pierde opacidad en una
-   franja de `--feather` por cada lado.
-
-   Son dos degradados, uno por eje, intersecados: así el difuminado es
-   proporcional al ancho en horizontal y al alto en vertical, y las esquinas se
-   apagan suavemente en vez de quedar como un óvalo. Es una máscara, no una
-   superposición del color de fondo, de modo que vale sobre cualquier fondo.
-
-   La rampa no es lineal. De 0 a 1 en línea recta, el ojo marca el punto donde
-   la foto llega a opacidad completa y la franja se lee como una sombra gris
-   alrededor de la foto. Las paradas intermedias siguen una curva en S
-   (smoothstep: 0,16 · 0,5 · 0,84), que sale y llega con pendiente nula: no
-   hay escalón ni al principio ni al final.
-
-   Va con `@utility` para que Tailwind registre también sus variantes. */
-@utility feather {
-  --feather-mask:
-    linear-gradient(
-      to right,
-      transparent,
-      rgb(0 0 0 / 0.16) calc(var(--feather, 10%) * 0.25),
-      rgb(0 0 0 / 0.5) calc(var(--feather, 10%) * 0.5),
-      rgb(0 0 0 / 0.84) calc(var(--feather, 10%) * 0.75),
-      #000 var(--feather, 10%),
-      #000 calc(100% - var(--feather, 10%)),
-      rgb(0 0 0 / 0.84) calc(100% - var(--feather, 10%) * 0.75),
-      rgb(0 0 0 / 0.5) calc(100% - var(--feather, 10%) * 0.5),
-      rgb(0 0 0 / 0.16) calc(100% - var(--feather, 10%) * 0.25),
-      transparent
-    ),
-    linear-gradient(
-      to bottom,
-      transparent,
-      rgb(0 0 0 / 0.16) calc(var(--feather, 10%) * 0.25),
-      rgb(0 0 0 / 0.5) calc(var(--feather, 10%) * 0.5),
-      rgb(0 0 0 / 0.84) calc(var(--feather, 10%) * 0.75),
-      #000 var(--feather, 10%),
-      #000 calc(100% - var(--feather, 10%)),
-      rgb(0 0 0 / 0.84) calc(100% - var(--feather, 10%) * 0.75),
-      rgb(0 0 0 / 0.5) calc(100% - var(--feather, 10%) * 0.5),
-      rgb(0 0 0 / 0.16) calc(100% - var(--feather, 10%) * 0.25),
-      transparent
-    );
-  /* Chrome anterior a la 120 y los WebView de Android de esa época solo
-     entienden la forma prefijada, que llama `source-in` a la intersección. */
-  -webkit-mask-image: var(--feather-mask);
-  -webkit-mask-composite: source-in;
-  mask-image: var(--feather-mask);
-  mask-composite: intersect;
-}
-
 /* ============================================================================
    ANIMACIONES CSS
    Todo el movimiento del sitio vive aquí. No hay ninguna librería de animación
@@ -306,47 +254,63 @@ body {
   animation: rise-in 0.7s var(--ease-out-expo) both;
 }
 
-/* --- Fotografía de cabecera -------------------------------------------------
+/* --- Fotografía de cabecera a sangre ----------------------------------------
  *
- * Dos movimientos, los dos solo de opacidad y escala, que el compositor hace
- * sin tocar el hilo principal:
+ * Dos movimientos, y ninguno necesita JavaScript:
  *
- * 1. Entrada: aparece y se asienta desde un 4% más grande, una sola vez.
- * 2. Deriva: después, un acercamiento muy lento de ida y vuelta (26 s por
- *    tramo). No se percibe como movimiento sino como que la foto está viva.
+ * 1. APERTURA, al cargar. La foto aparece recogida —un poco más estrecha que la
+ *    página y con las esquinas redondeadas— y se abre hasta ocupar todo el
+ *    ancho en 1,2 s. Es un recorte (`clip-path`), no una transparencia: la
+ *    imagen se pinta desde el primer fotograma, así que no retrasa el LCP.
  *
- * La deriva va sobre la <img> y la entrada sobre su marco, que es el que
- * recorta y lleva la máscara: así la escala nunca asoma fuera del borde.
+ * 2. ACERCAMIENTO, al desplazarse. Mientras la página baja el primer alto de
+ *    pantalla, la foto se acerca un 10% y se desplaza un poco más despacio que
+ *    el texto: la sensación de entrar en la habitación. Va ligado al scroll
+ *    con `animation-timeline`, que lo resuelve el compositor sin escuchar un
+ *    solo evento. El desplazamiento (4%) nunca supera el margen que deja la
+ *    escala (5% por lado), de modo que el borde de la foto no asoma.
  *
- * Con movimiento reducido el bloque de ACCESIBILIDAD deja ambas en su sitio:
- * la entrada termina al instante en su estado final y la deriva, sin
- * `fill-mode`, vuelve a escala 1. */
-@keyframes photo-in {
+ * La apertura va sobre el marco y el acercamiento sobre la <img>, porque el
+ * marco es el que recorta: así la escala nunca se sale de él. */
+@keyframes hero-open {
   from {
-    opacity: 0;
-    scale: 1.04;
+    clip-path: inset(6% 4% 0 4% round var(--radius-3xl));
   }
   to {
-    opacity: 1;
-    scale: none;
+    clip-path: inset(0 round 0);
   }
 }
 
-@keyframes photo-drift {
+.hero-media {
+  animation: hero-open 1.2s var(--ease-out-expo) both;
+}
+
+@keyframes hero-approach {
   from {
     scale: 1;
+    translate: 0 0;
   }
   to {
-    scale: 1.06;
+    scale: 1.1;
+    translate: 0 4%;
   }
 }
 
-.hero-photo {
-  animation: photo-in 1.1s var(--ease-out-expo) both;
+/* Testigo de "abierto": un aro que se expande y se desvanece. Solo escala y
+   opacidad, en el compositor. */
+@keyframes pulse-ring {
+  from {
+    scale: 1;
+    opacity: 0.7;
+  }
+  to {
+    scale: 2.6;
+    opacity: 0;
+  }
 }
 
-.hero-photo img {
-  animation: photo-drift 26s var(--ease-smooth) 1.1s infinite alternate;
+.pulse-ring {
+  animation: pulse-ring 2.4s var(--ease-out-quart) infinite;
 }
 
 /* Entradas ligadas al scroll.
@@ -375,6 +339,12 @@ body {
       animation-timeline: view();
       animation-range: entry 0% entry 100%;
       animation-range-start: entry calc(var(--step, 0) * 10%);
+    }
+
+    .hero-media img {
+      animation: hero-approach linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 100vh;
     }
   }
 }

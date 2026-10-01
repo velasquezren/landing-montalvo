@@ -16,8 +16,8 @@ export const editorialImages = {
     position: "center 55%",
   },
   servicios: {
-    // Elegida entre las cuatro vistas generales de suite más anchas. Va en un
-    // marco en arco de 5:4: el encuadre conserva la cama y el ventanal.
+    // Elegida entre las cuatro vistas generales de suite más anchas. Va a todo
+    // el ancho en franja panorámica; a 55% el recorte conserva cama y ventanal.
     src: "/images/habitaciones/silver/principal-1.jpg",
     alt: "Suite de internación amplia con ventanal de suelo a techo y sala de estar",
     position: "center 55%",

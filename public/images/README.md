@@ -15,8 +15,8 @@ una).**
 
 | Tipo de foto | Ancho a entregar | Proporción |
 | :--- | ---: | :--- |
-| Cabecera de página | **2000 px** (mínimo 1600) | 2000 × 1500 (4:3) |
-| Portada, foto principal | **1600 px** | 1600 × 1600 (cuadrada) |
+| Cabecera de página | **2560 px** (mínimo 1920) | 2560 × 1440 (16:9) |
+| Portada, foto principal | **2560 px** (mínimo 1920) | 2560 × 1440 (16:9) |
 | Portada, internación | **1600 px** | 1600 × 1200 (4:3) |
 | Habitación, foto principal | **2000 px** | 2000 × 1500 (4:3) |
 | Habitación, resto de galería | **1600 px** | 1600 × 1200 (4:3) |
@@ -54,10 +54,10 @@ Si hay que ir por partes, este es el orden que más rápido mejora el sitio.
 
 Dos fotografías. Es la página que más se ve.
 
-### 01 · `portada/principal.jpg` — **1600 × 1600 px**
+### 01 · `portada/principal.jpg` — **2560 × 1440 px (16:9)**
 
-Ocupa la mitad derecha de la apertura, junto al titular *«Su salud, con atención
-cercana»*.
+Ocupa **todo el ancho de la pantalla**, debajo del titular *«Su salud, con
+atención cercana»*. Lleva una tarjeta blanca en la esquina inferior izquierda.
 
 **Qué mostrar:** atención cercana y trato humano. Una persona siendo atendida,
 una consulta real. No una sala vacía.
@@ -65,17 +65,17 @@ una consulta real. No una sala vacía.
 **Encuadre — es la foto más exigente del pedido:**
 
 ```
-   ESCRITORIO          MÓVIL
-   640 × 630 px        412 × 258 px
-   ┌─────────┐         ┌───────────────┐
-   │         │         │               │   Pasa de cuadrada
-   │  CASI   │         │   APAISADA    │   a apaisada.
-   │CUADRADA │         │               │   Deje aire por los
-   └─────────┘         └───────────────┘   CUATRO lados.
+   ESCRITORIO 1440–1920 px                     MÓVIL 390 px
+   ┌──────────────────────────────────────┐    ┌─────────────┐
+   │              FRANJA                  │    │             │
+   │ ┌──────────┐ PANORÁMICA              │    │  APAISADA   │
+   │ │ tarjeta  │                         │    │             │
+   └─┴──────────┴─────────────────────────┘    └─────────────┘
+    de 2,8:1 a 3,3:1                            1,4:1
 ```
 
-Sujeto centrado y con margen generoso. Un recorte ajustado se romperá en uno de
-los dos formatos.
+Sujeto centrado, con aire arriba y abajo: en escritorio solo se ve la franja
+central. Nada importante en la esquina inferior izquierda, que tapa la tarjeta.
 
 ### 06 · `portada/internacion.jpg` — **1600 × 1200 px (4:3)**
 
@@ -92,7 +92,7 @@ sin distorsión de gran angular.
 La página más importante después de la portada, y la que más material necesita:
 **una cabecera y tres galerías completas**.
 
-### 05 · `cabeceras/servicios.jpg` — **2000 × 1500 px (4:3)**
+### 05 · `cabeceras/servicios.jpg` — **2560 × 1440 px (16:9)**
 
 **Qué mostrar:** escena de atención médica real — consulta, sala de espera,
 pasillo clínico.
@@ -136,19 +136,17 @@ pantalla completa al ampliarlas.
 
 ## `/dr-montalvo` — Dr. Montalvo
 
-### 10 · `cabeceras/dr-montalvo.jpg` — **2000 × 1500 px (4:3)**
+### 10 · `equipo/dr-montalvo-retrato.jpg` — **retrato vertical 4:5, 1600 × 2000 px**
 
-**Retrato ambiental**, no primer plano: el Dr. Montalvo en su consulta o junto al
-equipo. En este formato tan apaisado un primer plano vertical no cabe.
-
-El Dr. Montalvo **a la derecha del encuadre** — su nombre se pinta a la
-izquierda.
+**Ya publicado.** Ocupa la mitad derecha de la cabecera de arriba abajo
+(720 × 608 en escritorio, casi cuadrada) y todo el ancho en móvil (4:5). Si se
+sustituye: cabeza en el tercio superior y aire a los lados.
 
 ---
 
 ## `/especialidades` — Especialidades
 
-### 11 · `cabeceras/especialidades.jpg` — **2000 × 1500 px (4:3)**
+### 11 · `cabeceras/especialidades.jpg` — **2560 × 1440 px (16:9)**
 
 Consulta médica; profesional atendiendo. Sujeto a la derecha.
 
@@ -156,7 +154,7 @@ Consulta médica; profesional atendiendo. Sujeto a la derecha.
 
 ## `/sobre-nosotros` — Sobre nosotros
 
-### 12 · `cabeceras/sobre-nosotros.jpg` — **2000 × 1500 px (4:3)**
+### 12 · `cabeceras/sobre-nosotros.jpg` — **2560 × 1440 px (16:9)**
 
 Equipo médico o fachada e instalaciones. Sujeto a la derecha.
 
@@ -164,7 +162,7 @@ Equipo médico o fachada e instalaciones. Sujeto a la derecha.
 
 ## `/atencion-al-paciente` — Atención al paciente
 
-### 13 · `cabeceras/atencion-al-paciente.jpg` — **2000 × 1500 px (4:3)**
+### 13 · `cabeceras/atencion-al-paciente.jpg` — **2560 × 1440 px (16:9)**
 
 Recepción, admisión o bienvenida. Sujeto a la derecha.
 
@@ -180,30 +178,35 @@ y portadas de artículo.
 
 # Cómo se recorta una cabecera
 
-Las cabeceras (05, 10, 11, 12, 13) ya **no van a sangre bajo un velo verde**:
-la fotografía se ve **entera**, en 4:3, a la derecha del titular y sobre un fondo
-claro, con los bordes difuminados hacia el fondo. Eso las hace más fáciles de
-entregar que antes.
+Las cabeceras con foto (05, 11, 12, 13) van **a todo el ancho de la pantalla**,
+debajo del titular, en una franja panorámica. Sin velo y sin texto encima: la
+foto se ve tal cual.
 
 ```
-   ESCRITORIO                               MÓVIL
-   ┌──────────────────────────────┐        ┌──────────┐
-   │  TITULAR        ┌────────┐   │        │ TITULAR  │
-   │  texto          │ FOTO   │   │        │ texto    │
-   │                 └────────┘   │        │  ┌────┐  │
-   └──────────────────────────────┘        │  │FOTO│  │
-    marco 4:3, la foto completa y          │  └────┘  │
-    con los bordes difuminados             └──────────┘
+   ESCRITORIO 1440 px                         MÓVIL 390 px
+   ┌──────────────────────────────────────┐   ┌──────────┐
+   │ TITULAR               entradilla     │   │ TITULAR  │
+   ├──────────────────────────────────────┤   │ texto    │
+   │                                      │   ├──────────┤
+   │        FOTO A TODO EL ANCHO          │   │   FOTO   │
+   │                                      │   ├──────────┤
+   └──────────────────────────────────────┘   └──────────┘
+    1440 × 430–480 px  ← unos 3:1               390 × 240 px  ← 1,6:1
 ```
 
 **Tres reglas:**
 
-1. **Proporción 4:3 (apaisada), sujeto en el centro.** Se muestra entera, sin
-   recorte, igual en escritorio y en móvil.
-2. **Los bordes se funden con el fondo**: el 10 % de cada lado pierde opacidad
-   poco a poco. Deje aire alrededor del sujeto; nada importante pegado al borde.
-3. **Entregue la foto con su luz natural.** Ya no lleva velo: se muestra tal
-   cual, así que una foto oscura o sobreexpuesta se verá oscura o sobreexpuesta.
+1. **Sujeto en el centro, con aire arriba y abajo.** La misma foto se ve muy
+   panorámica en escritorio y casi 16:10 en móvil: solo sobrevive la franja
+   central. Componga holgado.
+2. **Grande.** Ocupa toda la pantalla de ancho; en un portátil con pantalla de
+   alta densidad el navegador pide más de 2500 px. Entregue 2560 px.
+3. **Con su luz natural.** No lleva velo ni degradado: una foto oscura o
+   sobreexpuesta se verá oscura o sobreexpuesta.
+
+Al cargar, la foto se abre desde un recorte con esquinas redondeadas hasta el
+borde de la pantalla, y al desplazarse se acerca un 10%. Ninguna de las dos
+animaciones recorta más que esa franja central.
 
 ---
 

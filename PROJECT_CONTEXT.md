@@ -109,8 +109,9 @@ app/
 * **`WhatsAppFloat.tsx`**: Botón flotante accesible de WhatsApp. Un testigo de 420px al inicio del documento y un `IntersectionObserver` lo muestran al superar el héroe: el navegador avisa al cruzar el umbral, no en cada fotograma de scroll.
 
 ### Secciones (`components/sections/`)
-* **`PageHero.tsx`**: Encabezado de página, claro (`bg-wash`), de renderizado del lado servidor (RSC). Con fotografía, la muestra entera en 4:3 a la derecha, con bordes difuminados (`feather`) y animación de entrada (`hero-photo`); sin ella, dibuja las circunferencias de `Rings`. Migas de pan y metadatos al pie.
-* **`SplitHero.tsx`**: Cabecera partida de texto y retrato 4:5 completo con bordes difuminados (página del doctor).
+* **`PageHero.tsx`**: Encabezado de página, claro (`bg-wash`), de renderizado del lado servidor (RSC). Con fotografía, titular y entradilla en dos columnas y la foto debajo a todo el ancho (`HeroMedia`); sin ella, una columna y las circunferencias de `Rings`. Migas de pan y metadatos al pie.
+* **`SplitHero.tsx`**: Cabecera partida: texto a la izquierda y el retrato llenando la mitad derecha de arriba abajo y hasta el borde (página del doctor).
+* **`HeroMedia.tsx`**: Fotografía de cabecera a sangre. Se abre al cargar (`clip-path`) y se acerca al desplazarse (`animation-timeline: scroll(root)`), sin JavaScript.
 * **`ServicesGrid.tsx`**: Grilla de 4 columnas en desktop con hairlines perimetrales de 1px. No usa `overflow: hidden` para permitir animaciones CSS scroll nativas escalonadas mediante `--step`.
 * **`RoomsSection.tsx`**: Bloque interactivo de internación:
   * Maneja el estado de la suite activa (`gold`, `silver`, `bronce`).
@@ -902,4 +903,71 @@ de la foto, no un defecto de la máscara. Con un original nuevo desaparece.
 
 `tsc --noEmit`, `eslint` y `next build --webpack` correctos. Portada, Servicios,
 Dr. Montalvo y Sobre nosotros en 1440 y 390 px: sin desbordes ni errores de consola.
+
+---
+
+## 25. Cabecera editorial con la foto a todo el ancho — 1 de octubre de 2026
+
+El cliente vio §24 en producción y lo encontró **«muy común»**: la foto flotante
+con bordes difuminados es un recurso de plantilla. Pidió la imagen **a todo el
+ancho de su sección** y el mejor resultado posible. Esto sustituye §24.
+
+### Investigación
+
+* Las cabeceras de los hospitales de referencia (Cleveland Clinic, Mayo Clinic)
+  usan fotografía a todo el ancho con un titular fuerte y ponen arriba las vías
+  prácticas antes que el relato institucional.
+* Texto sobre foto exige 4,5:1 (3:1 en titulares grandes): obliga a un velo, y
+  el velo verde era justo lo que el cliente rechazó en §23.
+* El patrón editorial —titular sobre fondo liso y foto a sangre debajo— resuelve
+  las dos cosas: la foto se ve entera de lado a lado y el texto no depende de
+  ella para leerse.
+* Las animaciones ligadas al scroll en CSS ya funcionan en Chrome 115+ y en
+  Safari 26; el sitio ya las usaba con `@supports` para los `reveal`.
+
+### Qué cambió
+
+* **Portada y `PageHero` con foto**: titular a la izquierda (7 columnas),
+  entradilla y botones a la derecha (5), alineados por abajo. Debajo,
+  `HeroMedia` a todo el ancho.
+* **Alto de la franja ligado a la pantalla**:
+  `clamp(17rem, min(40vw, 100svh − 24rem), 36rem)` en portada y
+  `clamp(15rem, min(34vw, 100svh − 23rem), 30rem)` en las interiores. La
+  cabecera entera —tarjeta incluida— cabe en la primera vista en un portátil
+  de 1440 × 780; en 1920 × 1080 la franja se detiene en 576 px.
+* **Página del doctor (`SplitHero`)**: el retrato llena la mitad derecha de
+  arriba abajo y hasta el borde de la pantalla. A todo el ancho de la página, un
+  retrato 4:5 quedaría en una franja a la altura de los ojos. La columna de
+  texto se alinea con el contenedor del sitio (`max-w-[40rem]` + `ml-auto`).
+* **Tarjeta sobre la foto de portada** (solo ≥ 1024 px): «Emergencias, 24 horas»,
+  el horario y «Pioneros en reproducción asistida». Con un testigo que late
+  (`.pulse-ring`). **No se asocia ningún teléfono a emergencias**: la clínica no
+  ha confirmado que `siteConfig.phone` sea la línea de guardia. Por debajo de
+  1024 px la foto es baja y la tarjeta la taparía: el dato de marca va en el texto.
+
+### Movimiento (`app/globals.css`, bloque «Fotografía de cabecera a sangre»)
+
+* **Apertura** (`hero-open`, 1,2 s): la foto arranca recortada —4% por los lados,
+  6% arriba, esquinas de 24 px— y se abre hasta el borde. Es un `clip-path`, no
+  una transparencia: la imagen se pinta desde el primer fotograma y no retrasa el
+  LCP.
+* **Acercamiento** (`hero-approach`): mientras se baja la primera pantalla, la
+  `<img>` escala de 1 a 1,1 y baja un 4%. Medido a 300, 600 y 900 px de scroll:
+  la imagen cubre siempre su marco, sin hueco por ningún lado.
+* Movimiento reducido: apertura terminada y escala 1, comprobado.
+
+Se retiraron `@utility feather`, `.hero-photo` y sus fotogramas.
+
+### Fotografía
+
+El pedido (`public/images/README.md`) vuelve a 2560 × 1440 para cabeceras y
+portada. La foto actual de portada y Servicios mide 2000 px: en pantallas de
+alta densidad a todo el ancho se verá algo blanda hasta que llegue un original
+mayor.
+
+### Verificado
+
+`tsc --noEmit`, `eslint` y `next build --webpack` correctos. Portada, Servicios,
+Dr. Montalvo y Sobre nosotros en 1920 × 1080, 1440 × 900, 1440 × 780, 820 × 1180 y
+390 × 844: sin desbordes ni errores de consola.
 

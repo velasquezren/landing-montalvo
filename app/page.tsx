@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Stethoscope, BedDouble, ClipboardList } from "lucide-react";
 import EditorialPhoto from "@/components/sections/EditorialPhoto";
-import Rings from "@/components/brand/Rings";
+import HeroMedia from "@/components/sections/HeroMedia";
 import CtaBand from "@/components/sections/CtaBand";
 import { Button } from "@/components/ui/button";
 import { editorialImages } from "@/content/images";
@@ -25,25 +25,48 @@ export default function HomePage() {
   const appointment = getAppointmentLink();
   return (
     <>
-      <section aria-labelledby="inicio-heading" className="relative overflow-hidden border-b border-border bg-wash">
-        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pt-10 pb-14 sm:px-8 sm:pt-14 sm:pb-16 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:pt-14 lg:pb-16">
-          <div>
+      <section aria-labelledby="inicio-heading" className="border-b border-border bg-wash">
+        <div className="mx-auto max-w-7xl px-5 pt-10 pb-10 sm:px-8 sm:pt-14 sm:pb-12 lg:grid lg:grid-cols-12 lg:items-end lg:gap-16 lg:pt-16 lg:pb-14">
+          <div className="lg:col-span-7">
             <p className="label leading-relaxed text-primary">Clínica Montalvo · Santa Cruz de la Sierra</p>
-            <h1 id="inicio-heading" className="display mt-6 max-w-xl">Su salud, <span className="text-primary">con atención cercana.</span></h1>
-            <p className="lead mt-6 max-w-lg">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <h1 id="inicio-heading" className="display mt-6 max-w-2xl">Su salud, <span className="text-primary">con atención cercana.</span></h1>
+          </div>
+          <div className="mt-6 lg:col-span-5 lg:mt-0">
+            <p className="lead max-w-lg">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>
+            <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild variant="primary" size="lg">
                 <a href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>Reservar una cita <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a>
               </Button>
               <Button asChild size="lg"><Link href="/servicios">Explorar servicios</Link></Button>
             </div>
-            <p className="mt-10 max-w-xl border-t border-border-strong pt-5 text-sm text-muted-foreground">Pioneros en reproducción asistida en Bolivia.</p>
-          </div>
-          <div className="relative mx-auto w-full max-w-md lg:max-w-[34rem]">
-            <Rings className="left-1/2 top-1/2 w-full -translate-x-1/2 -translate-y-1/2 lg:w-[125%]" />
-            <EditorialPhoto image={editorialImages.inicio} preload quality={85} sizes="(min-width: 1024px) 544px, (min-width: 488px) 448px, calc(100vw - 40px)" className="feather hero-photo relative aspect-[4/3]" />
+            {/* Por debajo de 1024 px la foto es baja y la tarjeta taparía media
+                imagen: el dato de marca se queda aquí, en el texto. */}
+            <p className="mt-6 text-sm text-muted-foreground lg:hidden">Pioneros en reproducción asistida en Bolivia.</p>
           </div>
         </div>
+
+        <HeroMedia image={editorialImages.inicio} preload sizes="100vw" className="h-[clamp(17rem,min(40vw,calc(100svh_-_24rem)),36rem)]">
+          {/* Dato práctico sobre la foto, como hacen las cabeceras de los
+              hospitales de referencia: lo primero que busca quien llega con
+              prisa. Solo datos de siteConfig; no se atribuye ningún teléfono
+              a emergencias porque la clínica no lo ha confirmado. */}
+          <div className="absolute inset-x-0 bottom-0 hidden lg:block">
+            <div className="mx-auto max-w-7xl px-8 pb-8">
+              <div className="inline-flex items-center gap-4 bg-background px-5 py-4 shadow-lg">
+                <span aria-hidden="true" className="relative flex h-2.5 w-2.5 shrink-0">
+                  <span className="pulse-ring absolute inset-0 rounded-full bg-accent" />
+                  <span className="relative h-2.5 w-2.5 rounded-full bg-primary" />
+                </span>
+                <span>
+                  <span className="block text-sm font-semibold">{siteConfig.emergencies}</span>
+                  <span className="mt-0.5 block text-sm text-muted-foreground">{siteConfig.schedule}</span>
+                </span>
+                <span aria-hidden="true" className="mx-1 h-8 w-px bg-border" />
+                <span className="max-w-[13rem] text-sm leading-snug text-muted-foreground">Pioneros en reproducción asistida en Bolivia.</span>
+              </div>
+            </div>
+          </div>
+        </HeroMedia>
       </section>
 
       <section aria-labelledby="orientacion-heading" className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-20">
