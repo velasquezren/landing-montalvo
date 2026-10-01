@@ -40,27 +40,27 @@ export default function DrMontalvoPage() {
         preload
       >
         <nav aria-label="Ruta de navegación">
-          <ol className="label flex items-center gap-2 text-white/75">
-            <li><Link href="/" className="transition-colors hover:text-white">Inicio</Link></li>
-            <li aria-hidden="true" className="text-white/30">/</li>
-            <li aria-current="page" className="text-white">Dr. Montalvo</li>
+          <ol className="label flex items-center gap-2 text-muted-foreground">
+            <li><Link href="/" className="transition-colors hover:text-primary">Inicio</Link></li>
+            <li aria-hidden="true" className="text-border-strong">/</li>
+            <li aria-current="page" className="text-primary">Dr. Montalvo</li>
           </ol>
         </nav>
         <h1 id="doctor-heading" className="display mt-6 max-w-xl text-balance">{doctor.name}</h1>
-        <p className="lead mt-6 max-w-lg text-white/85">
+        <p className="lead mt-6 max-w-lg">
           {doctor.role || `Clínica Montalvo · ${siteConfig.city}`}
         </p>
-        <p className="mt-6 max-w-md text-base leading-relaxed text-white/80">
+        <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
           Conozca su trayectoria y su aportación a la investigación médica.
           Nuestro equipo le orientará para coordinar una consulta.
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
-          <Button asChild variant="inverse" size="lg">
+          <Button asChild variant="primary" size="lg">
             <a href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>
               Solicitar una consulta <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
             </a>
           </Button>
-          <a href="#trayectoria" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-white hover:underline">
+          <a href="#trayectoria" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary hover:underline">
             Ver trayectoria <ArrowDown aria-hidden="true" className="h-4 w-4" />
           </a>
         </div>

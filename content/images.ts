@@ -16,10 +16,8 @@ export const editorialImages = {
     position: "center 55%",
   },
   servicios: {
-    // Elegida entre las cuatro vistas generales de suite más anchas: es la
-    // única cuyo punto de interés —el ventanal— cae a la derecha, donde el
-    // velo verde de la cabecera es más transparente. El titular queda sobre
-    // verde sólido a la izquierda y se lee sin esfuerzo.
+    // Elegida entre las cuatro vistas generales de suite más anchas. Va en un
+    // marco en arco de 5:4: el encuadre conserva la cama y el ventanal.
     src: "/images/habitaciones/silver/principal-1.jpg",
     alt: "Suite de internación amplia con ventanal de suelo a techo y sala de estar",
     position: "center 55%",

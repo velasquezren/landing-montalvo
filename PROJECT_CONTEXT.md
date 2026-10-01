@@ -37,7 +37,7 @@
 Basado estrictamente en el tablero de marca corporativo (`colorimetria.jpeg`):
 
 ### Paleta de Colores
-* **`--color-primary` (`#006156`)**: Verde oscuro de marca. Utilizado en elementos de acción principal, héroes de página, bordes activos y titulares destacados.
+* **`--color-primary` (`#006156`)**: Verde oscuro de marca. Utilizado en el botón de acción principal, etiquetas, bordes activos y palabras destacadas de un titular. Ya no se usa como bloque de fondo (§23).
 * **`--color-accent` (`#39ada3`)**: Verde claro corporativo. Se usa exclusivamente para acentos visuales y fondos suaves, nunca para texto sobre blanco (por restricción de contraste WCAG 2.7:1).
 * **`--color-primary-dark` (`#00453d`)**: Variante oscura para estados hover, pulsados y velos sobre fotografía.
 * **`--color-wash` (`#f5fbfa`)**: Tinte verde al 5% para fondos de tarjetas, estados hover sutiles y contenedores de imágenes.
@@ -97,6 +97,7 @@ app/
 
 ### Brand (`components/brand/`)
 * **`Logo.tsx`**: Renderiza el isotipo oficial vectorizado en línea junto con la tipografía "CLÍNICA MONTALVO". Acepta la propiedad `tone="color"` (para fondo blanco) o `tone="light"` (para fondos verdes oscuros o héroes).
+* **`Rings.tsx`**: Tres circunferencias concéntricas, eco del isotipo. Única decoración de las superficies claras.
 * **`SocialIcons.tsx`**: SVGs limpios y accesibles para Facebook, Instagram, TikTok, YouTube y WhatsApp.
 
 ### Layout (`components/layout/`)
@@ -108,8 +109,8 @@ app/
 * **`WhatsAppFloat.tsx`**: Botón flotante accesible de WhatsApp. Un testigo de 420px al inicio del documento y un `IntersectionObserver` lo muestran al superar el héroe: el navegador avisa al cruzar el umbral, no en cada fotograma de scroll.
 
 ### Secciones (`components/sections/`)
-* **`PageHero.tsx`**: Encabezado visual de página de renderizado del lado servidor (RSC). Soporta fotografía editorial configurable o textura de marca, migas de pan y metadatos al pie. Mantiene alturas equivalentes con y sin imagen; el texto aparece sin retrasos individuales.
-* **`HeroBackdrop.tsx`**: Componente de servidor con Next Image y un velo de contraste constante, sin paralaje ni JavaScript de scroll.
+* **`PageHero.tsx`**: Encabezado de página, claro (`bg-wash`), de renderizado del lado servidor (RSC). Con fotografía, la coloca en un marco en arco a la derecha; sin ella, dibuja las circunferencias de `Rings`. Migas de pan y metadatos al pie.
+* **`SplitHero.tsx`**: Cabecera partida de texto y retrato 4:5 en marco en arco (página del doctor).
 * **`ServicesGrid.tsx`**: Grilla de 4 columnas en desktop con hairlines perimetrales de 1px. No usa `overflow: hidden` para permitir animaciones CSS scroll nativas escalonadas mediante `--step`.
 * **`RoomsSection.tsx`**: Bloque interactivo de internación:
   * Maneja el estado de la suite activa (`gold`, `silver`, `bronce`).
@@ -125,13 +126,13 @@ app/
 * **`RoomAmenities.tsx`**: Lista en grilla de las prestaciones incluidas en la suite activa, con iconos Lucide específicos.
 * **`RoomsComparison.tsx`**: Tabla comparativa con las 15 amenidades para Gold, Silver y Bronce. Al pulsar sobre la cabecera de una suite, cambia activamente el panel principal. El cuerpo de la tabla va en un subcomponente memoizado sin props: cambiar de suite no reconcilia sus 45 celdas.
 * **`InternacionFaq.tsx`**: Acordeón Radix desplegable con preguntas frecuentes de internación y llamada lateral a admisiones.
-* **`CtaBand.tsx`**: Franja de cierre de página en verde oscuro con titular personalizable, botón directo a WhatsApp y enlace de llamada telefónica.
+* **`CtaBand.tsx`**: Cierre de página en tarjeta clara con hairline, titular personalizable, botón primario a WhatsApp y enlace de llamada telefónica.
 * **`SectionHeader.tsx`**: Encabezado estándar con numeración de sección (`01`, `02`), antetítulo en mayúsculas (`label`), titular y descripción.
 * **`TierDot.tsx`**: Punto coloreado que distingue visualmente las categorías Gold, Silver y Bronce.
 * **`PagePlaceholder.tsx`**: Plantilla para secciones pendientes (`/staff-medico`, `/blog`), explicando qué contenido está en preparación y ofreciendo vías de contacto alternativas para no perder al visitante.
 
 ### UI Primitivas (`components/ui/`)
-* **`button.tsx`**: Botón polimórfico (`asChild` vía `@radix-ui/react-slot`) con variantes (`default`, `inverse`, `inverseOutline`, `ghost`) y tamaños calibrados. Es componente de servidor: no usa estado ni APIs del navegador, así que en las páginas que no hidratan nada se resuelve en el servidor.
+* **`button.tsx`**: Botón polimórfico (`asChild` vía `@radix-ui/react-slot`) con variantes (`primary`, `default`, `ghost`, `link`) y tamaños calibrados. Es componente de servidor: no usa estado ni APIs del navegador, así que en las páginas que no hidratan nada se resuelve en el servidor.
 * **`reveal.tsx`**: 
   * `Reveal`: Envoltura que aplica clases CSS de revelado por scroll sin Javascript.
 * **`accordion.tsx`**: Implementación accesible de Radix Accordion con transiciones de apertura y cierre por CSS keyframes.
@@ -816,3 +817,50 @@ rotas ni errores de consola. Proporción del retrato y enlaces comprobados.
 Se repitieron las vistas móviles tras ajustar `sizes`. Compilación de
 producción correcta con `next build --webpack`; Turbopack falló en este entorno
 por `Operation not permitted` al abrir un puerto para procesar CSS.
+
+---
+
+## 23. Héroe y cierre en claro — 1 de octubre de 2026
+
+El cliente señaló que el bloque verde del héroe era demasiado invasivo y no
+combinaba con el resto de la página, que es blanca. Se retiró el verde de fondo
+en todas las cabeceras y en la franja de cierre; **esto sustituye la regla de §14
+«todo bloque verde termina en arco» y los velos verdes de §21 y §22.**
+
+### Qué cambió
+
+* **Cabeceras** (`app/page.tsx`, `PageHero`, `SplitHero`): fondo `bg-wash` con
+  hairline inferior, titular en negro y la fotografía en su propio marco, ya no a
+  sangre bajo un velo. Sin fotografía, las circunferencias de `Rings`.
+* **El arco pasó a la fotografía.** `@utility arch` (`app/globals.css`) redondea
+  las dos esquinas superiores con un semicírculo exacto a cualquier ancho. Regla
+  nueva: **toda fotografía de cabecera va en arco.** `arc-end`, `--arc-depth` y
+  `.grain` se eliminaron.
+* **`CtaBand`**: tarjeta `bg-wash` con borde sobre fondo blanco, en lugar de franja
+  verde pegada al pie.
+* **Botón `primary`** (relleno verde, hover `primary-dark`): la acción principal
+  de cada cabecera y del cierre. Es ahora **la** mancha de color de la pantalla.
+  Las variantes `inverse` e `inverseOutline` se eliminaron: no quedan superficies
+  verdes donde usarlas.
+* **Portada**: «con atención cercana.» va en `text-primary` dentro del titular.
+* `HeroBackdrop.tsx` se eliminó: ya nada pinta una fotografía a sangre con velo.
+
+### Fotografía
+
+Las cabeceras interiores usan marco **5:4** y la portada **4:5**; el doctor
+mantiene 4:5. Se pidió a Marketing 2000 × 1600 px por cabecera
+(`public/images/README.md`, actualizado). La portada reutiliza
+`silver/principal-1.jpg` con `sizes` generosos: el recorte vertical a 4:5 toma
+solo parte del ancho y necesita más resolución que el marco.
+
+### Si se quiere un toque de verde fuerte
+
+Es una decisión de una sola clase: volver `CtaBand` a `bg-primary text-white` con
+botones `primary`→blanco requiere reponer las variantes inversas del botón.
+El verde de fondo no se recomienda en cabeceras: era lo que se retiró.
+
+### Verificado
+
+`tsc --noEmit` y `eslint` limpios. Portada, Servicios, Dr. Montalvo y Sobre
+nosotros revisadas en 1440 y 390 px: sin desbordes horizontales ni errores de
+consola.

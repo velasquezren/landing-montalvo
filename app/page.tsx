@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Stethoscope, BedDouble, ClipboardList } from "lucide-react";
 import EditorialPhoto from "@/components/sections/EditorialPhoto";
-import HeroBackdrop from "@/components/sections/HeroBackdrop";
+import Rings from "@/components/brand/Rings";
 import CtaBand from "@/components/sections/CtaBand";
 import { Button } from "@/components/ui/button";
 import { editorialImages } from "@/content/images";
@@ -25,19 +25,24 @@ export default function HomePage() {
   const appointment = getAppointmentLink();
   return (
     <>
-      <section data-hero="" aria-labelledby="inicio-heading" className="arc-end relative overflow-hidden bg-primary text-white">
-        <HeroBackdrop src={editorialImages.inicio.src} alt={editorialImages.inicio.alt} position={editorialImages.inicio.position} sizes="(min-width: 1024px) 100vw, 900px" />
-        <div className="relative mx-auto max-w-7xl px-5 pt-14 pb-20 sm:px-8 sm:pt-20 sm:pb-24 lg:pt-24 lg:pb-28">
-            <p className="label leading-relaxed text-white/75">Clínica Montalvo · Santa Cruz de la Sierra</p>
-            <h1 id="inicio-heading" className="display mt-6 max-w-xl">Su salud, con atención cercana.</h1>
-            <p className="lead mt-6 max-w-lg text-white/85">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>
+      <section aria-labelledby="inicio-heading" className="relative overflow-hidden border-b border-border bg-wash">
+        <div className="relative mx-auto grid max-w-7xl items-center gap-12 px-5 pt-10 pb-14 sm:px-8 sm:pt-14 sm:pb-16 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:pt-14 lg:pb-16">
+          <div>
+            <p className="label leading-relaxed text-primary">Clínica Montalvo · Santa Cruz de la Sierra</p>
+            <h1 id="inicio-heading" className="display mt-6 max-w-xl">Su salud, <span className="text-primary">con atención cercana.</span></h1>
+            <p className="lead mt-6 max-w-lg">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild variant="inverse" size="lg">
+              <Button asChild variant="primary" size="lg">
                 <a href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>Reservar una cita <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a>
               </Button>
-              <Button asChild variant="inverseOutline" size="lg"><Link href="/servicios">Explorar servicios</Link></Button>
+              <Button asChild size="lg"><Link href="/servicios">Explorar servicios</Link></Button>
             </div>
-            <p className="mt-10 max-w-xl border-t border-white/20 pt-5 text-sm text-white/80">Pioneros en reproducción asistida en Bolivia.</p>
+            <p className="mt-10 max-w-xl border-t border-border-strong pt-5 text-sm text-muted-foreground">Pioneros en reproducción asistida en Bolivia.</p>
+          </div>
+          <div className="relative mx-auto w-full max-w-sm sm:max-w-md lg:max-w-none">
+            <Rings className="-bottom-16 -right-20 w-[120%]" />
+            <EditorialPhoto image={editorialImages.inicio} preload quality={85} sizes="(min-width: 1024px) 840px, (min-width: 640px) 640px, 560px" className="arch relative aspect-[4/5] shadow-lg" />
+          </div>
         </div>
       </section>
 

@@ -15,15 +15,14 @@ una).**
 
 | Tipo de foto | Ancho a entregar | Proporción |
 | :--- | ---: | :--- |
-| Cabecera de página | **2560 px** (mínimo 1920) | 2560 × 1200 |
+| Cabecera de página | **2000 px** (mínimo 1600) | 2000 × 1600 (5:4) |
 | Portada, foto principal | **1600 px** | 1600 × 1600 (cuadrada) |
 | Portada, internación | **1600 px** | 1600 × 1200 (4:3) |
 | Habitación, foto principal | **2000 px** | 2000 × 1500 (4:3) |
 | Habitación, resto de galería | **1600 px** | 1600 × 1200 (4:3) |
 
 Más grande siempre es bienvenido: el sitio reduce, **nunca amplía**. Quedarse
-corto sí se nota, sobre todo en las cabeceras, que ocupan todo el ancho de la
-pantalla.
+corto sí se nota, sobre todo en las fotos de cabecera y de portada.
 
 ---
 
@@ -93,7 +92,7 @@ sin distorsión de gran angular.
 La página más importante después de la portada, y la que más material necesita:
 **una cabecera y tres galerías completas**.
 
-### 05 · `cabeceras/servicios.jpg` — **2560 × 1200 px**
+### 05 · `cabeceras/servicios.jpg` — **2000 × 1600 px (5:4)**
 
 **Qué mostrar:** escena de atención médica real — consulta, sala de espera,
 pasillo clínico.
@@ -137,7 +136,7 @@ pantalla completa al ampliarlas.
 
 ## `/dr-montalvo` — Dr. Montalvo
 
-### 10 · `cabeceras/dr-montalvo.jpg` — **2560 × 1200 px**
+### 10 · `cabeceras/dr-montalvo.jpg` — **2000 × 1600 px (5:4)**
 
 **Retrato ambiental**, no primer plano: el Dr. Montalvo en su consulta o junto al
 equipo. En este formato tan apaisado un primer plano vertical no cabe.
@@ -149,7 +148,7 @@ izquierda.
 
 ## `/especialidades` — Especialidades
 
-### 11 · `cabeceras/especialidades.jpg` — **2560 × 1200 px**
+### 11 · `cabeceras/especialidades.jpg` — **2000 × 1600 px (5:4)**
 
 Consulta médica; profesional atendiendo. Sujeto a la derecha.
 
@@ -157,7 +156,7 @@ Consulta médica; profesional atendiendo. Sujeto a la derecha.
 
 ## `/sobre-nosotros` — Sobre nosotros
 
-### 12 · `cabeceras/sobre-nosotros.jpg` — **2560 × 1200 px**
+### 12 · `cabeceras/sobre-nosotros.jpg` — **2000 × 1600 px (5:4)**
 
 Equipo médico o fachada e instalaciones. Sujeto a la derecha.
 
@@ -165,7 +164,7 @@ Equipo médico o fachada e instalaciones. Sujeto a la derecha.
 
 ## `/atencion-al-paciente` — Atención al paciente
 
-### 13 · `cabeceras/atencion-al-paciente.jpg` — **2560 × 1200 px**
+### 13 · `cabeceras/atencion-al-paciente.jpg` — **2000 × 1600 px (5:4)**
 
 Recepción, admisión o bienvenida. Sujeto a la derecha.
 
@@ -181,29 +180,30 @@ y portadas de artículo.
 
 # Cómo se recorta una cabecera
 
-Las cinco cabeceras (05, 10, 11, 12, 13) son las fotos **más difíciles del
-pedido**, porque se recortan de forma muy distinta según la pantalla:
+Las cabeceras (05, 10, 11, 12, 13) ya **no van a sangre bajo un velo verde**:
+la fotografía ocupa su propio marco en arco, a la derecha del titular, sobre un
+fondo claro. Eso las hace más fáciles de entregar que antes.
 
 ```
-   ESCRITORIO 1920 px                      MÓVIL 412 px
-   ┌────────────────────────────────┐      ┌──────────┐
-   │  TITULAR       │               │      │ TITULAR  │
-   │  encima        │    libre      │      │ encima   │
-   └────────────────────────────────┘      │          │
-    1920 × 395 px  ← franja muy ancha      │  libre   │
-                                           └──────────┘
-                                            412 × 392 px  ← casi cuadrada
+   ESCRITORIO                               MÓVIL
+   ┌──────────────────────────────┐        ┌──────────┐
+   │  TITULAR        ╭────────╮   │        │ TITULAR  │
+   │  texto          │ FOTO   │   │        │ texto    │
+   │                 └────────┘   │        │  ╭────╮  │
+   └──────────────────────────────┘        │  │FOTO│  │
+    marco 5:4 con la parte superior        │  └────┘  │
+    redondeada (arco de ventana)           └──────────┘
 ```
 
-**Tres reglas, y las tres importan:**
+**Tres reglas:**
 
-1. **El sujeto va a la derecha.** El titular y las migas de navegación se pintan
-   sobre la mitad izquierda. Deje ese lado tranquilo: pared, fondo desenfocado,
-   suelo. Nada importante a la izquierda.
-2. **Aire arriba y abajo.** En escritorio solo se ve una franja central. Todo lo
-   que quede en los bordes superior e inferior se pierde. Componga holgado.
-3. **Entregue la foto clara.** Lleva un velo verde oscuro encima para que el
-   texto blanco se lea; una foto ya oscura quedará casi negra.
+1. **Proporción 5:4 (apaisada), sujeto en el centro.** El marco es casi
+   cuadrado en escritorio y en móvil: ya no hay franja panorámica.
+2. **Las dos esquinas superiores se recortan en curva.** Deje aire arriba: el
+   techo, una pared o un fondo desenfocado. Nada importante en las esquinas
+   superiores.
+3. **Entregue la foto con su luz natural.** Ya no lleva velo: se muestra tal
+   cual, así que una foto oscura o sobreexpuesta se verá oscura o sobreexpuesta.
 
 ---
 
@@ -267,7 +267,7 @@ reconocibles y su autorización está firmada.
 - **Fotos con texto, logotipo o marca de agua.**
 - **Collages** o fotos ya montadas en marcos y mockups.
 - **Personas sin autorización firmada**, incluido el personal de la clínica.
-- **Fotos oscuras o nocturnas** para cabeceras: llevan un velo verde encima.
+- **Fotos oscuras o nocturnas** para cabeceras: se muestran sin velo.
 - **Habitaciones con gente dentro** o con objetos personales a la vista.
 
 ---

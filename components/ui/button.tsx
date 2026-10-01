@@ -10,32 +10,27 @@ import { cn } from "@/lib/utils";
  *
  * 1. Rectos. 2px de radio en vez de 6: a este tamaño se leen como rectángulos,
  *    que es lo que pega con una página construida a base de líneas.
- * 2. Sin relleno de color en reposo. El botón es un contorno de 1px con el texto
- *    en negro; el verde aparece solo al pasar por encima. Antes cada llamada a
- *    la acción era un bloque verde sólido y la página se llenaba de manchas.
+ * 2. El relleno verde es solo para la acción principal de cada bloque (`primary`).
+ *    El resto son contornos de 1px con el texto en negro y el verde al pasar por
+ *    encima. Con el héroe y la franja de cierre en claro, ese botón es la
+ *    mancha de color de la pantalla: tiene que ser una y se tiene que ver.
  * 3. Sin animación de pulsado. El `active:scale` daba un rebote de juguete;
  *    queda solo una transición de color, que es la que informa de algo.
- *
- * Sobre el verde de marca el reparto se invierte: ahí el blanco no es "color",
- * así que el botón principal sí va relleno.
  */
 const buttonVariants = cva(
   "inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-xs font-medium transition-colors duration-150 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        /** Sobre blanco. Es el botón por defecto de todo el sitio. */
+        /** Acción principal: relleno de marca. Una por bloque. */
+        primary:
+          "border border-primary bg-primary text-white hover:border-primary-dark hover:bg-primary-dark",
+        /** Secundaria. Es el botón por defecto de todo el sitio. */
         default:
           "border border-border-strong bg-transparent text-foreground hover:border-primary hover:bg-wash hover:text-primary",
-        /** Acción secundaria sobre blanco: sin caja. */
+        /** Acción terciaria: sin caja. */
         ghost:
           "bg-transparent text-muted-foreground hover:bg-wash hover:text-primary",
-
-        /** Sobre el verde de marca: relleno blanco para la acción principal. */
-        inverse: "bg-white text-primary hover:bg-wash",
-        /** Y contorno blanco para la secundaria. */
-        inverseOutline:
-          "border border-white/35 bg-transparent text-white hover:border-white hover:bg-white hover:text-primary",
 
         link: "h-auto p-0 text-primary underline-offset-4 hover:underline",
       },
