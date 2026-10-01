@@ -120,7 +120,7 @@ export default function Footer() {
             </ul>
 
             <h3 className="label mt-8 text-muted-foreground">Redes</h3>
-            <ul className="mt-4 flex items-center gap-1">
+            <ul className="-ml-3 mt-3 flex items-center">
               {socials.map(({ key, label, Icon }) => (
                 <li key={key}>
                   <a
@@ -128,7 +128,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`${label} de ${siteConfig.name}`}
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-xs text-muted-foreground transition-colors hover:bg-wash hover:text-primary"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-xs text-muted-foreground transition-colors hover:bg-wash hover:text-primary"
                   >
                     <Icon className="h-[18px] w-[18px]" />
                   </a>

@@ -51,7 +51,15 @@ export default function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerP
   // esto cubre lo demás (atrás/adelante del navegador, saltos programáticos).
   // Antes se resolvía remontando el componente entero con `key={pathname}`
   // desde la cabecera, que tiraba y reconstruía el diálogo en cada página.
+  //
+  // Solo cuando la ruta cambia, no al montarse: si el primer toque llegaba
+  // antes de que terminara la precarga, el panel se montaba ya abierto y este
+  // efecto lo cerraba en el mismo instante. El menú no respondía al primer
+  // toque en un teléfono ocupado, reproducido bloqueando `requestIdleCallback`.
+  const routeAtMount = React.useRef(pathname);
   React.useEffect(() => {
+    if (routeAtMount.current === pathname) return;
+    routeAtMount.current = pathname;
     onOpenChange(false);
   }, [pathname, onOpenChange]);
 

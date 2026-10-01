@@ -1,5 +1,6 @@
 import { editorialImages } from "@/content/images";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
 import SplitHero from "@/components/sections/SplitHero";
@@ -11,12 +12,12 @@ import { siteConfig } from "@/content/site";
 import { doctor, milestones } from "@/content/institucional";
 import { getAppointmentLink } from "@/lib/links";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Dr. Montalvo",
   description:
     "Dr. Juan Carlos Montalvo, de Clínica Montalvo, Santa Cruz de la Sierra. Trayectoria e investigación médica.",
-  alternates: { canonical: "/dr-montalvo" },
-};
+  path: "/dr-montalvo",
+});
 
 /**
  * Página del Dr. Montalvo.
@@ -37,7 +38,7 @@ export default function DrMontalvoPage() {
       <SplitHero
         headingId="doctor-heading"
         image={editorialImages.doctor}
-        preload
+        lcp
       >
         <nav aria-label="Ruta de navegación">
           <ol className="label flex items-center gap-2 text-muted-foreground">

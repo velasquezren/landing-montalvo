@@ -37,7 +37,8 @@ export default function RoomTabs({ activeSlug, onSelectTab }: RoomTabsProps) {
       if (!tab) return;
 
       list.style.setProperty("--tab-x", `${tab.offsetLeft}px`);
-      list.style.setProperty("--tab-w", `${tab.offsetWidth}px`);
+      // Sin unidad: el subrayado mide 1px y se estira con `scale`.
+      list.style.setProperty("--tab-w", String(tab.offsetWidth));
       // Solo a partir de la primera medida se permite la transición: si no, el
       // subrayado se vería viajar desde el origen al cargar la página.
       list.toggleAttribute("data-tabs-ready", true);

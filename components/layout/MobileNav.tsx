@@ -32,6 +32,10 @@ export default function MobileNav() {
       ((callback: IdleRequestCallback) => window.setTimeout(callback, 200));
     const cancel = window.cancelIdleCallback ?? window.clearTimeout;
 
+    // Sin tope de tiempo a propósito: forzar la precarga a los 2 s la hacía
+    // coincidir con la carga de la página y retrasaba el pintado de la foto
+    // principal (medido con Lighthouse). Si el toque llega antes, el panel se
+    // carga en ese momento y abre igual (ver MobileNavDrawer).
     const handle = schedule(() => {
       void loadDrawer().then(() => setMounted(true));
     });

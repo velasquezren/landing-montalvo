@@ -1,5 +1,6 @@
 import { editorialImages } from "@/content/images";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import { Phone, MessageCircle } from "lucide-react";
 import PageHero from "@/components/sections/PageHero";
 import SectionHeader from "@/components/sections/SectionHeader";
@@ -11,12 +12,12 @@ import { siteConfig } from "@/content/site";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getAppointmentLink } from "@/lib/links";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Atención al paciente",
   description:
     "Cómo agendar una consulta en Clínica Montalvo, programa de maternidad Plan Nacer y aseguradoras con convenio.",
-  alternates: { canonical: "/atencion-al-paciente" },
-};
+  path: "/atencion-al-paciente",
+});
 
 /**
  * Página práctica: lo que un paciente necesita resolver antes de venir.

@@ -43,7 +43,7 @@ export default function PageHero({
       {src && image ? (
         <HeroMedia
           image={{ ...image, src }}
-          preload
+          lcp
           layout="side"
           sizes="(min-width: 1024px) 54vw, 100vw"
           className="h-[clamp(15rem,62vw,26rem)]"

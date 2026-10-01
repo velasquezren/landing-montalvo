@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Stethoscope, BedDouble, ClipboardList } from "lucide-react";
 import EditorialPhoto from "@/components/sections/EditorialPhoto";
@@ -9,11 +10,12 @@ import { editorialImages } from "@/content/images";
 import { siteConfig } from "@/content/site";
 import { getAppointmentLink } from "@/lib/links";
 
-export const metadata: Metadata = {
-  title: { absolute: "Clínica Montalvo | Atención médica integral en Santa Cruz" },
+export const metadata: Metadata = pageMetadata({
+  title: "Clínica Montalvo | Atención médica integral en Santa Cruz",
   description: siteConfig.description,
-  alternates: { canonical: "/" },
-};
+  path: "/",
+  absoluteTitle: true,
+});
 
 const pathways = [
   { title: "Buscar una especialidad", body: "Conozca nuestras áreas de atención y consulte por el profesional que necesita.", href: "/especialidades", Icon: Stethoscope },
@@ -26,7 +28,7 @@ export default function HomePage() {
   return (
     <>
       <section aria-labelledby="inicio-heading" className="relative overflow-hidden border-b border-border bg-wash lg:flex lg:min-h-[clamp(34rem,calc(100svh_-_var(--header-h)),46rem)] lg:items-center">
-        <HeroMedia image={editorialImages.inicio} preload sizes="100vw" className="h-[clamp(17rem,78vw,28rem)]" />
+        <HeroMedia image={editorialImages.inicio} lcp sizes="100vw" className="h-[clamp(17rem,78vw,28rem)]" />
 
         {/* En móvil el texto sube sobre la parte de la foto que ya se ha fundido
             con el fondo; en escritorio la foto es el fondo entero. */}

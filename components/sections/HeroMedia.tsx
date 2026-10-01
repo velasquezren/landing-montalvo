@@ -27,10 +27,16 @@ export const SIDE_TEXT = "max-w-xl lg:max-w-md xl:max-w-lg";
  *
  * El movimiento vive en CSS (`.hero-media`, app/globals.css), sin JavaScript.
  */
-export default function HeroMedia({ image, sizes, preload = false, layout = "full", className }: {
+export default function HeroMedia({ image, sizes, lcp = false, layout = "full", className }: {
   image: EditorialImage & { src: string };
   sizes: string;
-  preload?: boolean;
+  /**
+   * Es el elemento más grande de la primera pantalla (LCP). Se pide al
+   * instante y con prioridad alta (`fetchPriority="high"`), como recomienda la
+   * documentación de Next 16 frente a `preload`: con `preload` la imagen se
+   * pedía sin prioridad y Lighthouse lo marcaba.
+   */
+  lcp?: boolean;
   layout?: "full" | "side";
   className?: string;
 }) {
@@ -49,7 +55,8 @@ export default function HeroMedia({ image, sizes, preload = false, layout = "ful
         src={image.src}
         alt={image.alt}
         fill
-        preload={preload}
+        loading={lcp ? "eager" : undefined}
+        fetchPriority={lcp ? "high" : undefined}
         quality={85}
         sizes={sizes}
         className="object-cover"

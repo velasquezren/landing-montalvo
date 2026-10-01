@@ -1,5 +1,8 @@
 import { editorialImages } from "@/content/images";
 import type { Metadata } from "next";
+import JsonLd from "@/components/seo/JsonLd";
+import { pageMetadata } from "@/lib/metadata";
+import { clinicJsonLd } from "@/lib/structured-data";
 import Link from "next/link";
 import PageHero from "@/components/sections/PageHero";
 import SectionHeader from "@/components/sections/SectionHeader";
@@ -18,18 +21,23 @@ import {
   values,
 } from "@/content/institucional";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Sobre nosotros",
   description:
     "Clínica Montalvo: atención médica integral en Santa Cruz de la Sierra. Pioneros en reproducción asistida, con más de 30 especialidades y 80 especialistas.",
-  alternates: { canonical: "/sobre-nosotros" },
-};
+  path: "/sobre-nosotros",
+});
 
 export default function SobreNosotrosPage() {
   const declaredValues = values.filter((value) => value.declared);
 
   return (
     <>
+      {/* La ficha de la clínica para buscadores va aquí y en Servicios, no en
+          la portada: Google la acepta «en la portada o en una página sobre la
+          organización», y en la portada empujaba el HTML por encima de los
+          ~14 KB del primer viaje de red (ver PROJECT_CONTEXT §27). */}
+      <JsonLd data={clinicJsonLd()} />
       <PageHero
         image={editorialImages.nosotros}
         title="Sobre nosotros"

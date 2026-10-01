@@ -33,7 +33,11 @@ export default function CtaBand({
       aria-labelledby="cta-heading"
       className="mx-auto max-w-7xl px-5 py-16 sm:px-8 lg:py-24"
     >
-      <div className="relative overflow-hidden border border-border bg-wash">
+      {/* `overflow-clip` y no `overflow-hidden`: recortan igual, pero `hidden`
+          convierte la tarjeta en contenedor de desplazamiento, y las entradas
+          por scroll de dentro (`.reveal`) se medían contra ella y no contra la
+          página: el texto y los botones se quedaban a medio aparecer. */}
+      <div className="relative overflow-clip border border-border bg-wash">
         <Rings className="-right-24 -top-32 w-[24rem] lg:-right-16 lg:-top-40 lg:w-[34rem]" />
 
         <div className="relative grid gap-8 p-8 sm:p-12 lg:grid-cols-12 lg:items-end lg:gap-16 lg:p-16">

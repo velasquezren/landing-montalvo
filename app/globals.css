@@ -254,6 +254,24 @@ body {
   animation: rise-in 0.7s var(--ease-out-expo) both;
 }
 
+/* La entrada por scroll llega a opacidad completa en el primer 45% del tramo y
+   el resto es solo el desplazamiento: el texto se lee nítido en cuanto asoma,
+   en vez de pasar la mitad del recorrido a media tinta. A media opacidad el
+   gris secundario no llega al contraste mínimo. */
+@keyframes reveal-in {
+  0% {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    translate: none;
+  }
+}
+
 /* --- Fotografía de cabecera, detrás del texto ------------------------------
  *
  * VELO CLARO. El texto va encima de la foto, y texto sobre foto necesita algo
@@ -355,11 +373,15 @@ body {
 /* --- Fotografías del contenido ----------------------------------------------
  *
  * Toda foto fuera de la cabecera se descubre igual al entrar en pantalla: una
- * cortina que sube desde abajo mientras la imagen se asienta desde un 8% más
- * cerca. Es la misma idea que la cabecera, a escala de sección, y es lo que hace
- * que todas las fotos del sitio se lean como una sola serie.
+ * cortina que sube mientras la imagen se asienta desde un 8% más cerca. Es la
+ * misma idea que la cabecera, a escala de sección, y es lo que hace que todas
+ * las fotos del sitio se lean como una sola serie.
  *
- * `--photo-radius` deja la cortina con las mismas esquinas que la ficha.
+ * La cortina es un `::after` del color del marco que se encoge en vertical
+ * (`scale`), no un `clip-path`: el recorte no lo anima el compositor, así que
+ * se recalculaba en el hilo principal en cada fotograma de scroll (Lighthouse:
+ * «animación no compuesta»). Una escala sí. Las esquinas las recorta el propio
+ * marco, que lleva `overflow: hidden` y el radio de la ficha.
  *
  * La imagen no puede usar `view()` por sí misma: su marco recorta, y un ancestro
  * con `overflow: hidden` cuenta como contenedor de desplazamiento (ver «Entradas
@@ -367,10 +389,10 @@ body {
  * (`--photo`) y la imagen la sigue. */
 @keyframes photo-curtain {
   from {
-    clip-path: inset(16% 0 0 0 round var(--photo-radius, 0px));
+    scale: 1 0.18;
   }
   to {
-    clip-path: inset(0 round var(--photo-radius, 0px));
+    scale: 1 0;
   }
 }
 
@@ -425,19 +447,27 @@ body {
  * animaciones. `--step` escalona a los hermanos retrasando su arranque.
  *
  * Ojo: `view()` se mide contra el ancestro con scroll más cercano, y
- * `overflow: hidden` cuenta como tal. Dentro de un contenedor recortado el
- * elemento está "siempre visible" y la animación se queda fija en su estado
- * final. Por eso ninguna rejilla de este sitio recorta a sus celdas. */
+ * `overflow: hidden` cuenta como tal. Dentro de un contenedor recortado la
+ * animación se queda fija en el punto que le dé su posición dentro de él —con
+ * el recorrido de longitud fija de abajo, a medio aparecer si está cerca de su
+ * borde inferior—. Para recortar alrededor de una entrada, `overflow: clip`,
+ * que recorta igual sin crear contenedor de desplazamiento. */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) {
     /* El atajo `animation` reinicia animation-timeline y animation-range, así
        que va primero. Y el escalonado se declara aparte, para que si el calc()
        no se entiende solo se pierda el desfase y no el tramo entero. */
+    /* Un recorrido fijo de 6rem desde que el bloque asoma, y no «hasta que ha
+       entrado entero». En porcentaje, el tramo dependía del alto del bloque:
+       uno más alto que la pantalla —tres párrafos en un móvil— no llegaba al
+       100% hasta que su borde superior alcanzaba lo alto de la pantalla, y su
+       primer párrafo se leía atenuado todo ese rato. */
     .reveal {
-      animation: rise-in linear both;
+      animation: reveal-in linear both;
       animation-timeline: view();
-      animation-range: entry 0% entry 100%;
-      animation-range-start: entry calc(var(--step, 0) * 10%);
+      animation-range: entry 0% entry 6rem;
+      animation-range-start: entry calc(var(--step, 0) * 1.25rem);
+      animation-range-end: entry calc(6rem + var(--step, 0) * 1.25rem);
     }
 
     .hero-media img {
@@ -448,6 +478,16 @@ body {
 
     .photo-reveal {
       view-timeline: --photo block;
+    }
+
+    /* Solo existe aquí dentro: sin soporte de scroll, ninguna cortina tapa la
+       foto. */
+    .photo-reveal::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: inherit;
+      transform-origin: top;
       animation: photo-curtain linear both;
       animation-timeline: --photo;
       animation-range: entry 0% cover 35%;
@@ -533,14 +573,20 @@ body {
 /* --- Subrayado deslizante de las pestañas -----------------------------------
  *
  * Lo que hacía `layoutId` de Motion, sin su motor de proyección de layout. La
- * posición y el ancho del tramo activo se escriben una sola vez por selección
- * como variables CSS; el desplazamiento lo interpola el compositor.
+ * posición y el ancho de la pestaña activa se escriben una sola vez por
+ * selección como variables CSS; el desplazamiento lo interpola el compositor.
  *
- * `translate` y `width` van como propiedades independientes para no chocar con
- * ninguna utilidad `transform-*` de Tailwind sobre el mismo elemento. */
+ * El subrayado mide 1px y se estira con `scale` hasta el ancho de la pestaña,
+ * en lugar de animar `width`: `width` obliga a recalcular el layout en cada
+ * fotograma en el hilo principal (Lighthouse lo marcaba como animación no
+ * compuesta al cargar la fuente y remedir). `translate` y `scale` los mueve el
+ * compositor. Van como propiedades sueltas para no chocar con ninguna utilidad
+ * `transform-*` de Tailwind sobre el mismo elemento. */
 .tab-indicator {
-  width: var(--tab-w, 0);
+  width: 1px;
+  transform-origin: left;
   translate: var(--tab-x, 0) 0;
+  scale: var(--tab-w, 0) 1;
 }
 
 /* La transición se habilita solo después de la primera medición: si no, el
@@ -548,7 +594,7 @@ body {
 [data-tabs-ready] .tab-indicator {
   transition:
     translate 0.34s var(--ease-out-quart),
-    width 0.34s var(--ease-out-quart);
+    scale 0.34s var(--ease-out-quart);
 }
 
 /* --- Acceso flotante --------------------------------------------------------

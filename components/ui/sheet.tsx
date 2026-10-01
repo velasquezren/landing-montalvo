@@ -15,60 +15,47 @@ import { cn } from "@/lib/utils";
  */
 
 const Sheet = DialogPrimitive.Root;
-const SheetTrigger = DialogPrimitive.Trigger;
 
-const SheetContent = React.forwardRef<
-  React.ComponentRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
-  <DialogPrimitive.Portal>
-    <DialogPrimitive.Overlay
-      className={cn(
-        // Sin `backdrop-blur`: el velo aparece a la vez que el panel entra
-        // deslizándose, así que desenfocar obliga a recomponer la pantalla
-        // entera durante toda la animación. Es la causa habitual de que un
-        // cajón lateral se abra a trompicones en un teléfono de gama media.
-        "fixed inset-0 z-50 bg-primary-dark/50",
-        "data-[state=open]:animate-[overlay-in_0.3s_var(--ease-smooth)]",
-        "data-[state=closed]:animate-[overlay-in_0.2s_var(--ease-smooth)_reverse]"
-      )}
-    />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed inset-y-0 right-0 z-50 flex h-full w-[min(88vw,26rem)] flex-col bg-background",
-        "border-l border-border shadow-lg",
-        "data-[state=open]:animate-[sheet-in_0.45s_var(--ease-out-expo)]",
-        "data-[state=closed]:animate-[sheet-out_0.3s_var(--ease-smooth)]",
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </DialogPrimitive.Content>
-  </DialogPrimitive.Portal>
-));
-SheetContent.displayName = DialogPrimitive.Content.displayName;
+/* En React 19 `ref` es una propiedad más y llega dentro de `props`, así que
+   `forwardRef` sobra (ver components/ui/button.tsx). */
 
-const SheetTitle = React.forwardRef<
-  React.ComponentRef<typeof DialogPrimitive.Title>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Title ref={ref} className={cn("h3", className)} {...props} />
-));
-SheetTitle.displayName = DialogPrimitive.Title.displayName;
+function SheetContent({ className, children, ...props }: React.ComponentProps<typeof DialogPrimitive.Content>) {
+  return (
+    <DialogPrimitive.Portal>
+      <DialogPrimitive.Overlay
+        className={cn(
+          // Sin `backdrop-blur`: el velo aparece a la vez que el panel entra
+          // deslizándose, así que desenfocar obliga a recomponer la pantalla
+          // entera durante toda la animación. Es la causa habitual de que un
+          // cajón lateral se abra a trompicones en un teléfono de gama media.
+          "fixed inset-0 z-50 bg-primary-dark/50",
+          "data-[state=open]:animate-[overlay-in_0.3s_var(--ease-smooth)]",
+          "data-[state=closed]:animate-[overlay-in_0.2s_var(--ease-smooth)_reverse]"
+        )}
+      />
+      <DialogPrimitive.Content
+        className={cn(
+          "fixed inset-y-0 right-0 z-50 flex h-full w-[min(88vw,26rem)] flex-col bg-background",
+          "border-l border-border shadow-lg",
+          "data-[state=open]:animate-[sheet-in_0.45s_var(--ease-out-expo)]",
+          "data-[state=closed]:animate-[sheet-out_0.3s_var(--ease-smooth)]",
+          className
+        )}
+        {...props}
+      >
+        {children}
+      </DialogPrimitive.Content>
+    </DialogPrimitive.Portal>
+  );
+}
 
-const SheetDescription = React.forwardRef<
-  React.ComponentRef<typeof DialogPrimitive.Description>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props}
-  />
-));
-SheetDescription.displayName = DialogPrimitive.Description.displayName;
+function SheetTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
+  return <DialogPrimitive.Title className={cn("h3", className)} {...props} />;
+}
+
+function SheetDescription({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Description>) {
+  return <DialogPrimitive.Description className={cn("text-sm text-muted-foreground", className)} {...props} />;
+}
 
 function SheetCloseButton({ className }: { className?: string }) {
   return (
@@ -86,7 +73,6 @@ function SheetCloseButton({ className }: { className?: string }) {
 
 export {
   Sheet,
-  SheetTrigger,
   SheetContent,
   SheetTitle,
   SheetDescription,

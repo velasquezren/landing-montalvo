@@ -1,5 +1,6 @@
 import { editorialImages } from "@/content/images";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/metadata";
 import PageHero from "@/components/sections/PageHero";
 import SectionHeader from "@/components/sections/SectionHeader";
 import CtaBand from "@/components/sections/CtaBand";
@@ -8,12 +9,12 @@ import { Button } from "@/components/ui/button";
 import { fertilityTreatments, positioning } from "@/content/institucional";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Especialidades",
   description:
     "Más de 30 especialidades médicas en Clínica Montalvo, con tratamientos de reproducción asistida: fertilización in vitro, ICSI, ovodonación y más.",
-  alternates: { canonical: "/especialidades" },
-};
+  path: "/especialidades",
+});
 
 /**
  * De las más de 30 especialidades que la clínica afirma tener, la única

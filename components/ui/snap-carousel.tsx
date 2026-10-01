@@ -92,7 +92,7 @@ export default function SnapCarousel({
         <div className="flex gap-2">
           <Button
             size="icon"
-            className="h-9 w-9 disabled:opacity-25"
+            className="h-11 w-11 disabled:opacity-25"
             aria-label="Fotografía anterior"
             disabled={index === 0}
             onClick={() => scrollTo(index - 1)}
@@ -101,7 +101,7 @@ export default function SnapCarousel({
           </Button>
           <Button
             size="icon"
-            className="h-9 w-9 disabled:opacity-25"
+            className="h-11 w-11 disabled:opacity-25"
             aria-label="Fotografía siguiente"
             disabled={index >= count - 1}
             onClick={() => scrollTo(index + 1)}

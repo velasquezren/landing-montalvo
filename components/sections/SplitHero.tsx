@@ -6,8 +6,8 @@ interface SplitHeroProps {
   /** Id del titular, para `aria-labelledby`. */
   headingId: string;
   image: EditorialImage & { src: string };
-  /** Precargar la fotografía principal de la página. */
-  preload?: boolean;
+  /** La foto es el elemento más grande de la primera pantalla. */
+  lcp?: boolean;
   children: ReactNode;
 }
 
@@ -22,7 +22,7 @@ interface SplitHeroProps {
  * En móvil, como el resto de cabeceras: la foto arriba, fundida hacia abajo, y
  * el titular entrando encima.
  */
-export default function SplitHero({ headingId, image, preload = false, children }: SplitHeroProps) {
+export default function SplitHero({ headingId, image, lcp = false, children }: SplitHeroProps) {
   return (
     <section
       aria-labelledby={headingId}
@@ -30,7 +30,7 @@ export default function SplitHero({ headingId, image, preload = false, children 
     >
       <HeroMedia
         image={image}
-        preload={preload}
+        lcp={lcp}
         layout="side"
         sizes="(min-width: 1024px) 60vw, 100vw"
         className="aspect-[4/5] sm:aspect-[4/3] lg:aspect-auto"

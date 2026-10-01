@@ -24,6 +24,45 @@ const nextConfig: NextConfig = {
        bajo la misma URL. Un año de caché. */
     minimumCacheTTL: 31_536_000,
   },
+
+  /**
+   * Cabeceras de seguridad para todas las respuestas.
+   *
+   * Ninguna restringe los scripts ni los estilos, así que no pueden romper la
+   * página: cierran lo que un sitio informativo no usa nunca.
+   *
+   * - `frame-ancestors 'none'`: nadie puede incrustar el sitio en un iframe
+   *   para suplantarlo. (Sin X-Frame-Options: lo sustituye en todo navegador
+   *   actual, y cada cabecera cuenta —ver más abajo—.)
+   * - `nosniff`: el navegador no adivina tipos de archivo.
+   * - Referrer-Policy: a sitios externos (WhatsApp, redes) solo llega el
+   *   dominio, no la ruta que el paciente estaba viendo.
+   * - Permissions-Policy: cámara, micrófono y ubicación desactivados.
+   *
+   * Sin HSTS: Vercel ya la envía en todos sus dominios. Duplicarla solo sumaba
+   * bytes a la primera respuesta, que es la que más importa: la portada tiene
+   * que caber en los ~14 KB del primer viaje de red, y medida con 1,3 KB de más
+   * necesitaba un viaje extra (+170 ms en el primer pintado en móvil).
+   */
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'",
+          },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

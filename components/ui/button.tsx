@@ -59,10 +59,16 @@ interface ButtonProps
  * En React 19 `ref` es una propiedad más, así que `forwardRef` sobra: era una
  * envoltura por componente sin ninguna contrapartida.
  */
-function Button({ className, variant, size, asChild = false, ...props }: ButtonProps) {
+function Button({ className, variant, size, asChild = false, type, ...props }: ButtonProps) {
   const Comp = asChild ? Slot : "button";
   return (
-    <Comp className={cn(buttonVariants({ variant, size }), className)} {...props} />
+    <Comp
+      // Un <button> sin `type` es de envío: dentro de un formulario lo
+      // mandaría. Con `asChild` el tipo lo decide el hijo (un enlace no lleva).
+      type={asChild ? type : (type ?? "button")}
+      className={cn(buttonVariants({ variant, size }), className)}
+      {...props}
+    />
   );
 }
 

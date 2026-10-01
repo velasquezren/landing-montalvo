@@ -222,7 +222,7 @@ function Tile({
       type="button"
       onClick={() => onOpen(index)}
       aria-label={`Ampliar foto ${index + 1} de ${roomName}`}
-      className={cn("photo-reveal photo-hover group relative block overflow-hidden rounded-lg bg-wash [--photo-radius:var(--radius-lg)]", className)}
+      className={cn("photo-reveal photo-hover group relative block overflow-hidden rounded-lg bg-wash", className)}
     >
       <Image
         src={image.src}

@@ -41,7 +41,7 @@ export default function SectionHeader({
         </h2>
 
         {description && (
-          <Reveal step={3} className="lg:col-span-5">
+          <Reveal step={1} className="lg:col-span-5">
             <p className="lead">{description}</p>
           </Reveal>
         )}

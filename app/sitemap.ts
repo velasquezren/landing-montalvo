@@ -1,22 +1,24 @@
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { absoluteUrl } from "@/lib/site-url";
+
+/**
+ * Solo las páginas con contenido propio. Blog y Staff médico están en
+ * preparación y llevan `noindex` (ver `pageMetadata`): listarlas aquí sería
+ * pedir a los buscadores que indexen una página que se les pide no indexar.
+ * Cuando tengan contenido, se añaden aquí y se les quita el `index: false`.
+ *
+ * Sin `priority` ni `changeFrequency`: Google los ignora.
+ */
+const routes = [
+  "/",
+  "/servicios",
+  "/especialidades",
+  "/dr-montalvo",
+  "/sobre-nosotros",
+  "/atencion-al-paciente",
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://clinicamontalvo.net";
-  const routes = [
-    "/",
-    "/servicios",
-    "/especialidades",
-    "/dr-montalvo",
-    "/staff-medico",
-    "/blog",
-    "/sobre-nosotros",
-    "/atencion-al-paciente",
-  ];
-
-  return routes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: route === "/servicios" ? "weekly" : "monthly",
-    priority: route === "/" ? 1.0 : 0.8,
-  }));
+  const lastModified = new Date();
+  return routes.map((route) => ({ url: absoluteUrl(route), lastModified }));
 }

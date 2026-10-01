@@ -111,7 +111,7 @@ app/
 ### Secciones (`components/sections/`)
 * **`PageHero.tsx`**: Encabezado de página, claro (`bg-wash`), de renderizado del lado servidor (RSC). Con fotografía, la foto ocupa la parte derecha de arriba abajo y se funde con el fondo detrás del texto (`HeroMedia`, modo "side"); sin ella, las circunferencias de `Rings`. Migas de pan y metadatos al pie.
 * **`SplitHero.tsx`**: Cabecera de la página del doctor: texto a la izquierda y el retrato detrás, a la derecha, fundido con el fondo.
-* **`HeroMedia.tsx`**: Fotografía de cabecera detrás del texto, con velo claro (`.hero-scrim`). Modo "full" (portada: la foto es todo el fondo) o "side" (interiores y retrato: la foto empieza donde acaba el texto). Se asienta al cargar y se acerca al desplazarse, sin JavaScript. Exporta `SIDE_TEXT`, el ancho de columna que garantiza que texto y foto no se pisen.
+* **`HeroMedia.tsx`**: Fotografía de cabecera detrás del texto, con velo claro (`.hero-scrim`). Modo "full" (portada: la foto es todo el fondo) o "side" (interiores y retrato: la foto empieza donde acaba el texto). `lcp` la pide al instante y con `fetchPriority="high"`. Se asienta al cargar y se acerca al desplazarse, sin JavaScript. Exporta `SIDE_TEXT`, el ancho de columna que garantiza que texto y foto no se pisen.
 * **`EditorialPhoto.tsx`**: Foto de contenido con proporción reservada, esquinas `rounded-lg` y la cortina común al entrar en pantalla (`.photo-reveal`).
 * **`ServicesGrid.tsx`**: Grilla de 4 columnas en desktop con hairlines perimetrales de 1px. No usa `overflow: hidden` para permitir animaciones CSS scroll nativas escalonadas mediante `--step`.
 * **`RoomsSection.tsx`**: Bloque interactivo de internación:
@@ -132,6 +132,9 @@ app/
 * **`SectionHeader.tsx`**: Encabezado estándar con numeración de sección (`01`, `02`), antetítulo en mayúsculas (`label`), titular y descripción.
 * **`TierDot.tsx`**: Punto coloreado que distingue visualmente las categorías Gold, Silver y Bronce.
 * **`PagePlaceholder.tsx`**: Plantilla para secciones pendientes (`/staff-medico`, `/blog`), explicando qué contenido está en preparación y ofreciendo vías de contacto alternativas para no perder al visitante.
+
+### SEO (`components/seo/`)
+* **`JsonLd.tsx`**: Datos estructurados schema.org en un `<script>`, con `<` escapado.
 
 ### UI Primitivas (`components/ui/`)
 * **`button.tsx`**: Botón polimórfico (`asChild` vía `@radix-ui/react-slot`) con variantes (`primary`, `default`, `ghost`, `link`) y tamaños calibrados. Es componente de servidor: no usa estado ni APIs del navegador, así que en las páginas que no hidratan nada se resuelve en el servidor.
@@ -164,6 +167,9 @@ app/
 * **[links.ts](file:///home/httpreen/Documentos/Clinica%20Montalvo/montalvo/montalvo/lib/links.ts)**: Lógica defensiva para el botón "Reservar cita". Si `siteConfig.appointmentUrl` aún no tiene una URL externa válida, redirige automáticamente a WhatsApp solicitando cita.
 * **[whatsapp.ts](file:///home/httpreen/Documentos/Clinica%20Montalvo/montalvo/montalvo/lib/whatsapp.ts)**: Generador centralizado de URLs `wa.me/59175031306` con mensajes contextuales predefinidos (general, por habitación o por especialidad).
 * **[utils.ts](file:///home/httpreen/Documentos/Clinica%20Montalvo/montalvo/montalvo/lib/utils.ts)**: Combinador de clases CSS `cn()` con `clsx` y `tailwind-merge`.
+* **`site-url.ts`**: Dirección pública del sitio (`NEXT_PUBLIC_SITE_URL` → `VERCEL_PROJECT_PRODUCTION_URL` → `clinicamontalvo.vercel.app`) y `absoluteUrl()`. Única fuente de canónicas, sitemap, robots y datos estructurados.
+* **`metadata.ts`**: `pageMetadata()` —título, descripción, canónica, Open Graph y `noindex` por página— y `shareImage`, la imagen para compartir (`public/og/clinica-montalvo.jpg`).
+* **`structured-data.ts`**: `clinicJsonLd()`, la clínica como `MedicalClinic`, en Sobre nosotros y Servicios.
 
 ---
 
@@ -1033,4 +1039,117 @@ Movimiento reducido: todo quieto y visible, comprobado. Se retiró `hero-open`.
 `tsc --noEmit`, `eslint` y `next build --webpack` correctos. Nueve rutas en
 1920 × 1080, 1440 × 900, 1440 × 780, 820 × 1180, 390 × 844 y 320 × 640: sin
 desbordes, imágenes rotas ni errores de consola.
+
+---
+
+## 27. Auditoría completa: velocidad, SEO, accesibilidad y código — 1 de octubre de 2026
+
+Pedido del cliente: revisar todo el sitio, corregir cada detalle, velocidad y
+optimización, con las mejores prácticas. Método: medir primero (Lighthouse 12
+sobre `next build`, en móvil y escritorio, ocho rutas), leer el código entero
+y corregir solo lo que una medida o una prueba justificara. Cada cambio de
+rendimiento se comparó contra la versión publicada (`4c94777`) servida a la
+vez, con cinco pasadas alternas y la mediana: una sola pasada de Lighthouse
+varía hasta 30 puntos en este entorno.
+
+### Errores corregidos
+
+* **El menú móvil no respondía al primer toque** si llegaba antes de terminar
+  la precarga del panel: se montaba abierto y el efecto «cerrar al navegar» lo
+  cerraba en el acto. Reproducido bloqueando `requestIdleCallback`; ahora solo
+  cierra cuando la ruta cambia (`MobileNavDrawer`).
+* **URLs canónicas, sitemap y robots apuntaban a `clinicamontalvo.net`**
+  mientras el sitio vive en `clinicamontalvo.vercel.app`. Ahora salen de
+  `lib/site-url.ts`, que en Vercel toma el dominio de producción del proyecto:
+  al conectar el dominio propio cambia solo.
+* **Sin imagen al compartir.** WhatsApp y Facebook mostraban el enlace sin
+  vista previa. `public/og/clinica-montalvo.jpg` (1200 × 630, 96 KB), con la
+  foto de portada, el isotipo y Montserrat, renderizada con Chromium. Cada
+  página comparte con su propio título y URL (`pageMetadata`); antes heredaban
+  los de la portada.
+* **Blog y Staff médico, páginas vacías, se ofrecían a los buscadores.** Ahora
+  `noindex, follow` y fuera del sitemap hasta que tengan contenido. Lighthouse
+  marca SEO 66 en ellas: es el aviso del `noindex`, intencionado.
+* **`medicalSpecialty: "Reproductive"`** no existe en schema.org; retirado.
+
+### Rendimiento
+
+* **Foto principal con `fetchPriority="high"`** y carga inmediata (`lcp` en
+  `HeroMedia`), como recomienda la documentación de Next 16 frente a
+  `preload`, que no le daba prioridad.
+* **Animaciones fuera del hilo principal.** La cortina de las fotos animaba
+  `clip-path` y el subrayado de las pestañas `width`: ninguna la mueve el
+  compositor, se recalculaban en cada fotograma. Ahora un `::after` con
+  `scale` y un subrayado de 1 px estirado con `scale`. Lighthouse: 0 animaciones
+  no compuestas.
+* **La regla de los 14 KB.** Medido en A/B, la portada empeoró 170 ms en el
+  primer pintado con los metadatos nuevos: el HTML pasó de 13,6 a 14,9 KB y
+  dejó de caber en el primer viaje de red (TCP envía unos 14,6 KB antes de
+  esperar respuesta). Se recuperó sin perder nada útil: fuera `keywords` (Google
+  la ignora), las etiquetas `twitter:` que repetían las de Open Graph, la HSTS
+  duplicada (Vercel ya la envía) y X-Frame-Options (la cubre la CSP); los datos
+  estructurados pasan de la portada a Sobre nosotros. Queda en 13,8 KB.
+* **Descartado tras medirlo: `experimental.inlineCss`.** El HTML pasaba de 77 a
+  158 KB y empeoraban LCP y TBT.
+* **Sin tope en la precarga del menú**: forzarla a los 2 s la hacía coincidir
+  con la carga.
+
+Resultado, mediana de cinco pasadas en móvil contra la versión publicada:
+
+| | Publicada | Nueva |
+| :--- | ---: | ---: |
+| Portada, primer pintado | 767 ms | 766 ms |
+| Portada, LCP | 2.516 ms | **2.473 ms** |
+| Portada, bloqueo (TBT) | 113 ms | **89 ms** |
+| Servicios, bloqueo (TBT) | 215 ms | **183 ms** |
+
+### Accesibilidad
+
+* **Entradas por scroll con recorrido fijo** (6rem desde que asoman) y
+  opacidad completa en el primer 45% del tramo (`reveal-in`). En porcentaje del
+  bloque, uno más alto que la pantalla dejaba su primer párrafo atenuado
+  mientras se leía en el móvil.
+* **`overflow-clip` en la tarjeta de cierre.** Con `overflow-hidden`, la tarjeta
+  era contenedor de desplazamiento y sus entradas se medían contra ella: con el
+  recorrido fijo se quedaban a medio aparecer para siempre (lo detectó
+  Lighthouse; corregido antes de publicar). Regla: para recortar alrededor de
+  una entrada por scroll, `overflow-clip`, nunca `overflow-hidden`.
+* **Botones táctiles de 44 px**: los del carrusel de fotos y los de redes en el
+  pie medían 36.
+* **Aviso conocido.** Un texto que cae justo en el borde inferior de la pantalla
+  al cargar está a mitad de su entrada, y Lighthouse puede medirlo a media
+  opacidad. Es propio de cualquier aparición por scroll con fundido y depende
+  del tamaño de pantalla; la versión publicada lo tenía en dos páginas. Con el
+  tramo acortado afecta solo a una franja de unos 40 px.
+
+### Seguridad (`next.config.ts`)
+
+CSP `frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action
+'self'`, `X-Content-Type-Options: nosniff`, `Referrer-Policy:
+strict-origin-when-cross-origin` y `Permissions-Policy` sin cámara, micrófono ni
+ubicación. Ninguna restringe scripts ni estilos, así que no pueden romper nada.
+
+### Código
+
+* `forwardRef` retirado de acordeón y panel lateral: en React 19 `ref` es una
+  propiedad más.
+* `Button` fija `type="button"` cuando dibuja un `<button>`.
+* `themeColor` blanco, como la cabecera; `min-h-dvh` en lugar de `min-h-screen`.
+* Retirado `SheetTrigger`, exportado y sin uso.
+
+### Pendiente fuera del código
+
+* **«Acceso para médicos»** (pie) enlaza a `resultados.107.175.132.15.nip.io`,
+  un dominio de pruebas montado sobre una IP. Conviene un subdominio propio de
+  la clínica antes de difundir el sitio.
+* La foto de portada mide 2000 px; a todo el ancho en pantallas de alta
+  densidad pide más. El pedido fotográfico ya lo recoge.
+
+### Verificado
+
+Lighthouse final, ocho rutas: rendimiento 99–100 en escritorio y 90–99 en
+móvil; accesibilidad, buenas prácticas y SEO 100 (salvo el `noindex` de Blog
+y Staff). Menú móvil abre al primer toque con la precarga bloqueada. Subrayado
+de pestañas medido al píxel. `tsc --noEmit`, `eslint` y `next build --webpack`
+correctos.
 
