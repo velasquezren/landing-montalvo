@@ -3,10 +3,10 @@ import { pageMetadata } from "@/lib/metadata";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, Stethoscope, BedDouble, ClipboardList } from "lucide-react";
 import EditorialPhoto from "@/components/sections/EditorialPhoto";
-import HeroMedia from "@/components/sections/HeroMedia";
+import PhotoSlideshow from "@/components/sections/PhotoSlideshow";
 import CtaBand from "@/components/sections/CtaBand";
 import { Button } from "@/components/ui/button";
-import { editorialImages } from "@/content/images";
+import { editorialImages, homeSlides } from "@/content/images";
 import { siteConfig } from "@/content/site";
 import { getAppointmentLink } from "@/lib/links";
 
@@ -27,13 +27,9 @@ export default function HomePage() {
   const appointment = getAppointmentLink();
   return (
     <>
-      <section aria-labelledby="inicio-heading" className="relative overflow-hidden border-b border-border bg-wash lg:flex lg:min-h-[clamp(34rem,calc(100svh_-_var(--header-h)),46rem)] lg:items-center">
-        <HeroMedia image={editorialImages.inicio} lcp sizes="100vw" className="h-[clamp(17rem,78vw,28rem)]" />
-
-        {/* En móvil el texto sube sobre la parte de la foto que ya se ha fundido
-            con el fondo; en escritorio la foto es el fondo entero. */}
-        <div className="relative mx-auto -mt-16 w-full max-w-7xl px-5 pb-12 sm:-mt-24 sm:px-8 sm:pb-14 lg:mt-0 lg:py-20">
-          <div className="max-w-2xl">
+      <section aria-labelledby="inicio-heading" className="border-b border-border bg-wash">
+        <div className="mx-auto grid max-w-7xl items-center gap-9 px-5 pt-10 pb-8 sm:gap-12 sm:px-8 sm:pt-14 lg:min-h-[38rem] lg:grid-cols-[0.85fr_1.15fr] lg:gap-12 lg:py-16">
+          <div className="max-w-xl">
             <p className="label leading-relaxed text-primary">Clínica Montalvo · Santa Cruz de la Sierra</p>
             <h1 id="inicio-heading" className="display mt-6">Su salud, <span className="text-primary">con atención cercana.</span></h1>
             <p className="lead mt-6 max-w-lg">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>
@@ -43,29 +39,15 @@ export default function HomePage() {
               </Button>
               <Button asChild size="lg" className="bg-background"><Link href="/servicios">Explorar servicios</Link></Button>
             </div>
-            {/* En escritorio este dato va en la tarjeta de la foto. */}
-            <p className="mt-6 text-sm text-muted-foreground lg:hidden">Pioneros en reproducción asistida en Bolivia.</p>
+            <p className="mt-6 text-sm text-muted-foreground">Pioneros en reproducción asistida en Bolivia.</p>
           </div>
+          <PhotoSlideshow slides={homeSlides} label="Conozca nuestra clínica" priority className="rounded-xl bg-background p-3 shadow-sm sm:p-4" />
         </div>
-
-        {/* Dato práctico sobre la foto, como hacen las cabeceras de los
-            hospitales de referencia: lo primero que busca quien llega con prisa.
-            Solo datos de siteConfig; no se atribuye ningún teléfono a
-            emergencias porque la clínica no lo ha confirmado. */}
-        <div className="absolute inset-x-0 bottom-0 hidden lg:block">
-          <div className="mx-auto flex max-w-7xl justify-end px-8 pb-8">
-            <div className="inline-flex items-center gap-4 bg-background px-5 py-4 shadow-lg">
-              <span aria-hidden="true" className="relative flex h-2.5 w-2.5 shrink-0">
-                <span className="pulse-ring absolute inset-0 rounded-full bg-accent" />
-                <span className="relative h-2.5 w-2.5 rounded-full bg-primary" />
-              </span>
-              <span>
-                <span className="block text-sm font-semibold">{siteConfig.emergencies}</span>
-                <span className="mt-0.5 block text-sm text-muted-foreground">{siteConfig.schedule}</span>
-              </span>
-              <span aria-hidden="true" className="mx-1 h-8 w-px bg-border" />
-              <span className="max-w-[13rem] text-sm leading-snug text-muted-foreground">Pioneros en reproducción asistida en Bolivia.</span>
-            </div>
+        <div className="border-t border-border">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-8 gap-y-2 px-5 py-4 text-xs sm:px-8 sm:text-sm">
+            <span className="inline-flex items-center gap-2.5 font-semibold text-primary"><span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-primary" />{siteConfig.emergencies}</span>
+            <span className="text-muted-foreground">{siteConfig.schedule}</span>
+            <a href={siteConfig.phoneTel} className="inline-flex min-h-11 items-center font-medium text-primary hover:underline sm:ml-auto">{siteConfig.phone} <ArrowUpRight aria-hidden="true" className="ml-2 h-3.5 w-3.5" /></a>
           </div>
         </div>
       </section>

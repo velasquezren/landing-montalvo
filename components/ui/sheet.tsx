@@ -29,16 +29,16 @@ function SheetContent({ className, children, ...props }: React.ComponentProps<ty
           // entera durante toda la animación. Es la causa habitual de que un
           // cajón lateral se abra a trompicones en un teléfono de gama media.
           "fixed inset-0 z-50 bg-primary-dark/50",
-          "data-[state=open]:animate-[overlay-in_0.3s_var(--ease-smooth)]",
-          "data-[state=closed]:animate-[overlay-in_0.2s_var(--ease-smooth)_reverse]"
+          "data-[state=open]:animate-[overlay-in_0.18s_var(--ease-smooth)]",
+          "data-[state=closed]:animate-[overlay-in_0.16s_var(--ease-smooth)_reverse]"
         )}
       />
       <DialogPrimitive.Content
         className={cn(
           "fixed inset-y-0 right-0 z-50 flex h-full w-[min(88vw,26rem)] flex-col bg-background",
           "border-l border-border shadow-lg",
-          "data-[state=open]:animate-[sheet-in_0.45s_var(--ease-out-expo)]",
-          "data-[state=closed]:animate-[sheet-out_0.3s_var(--ease-smooth)]",
+          "data-[state=open]:animate-[sheet-in_0.28s_var(--ease-out-expo)]",
+          "data-[state=closed]:animate-[sheet-out_0.18s_var(--ease-smooth)]",
           className
         )}
         {...props}

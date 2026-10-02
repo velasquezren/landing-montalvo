@@ -684,87 +684,69 @@ body {
   }
 }
 
-/* ============================================================================
-   TRANSICIONES ENTRE PÁGINAS (View Transitions API)
+/* Una sola captura por ruta, con salida opaca y entrada de 160 ms.
+   No se anima posición, tamaño ni scroll: Next controla el historial.
+   La cabecera tiene su propia capa, por encima de la captura que sale. */
+[data-site-header] { view-transition-name: site-header; }
 
-   El relevo entre páginas lo anima el navegador: toma una instantánea de la
-   página que sale y otra de la que entra y funde entre las dos. Sin librería,
-   en el compositor, y sin nada que hidratar.
+::view-transition { pointer-events: none; }
+/* React oculta root; su animación UA de 250 ms no debe alargar el relevo. */
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; }
+::view-transition-group(.route-enter),
+::view-transition-group(.route-exit) { animation: none; }
+::view-transition-group(.route-exit) { z-index: 1; }
+::view-transition-group(.route-enter) { z-index: 2; }
+::view-transition-old(.route-exit) {
+  animation: 160ms linear both route-hold;
+  mix-blend-mode: normal;
+}
+::view-transition-new(.route-enter) {
+  animation: 160ms ease-out both route-arrive;
+  mix-blend-mode: normal;
+}
+::view-transition-group(site-header) { animation: none; z-index: 100; }
+::view-transition-old(site-header) { display: none; }
+::view-transition-new(site-header) { animation: none; }
+@keyframes route-hold { from, to { opacity: 1; } }
+@keyframes route-arrive { from { opacity: 0; } to { opacity: 1; } }
 
-   Tres decisiones, y las tres van contra la sensación de lentitud:
-
-   1. NADA LLEVA NOMBRE. Ni la cabecera, ni el pie, ni el héroe.
-
-      Un elemento con `view-transition-name` se sustituye por una instantánea
-      mientras dura la transición: deja de dibujarse y, por tanto, deja de
-      recibir clics. Con la cabecera nombrada eran 300 ms muertos en cada
-      navegación, medidos. Sin nombre sigue viva, y `pointer-events: none` sobre
-      la capa deja pasar los clics hasta ella: 20 ms.
-
-      Que se pueda prescindir del nombre es consecuencia de que la cabecera sea
-      `sticky` y no `fixed` (ver components/layout/Header.tsx): los elementos
-      fijos no entran en la instantánea del documento y la capa de transición
-      los tapa, que es el «z-index issue» conocido de esta API.
-
-      Tampoco se transforma ya el héroe de una página en el de la siguiente. El
-      morfeo de elemento compartido comunica continuidad cuando las dos cosas
-      son la misma —una miniatura que se agranda—, pero los héroes de dos
-      páginas distintas no lo son: transformar uno en otro se lee como que la
-      página se está recolocando. Era el mayor responsable de que la navegación
-      pareciera lenta.
-
-   2. SOLO OPACIDAD, NADA SE MUEVE. Un `translate` sobre la raíz arrastraría
-      también a la cabecera y al pie, y una barra que se desplaza en cada
-      navegación es lo que más delata a una web como lenta.
-
-   3. LA SALIDA NO ESPERA A LA ENTRADA. Antes la vieja se desvanecía durante
-      140 ms y solo entonces empezaba la entrada: 360 ms hasta ver la página
-      pedida. Ahora la instantánea vieja se queda quieta y opaca debajo mientras
-      la nueva aparece encima, de modo que el compuesto nunca baja de opaco —no
-      hay bajón de opacidad a mitad de camino, que es lo que hace parpadear a un
-      crossfade corriente— y el total son 180 ms. Por encima de 400 ms una
-      transición empieza a leerse como espera; el valor por defecto del
-      navegador es 250 ms. 180 ms suaviza el relevo sin que llegue a percibirse
-      como una pausa.
-   ========================================================================== */
-
-::view-transition-old(root) {
-  /* Quieta y opaca debajo durante toda la transición. Sin una animación
-     declarada, el navegador la retiraría de inmediato. */
-  animation: 180ms linear both vt-hold;
+/* Respuesta discreta para conexiones lentas, sin flashes en rutas precargadas. */
+.navigation-hint {
+  position: absolute;
+  inset: auto 0.625rem 0;
+  height: 2px;
+  background: var(--color-primary);
+  transform-origin: left;
+  opacity: 0;
+}
+.navigation-hint[data-pending] {
+  animation: navigation-wait 1s ease-in-out 120ms infinite;
+}
+@keyframes navigation-wait {
+  0%, 100% { opacity: 0.4; transform: scaleX(0.25); }
+  50% { opacity: 0.8; transform: scaleX(1); }
 }
 
-::view-transition-new(root) {
-  animation: 180ms var(--ease-out-quart) both vt-in;
+/* El temporizador visual y el cambio de foto comparten la misma animación.
+   Pausar conserva el progreso; no hay renders ni intervalos por fotograma. */
+.slideshow-photo {
+  opacity: 0;
+  transition: opacity 0s 600ms;
 }
-
-@keyframes vt-hold {
-  from,
-  to {
-    opacity: 1;
-  }
+.slideshow-photo[data-active] { opacity: 1; transition: opacity 600ms ease; }
+.slideshow-progress {
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: slideshow-time 7s linear forwards;
 }
-
-@keyframes vt-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* La capa de transición no recibe los clics: así llegan al documento vivo que
-   hay debajo y la página entera sigue siendo utilizable mientras dura. */
-::view-transition {
-  pointer-events: none;
-}
+@keyframes slideshow-time { to { transform: scaleX(1); } }
 
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(*),
   ::view-transition-new(*),
-  ::view-transition-group(*) {
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
-  }
+  ::view-transition-group(*) { animation: none !important; }
+  ::view-transition-old(.route-exit) { display: none; }
+  .slideshow-progress { animation: none !important; }
+  .navigation-hint[data-pending] { animation: none; opacity: 0.65; }
 }

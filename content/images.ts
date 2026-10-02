@@ -7,14 +7,28 @@ export type EditorialImage = {
   position: string;
 };
 
+export type PhotoSlide = EditorialImage & { src: string; caption: string };
+
+export const clinicPhotos = {
+  fachada: { src: "/images/clinica/fachada-20261001.jpg", alt: "Fachada de Clínica Montalvo, con sus ventanales triangulares y entrada principal", position: "center", caption: "Bienvenidos a Clínica Montalvo" },
+  exterior: { src: "/images/clinica/exterior-20261001.jpg", alt: "Vista de la clínica desde la acera, entre árboles y junto al letrero de emergencias", position: "center", caption: "Un lugar cercano, en Santa Cruz" },
+  acceso: { src: "/images/clinica/acceso-vertical-20261001.jpg", alt: "Letrero de Clínica Montalvo y emergencias junto al acceso", position: "62% 70%", caption: "Reconozca nuestro acceso" },
+  emergencias: { src: "/images/clinica/emergencias-20261001.jpg", alt: "Señal de emergencias de Clínica Montalvo sobre la acera arbolada", position: "center", caption: "Emergencias las 24 horas" },
+  equipoEntrada: { src: "/images/clinica/equipo-entrada-20261001.jpg", alt: "Integrantes del equipo de la clínica reunidos en la entrada con la bandera de Santa Cruz", position: "center", caption: "Atención que empieza con las personas" },
+  equipoCercano: { src: "/images/clinica/equipo-cercano-20261001.jpg", alt: "Integrantes del equipo de Clínica Montalvo frente a la fachada", position: "center 60%", caption: "Un equipo para acompañarle" },
+  equipoCompleto: { src: "/images/clinica/equipo-completo-20261001.jpg", alt: "Fotografía de grupo del equipo de Clínica Montalvo frente a sus instalaciones", position: "center 60%", caption: "Las personas detrás de nuestra atención" },
+} satisfies Record<string, PhotoSlide>;
+
+export const homeSlides = [clinicPhotos.fachada, clinicPhotos.exterior, {
+  src: "/images/habitaciones/silver/principal-1.jpg",
+  alt: "Suite de Clínica Montalvo con amplios ventanales y espacio para acompañantes",
+  position: "center 55%", caption: "Espacios para una estancia tranquila",
+}] satisfies PhotoSlide[];
+
+export const teamSlides = [clinicPhotos.equipoCompleto, clinicPhotos.equipoEntrada, clinicPhotos.equipoCercano];
+
 export const editorialImages = {
-  inicio: {
-    // La fachada disponible solo tiene 382 × 510 px. Usamos la fotografía
-    // de 2000 × 1500 px de Servicios hasta recibir un original más grande.
-    src: "/images/habitaciones/silver/principal-1.jpg",
-    alt: "Suite de Clínica Montalvo con amplios ventanales y espacio para acompañantes",
-    position: "center 55%",
-  },
+  inicio: clinicPhotos.fachada,
   servicios: {
     // Cada foto se usa en un solo sitio destacado: la portada lleva la otra
     // vista de la suite Silver. Esta tiene los ventanales triangulares con el
@@ -29,8 +43,8 @@ export const editorialImages = {
     position: "center",
   },
   especialidades: { src: null, alt: "", position: "center" },
-  nosotros: { src: null, alt: "", position: "center" },
-  pacientes: { src: null, alt: "", position: "center" },
+  nosotros: clinicPhotos.exterior,
+  pacientes: clinicPhotos.acceso,
   doctor: {
     src: "/images/equipo/dr-montalvo-retrato.jpg",
     alt: "Retrato del Dr. Juan Carlos Montalvo con bata blanca y medalla de reconocimiento",

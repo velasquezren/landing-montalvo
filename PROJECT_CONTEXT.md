@@ -66,7 +66,7 @@ app/
 ├── (core)
 │   ├── layout.tsx             # Root layout: Montserrat, SEO metadata, Skip-to-content, Header, Footer, WhatsAppFloat
 │   ├── page.tsx               # Portada: atención, recorridos por necesidad y vista de internación
-│   ├── template.tsx           # Entrada CSS de 180 ms al navegar; respeta movimiento reducido
+│   ├── template.tsx           # Una captura por ruta: fundido de 160 ms, cabecera estable (§28)
 │   ├── globals.css            # Tokens Tailwind v4, animaciones CSS scroll-timeline, estilos base
 │   ├── not-found.tsx          # Página 404 estilizada con listado de rutas disponibles
 │   ├── robots.ts              # Reglas de indexación SEO
@@ -112,6 +112,7 @@ app/
 * **`PageHero.tsx`**: Encabezado de página, claro (`bg-wash`), de renderizado del lado servidor (RSC). Con fotografía, la foto ocupa la parte derecha de arriba abajo y se funde con el fondo detrás del texto (`HeroMedia`, modo "side"); sin ella, las circunferencias de `Rings`. Migas de pan y metadatos al pie.
 * **`SplitHero.tsx`**: Cabecera de la página del doctor: texto a la izquierda y el retrato detrás, a la derecha, fundido con el fondo.
 * **`HeroMedia.tsx`**: Fotografía de cabecera detrás del texto, con velo claro (`.hero-scrim`). Modo "full" (portada: la foto es todo el fondo) o "side" (interiores y retrato: la foto empieza donde acaba el texto). `lcp` la pide al instante y con `fetchPriority="high"`. Se asienta al cargar y se acerca al desplazarse, sin JavaScript. Exporta `SIDE_TEXT`, el ancho de columna que garantiza que texto y foto no se pisen.
+* **`PhotoSlideshow.tsx`** (§28): Carrusel de Inicio y del equipo en Sobre nosotros. Primera imagen renderizada en el servidor, siguiente carga anticipada, fundido de 600 ms y temporizador visual de 7 s. Pausa por interacción, visibilidad y movimiento reducido. La portada usa este componente desde §28; `HeroMedia` se conserva en las cabeceras interiores y el doctor.
 * **`EditorialPhoto.tsx`**: Foto de contenido con proporción reservada, esquinas `rounded-lg` y la cortina común al entrar en pantalla (`.photo-reveal`).
 * **`ServicesGrid.tsx`**: Grilla de 4 columnas en desktop con hairlines perimetrales de 1px. No usa `overflow: hidden` para permitir animaciones CSS scroll nativas escalonadas mediante `--step`.
 * **`RoomsSection.tsx`**: Bloque interactivo de internación:
@@ -1153,3 +1154,38 @@ y Staff). Menú móvil abre al primer toque con la precarga bloqueada. Subrayado
 de pestañas medido al píxel. `tsc --noEmit`, `eslint` y `next build --webpack`
 correctos.
 
+---
+
+## 28. Navegación sin parpadeo y fotografías de la clínica — 1 de octubre de 2026
+
+Sustituye la navegación descrita en §17 y la portada fotográfica de §26.
+El detalle técnico, mapa de las siete fotos y referencias está en
+[docs/navegacion-y-fotografias-2026-10-01.md](./docs/navegacion-y-fotografias-2026-10-01.md).
+
+* **Parpadeo reproducido desde scroll profundo:** React capturaba las secciones
+  por separado, con animaciones predeterminadas de 250 ms. El CSS de `root` no
+  las gobernaba; la captura saliente pasaba por encima de la cabecera.
+* **Una captura por ruta:** `template.tsx` tiene un contenedor único y clases
+  `route-enter` / `route-exit`. Salida opaca y entrada de 160 ms. La cabecera
+  `data-site-header` ocupa una capa quieta con z-index propio. Se desactiva la
+  animación residual de `root`. El historial y las anclas siguen a cargo de Next.
+* **Navegación:** precarga de la foto principal al señalar/enfocar un enlace,
+  omitida con ahorro de datos/2G (`lib/route-images.ts`). `NavigationHint` muestra
+  actividad solo si la ruta tarda más de 120 ms. El menú móvil abre/cierra en
+  280/180 ms y devuelve el foco al botón con `preventScroll`.
+* **Inicio:** texto y acciones permanentes, fachada real como primera imagen,
+  recorrido de tres fotografías y franja con horario, emergencias y teléfono.
+* **Sobre nosotros:** exterior en la cabecera y galería de tres fotos del equipo,
+  sin identificar a personas ni atribuirles especialidades.
+* **Atención al paciente:** acceso en la cabecera y fotografía del letrero de
+  emergencias junto a Admisión. La página y el retrato del doctor se conservan.
+* **Carrusel:** barra de siete segundos, controles de 44 px, pausa, fundido de
+  600 ms y espera de decodificación antes de cambiar. Se detiene fuera de
+  pantalla, con la pestaña oculta, al pasar el puntero o usar el teclado. Con
+  movimiento reducido funciona solo manualmente. Sin dependencias nuevas.
+* **Archivos:** siete copias públicas en `public/images/clinica/`, con fecha en
+  el nombre para respetar la caché anual. Originales intactos en `Imagenes/`.
+* **Verificación:** ocho comprobaciones funcionales en Chromium y las ocho
+  rutas a 320, 390, 820 y 1440 px, sin desbordes, imágenes rotas ni errores de
+  JavaScript. Atrás/Adelante conserva las posiciones. ESLint, TypeScript y
+  compilación de producción correctos. Safari y Firefox no probados esta sesión.

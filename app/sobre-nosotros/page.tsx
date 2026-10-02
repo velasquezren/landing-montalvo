@@ -1,4 +1,5 @@
-import { editorialImages } from "@/content/images";
+import { editorialImages, teamSlides } from "@/content/images";
+import PhotoSlideshow from "@/components/sections/PhotoSlideshow";
 import type { Metadata } from "next";
 import JsonLd from "@/components/seo/JsonLd";
 import { pageMetadata } from "@/lib/metadata";
@@ -84,6 +85,18 @@ export default function SobreNosotrosPage() {
               ))}
             </dl>
           </Reveal>
+        </div>
+      </section>
+
+      <section aria-labelledby="equipo-heading" className="mb-20 bg-wash lg:mb-28">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[1.3fr_0.7fr] lg:gap-16 lg:py-20">
+          <PhotoSlideshow slides={teamSlides} label="El equipo de Clínica Montalvo" />
+          <div>
+            <p className="label text-primary">Nuestra gente</p>
+            <h2 id="equipo-heading" className="h2 mt-5">Personas que cuidan de personas.</h2>
+            <p className="lead mt-5">Detrás de cada consulta y cada estancia está el equipo de Clínica Montalvo. Conozca a quienes forman parte de nuestra institución.</p>
+            <Link href="/dr-montalvo" className="mt-7 inline-flex min-h-11 items-center gap-3 text-sm font-semibold text-primary hover:underline">Conocer al Dr. Montalvo <span aria-hidden="true">→</span></Link>
+          </div>
         </div>
       </section>
 

@@ -25,6 +25,7 @@ export default function MobileNav() {
    *  desmontarlo al cerrar se saltaría su animación de salida. */
   const [mounted, setMounted] = React.useState(false);
   const [open, setOpen] = React.useState(false);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
     const schedule =
@@ -45,6 +46,7 @@ export default function MobileNav() {
   return (
     <>
       <button
+        ref={triggerRef}
         type="button"
         aria-label="Abrir menú"
         aria-expanded={open}
@@ -58,7 +60,7 @@ export default function MobileNav() {
         <Menu className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
       </button>
 
-      {mounted && <MobileNavDrawer open={open} onOpenChange={setOpen} />}
+      {mounted && <MobileNavDrawer open={open} onOpenChange={setOpen} triggerRef={triggerRef} />}
     </>
   );
 }

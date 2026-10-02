@@ -1,4 +1,5 @@
-import { editorialImages } from "@/content/images";
+import { editorialImages, clinicPhotos } from "@/content/images";
+import EditorialPhoto from "@/components/sections/EditorialPhoto";
 import type { Metadata } from "next";
 import { pageMetadata } from "@/lib/metadata";
 import { Phone, MessageCircle } from "lucide-react";
@@ -113,6 +114,7 @@ export default function AtencionAlPacientePage() {
           </Reveal>
 
           <Reveal step={2} className="lg:col-span-5">
+            <EditorialPhoto image={clinicPhotos.emergencias} sizes="(min-width: 1024px) 480px, 100vw" className="mb-6 aspect-[3/2]" />
             <div className="border-t border-border-strong pt-6">
               <h3 className="label text-muted-foreground">Admisión</h3>
               <p className="mt-4 border-l-2 border-border-strong pl-4 text-sm leading-relaxed text-muted-foreground">

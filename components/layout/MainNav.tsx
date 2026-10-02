@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { siteConfig } from "@/content/site";
 import { cn } from "@/lib/utils";
+import NavigationHint from "@/components/layout/NavigationHint";
+import { warmRouteImage } from "@/lib/route-images";
 
 /** Una ruta es la activa si coincide, o si la actual cuelga de ella. */
 export function isActivePath(pathname: string, href: string): boolean {
@@ -31,16 +33,19 @@ export default function MainNav() {
           <Link
             key={item.href}
             href={item.href}
+            onPointerEnter={() => warmRouteImage(item.href)}
+            onFocus={() => warmRouteImage(item.href)}
             aria-current={active ? "page" : undefined}
             className={cn(
               "relative flex min-h-11 items-center px-2.5 text-[13px] font-medium transition-colors duration-150 hover:bg-wash hover:text-primary",
-              "after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:bg-primary after:transition-opacity after:duration-200",
+              "after:absolute after:inset-x-2.5 after:bottom-0 after:h-0.5 after:bg-primary",
               active
                 ? "text-primary after:opacity-100"
                 : "text-muted-foreground after:opacity-0"
             )}
           >
             {item.short}
+            <NavigationHint />
           </Link>
         );
       })}

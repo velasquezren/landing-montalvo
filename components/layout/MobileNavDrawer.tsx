@@ -18,6 +18,8 @@ import { siteConfig } from "@/content/site";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { getAppointmentLink } from "@/lib/links";
 import { cn } from "@/lib/utils";
+import NavigationHint from "@/components/layout/NavigationHint";
+import { warmRouteImage } from "@/lib/route-images";
 
 const appointment = getAppointmentLink();
 const whatsappHref = buildWhatsAppUrl("Hola, deseo realizar una consulta.");
@@ -25,6 +27,7 @@ const whatsappHref = buildWhatsAppUrl("Hola, deseo realizar una consulta.");
 interface MobileNavDrawerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  triggerRef: React.RefObject<HTMLButtonElement | null>;
 }
 
 /**
@@ -41,10 +44,10 @@ interface MobileNavDrawerProps {
  * `MobileNav.tsx`.
  *
  * El disparador no es un `SheetTrigger`, sino el botón que queda en la
- * cabecera; Radix devuelve el foco al elemento que lo tenía antes de abrir, que
- * es exactamente ese botón.
+ * cabecera; onCloseAutoFocus lo devuelve explícitamente a ese botón sin
+ * desplazar la página, también cuando el diálogo se cargó bajo demanda.
  */
-export default function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerProps) {
+export default function MobileNavDrawer({ open, onOpenChange, triggerRef }: MobileNavDrawerProps) {
   const pathname = usePathname();
 
   // Al navegar, el panel se cierra. Los enlaces ya lo cierran al pulsarlos;
@@ -65,7 +68,13 @@ export default function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerP
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent aria-describedby="mobile-nav-desc">
+      <SheetContent
+        aria-describedby="mobile-nav-desc"
+        onCloseAutoFocus={event => {
+          event.preventDefault();
+          triggerRef.current?.focus({ preventScroll: true });
+        }}
+      >
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <Logo />
           <SheetCloseButton />
@@ -84,11 +93,13 @@ export default function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerP
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={() => onOpenChange(false)}
+                onPointerDown={() => warmRouteImage(item.href)}
+                onFocus={() => warmRouteImage(item.href)}
+                onNavigate={() => onOpenChange(false)}
                 aria-current={active ? "page" : undefined}
                 style={{ "--i": i } as React.CSSProperties}
                 className={cn(
-                  "stagger-item flex items-baseline gap-3 border-b border-border py-4 transition-colors duration-150",
+                  "stagger-item relative flex items-baseline gap-3 border-b border-border py-4 transition-colors duration-150",
                   active ? "text-primary" : "text-foreground hover:text-primary"
                 )}
               >
@@ -103,6 +114,7 @@ export default function MobileNavDrawer({ open, onOpenChange }: MobileNavDrawerP
                 <span className="text-[17px] font-medium tracking-[-0.01em]">
                   {item.label}
                 </span>
+                <NavigationHint />
               </Link>
             );
           })}
