@@ -19,16 +19,16 @@ export const clinicPhotos = {
   equipoCompleto: { src: "/images/clinica/equipo-completo-20261001.jpg", alt: "Fotografía de grupo del equipo de Clínica Montalvo frente a sus instalaciones", position: "center 60%", caption: "Las personas detrás de nuestra atención" },
 } satisfies Record<string, PhotoSlide>;
 
-export const homeSlides = [clinicPhotos.fachada, clinicPhotos.exterior, {
+export const homeSlides = [{
   src: "/images/habitaciones/silver/principal-1.jpg",
   alt: "Suite de Clínica Montalvo con amplios ventanales y espacio para acompañantes",
   position: "center 55%", caption: "Espacios para una estancia tranquila",
-}] satisfies PhotoSlide[];
+}, clinicPhotos.fachada, clinicPhotos.exterior] satisfies PhotoSlide[];
 
 export const teamSlides = [clinicPhotos.equipoCompleto, clinicPhotos.equipoEntrada, clinicPhotos.equipoCercano];
 
 export const editorialImages = {
-  inicio: clinicPhotos.fachada,
+  inicio: homeSlides[0],
   servicios: {
     // Cada foto se usa en un solo sitio destacado: la portada lleva la otra
     // vista de la suite Silver. Esta tiene los ventanales triangulares con el

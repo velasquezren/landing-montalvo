@@ -1,5 +1,12 @@
 # Navegación y fotografías — 1 de octubre de 2026
 
+> Corrección posterior: Inicio recupera la composición anterior a esta revisión,
+> con la suite Silver como primera fotografía a todo el ancho detrás del texto.
+> Únicamente el fondo rota automáticamente cada ocho segundos, con fundido de
+> 1,4 s. Se retiran de Inicio la tarjeta de galería, flechas y temporizador
+> visible. La descripción del carrusel con controles de abajo sigue aplicando
+> a Sobre nosotros. Véase PROJECT_CONTEXT §29.
+
 ## Corrección de la navegación
 
 La reproducción se hizo en Chromium, sobre una compilación de producción:

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import type { EditorialImage } from "@/content/images";
 import { cn } from "@/lib/utils";
+import HeroRotation from "@/components/sections/HeroRotation";
 
 /**
  * Ancho de la columna de texto junto a una foto "side". A 1024 px la foto
@@ -27,8 +28,9 @@ export const SIDE_TEXT = "max-w-xl lg:max-w-md xl:max-w-lg";
  *
  * El movimiento vive en CSS (`.hero-media`, app/globals.css), sin JavaScript.
  */
-export default function HeroMedia({ image, sizes, lcp = false, layout = "full", className }: {
+export default function HeroMedia({ image, slides, sizes, lcp = false, layout = "full", className }: {
   image: EditorialImage & { src: string };
+  slides?: readonly (EditorialImage & { src: string })[];
   sizes: string;
   /**
    * Es el elemento más grande de la primera pantalla (LCP). Se pide al
@@ -51,7 +53,7 @@ export default function HeroMedia({ image, sizes, lcp = false, layout = "full", 
         className
       )}
     >
-      <Image
+      {slides && slides.length > 1 ? <HeroRotation images={slides} sizes={sizes} lcp={lcp} /> : <Image
         src={image.src}
         alt={image.alt}
         fill
@@ -61,10 +63,10 @@ export default function HeroMedia({ image, sizes, lcp = false, layout = "full", 
         sizes={sizes}
         className="object-cover"
         style={{ objectPosition: image.position }}
-      />
+      />}
       <div
         aria-hidden="true"
-        className={cn("hero-scrim absolute inset-0", layout === "side" && "hero-scrim--side")}
+        className={cn("hero-scrim pointer-events-none absolute inset-0 z-[2]", layout === "side" && "hero-scrim--side")}
       />
     </div>
   );

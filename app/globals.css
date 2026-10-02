@@ -735,6 +735,14 @@ body {
   transition: opacity 0s 600ms;
 }
 .slideshow-photo[data-active] { opacity: 1; transition: opacity 600ms ease; }
+.hero-rotation-photo {
+  opacity: 0;
+  transition: opacity 0s 1400ms;
+}
+.hero-rotation-photo[data-active] {
+  opacity: 1;
+  transition: opacity 1400ms ease-in-out;
+}
 .slideshow-progress {
   transform: scaleX(0);
   transform-origin: left;

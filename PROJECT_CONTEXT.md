@@ -1189,3 +1189,19 @@ El detalle técnico, mapa de las siete fotos y referencias está en
   rutas a 320, 390, 820 y 1440 px, sin desbordes, imágenes rotas ni errores de
   JavaScript. Atrás/Adelante conserva las posiciones. ESLint, TypeScript y
   compilación de producción correctos. Safari y Firefox no probados esta sesión.
+
+## 29. Portada original con fondo automático — 1 de octubre de 2026
+
+Corrección solicitada por el cliente: conservar exactamente la composición de
+Inicio anterior a §28. `app/page.tsx` se restaura desde `bd38e25`, con una sola
+adición funcional: `slides` en el `HeroMedia` existente. Regresan la imagen a
+todo el ancho detrás del texto, su velo claro, los espacios originales y la
+tarjeta flotante de emergencias. No hay tarjeta de galería, flechas, contador ni
+barra de tiempo en Inicio.
+
+`HeroRotation` muestra primero la misma suite Silver de la portada original y
+después fachada y exterior. Cambia automáticamente cada ocho segundos con un
+fundido de 1,4 s, esperando la decodificación de la siguiente fotografía. Se
+detiene fuera de pantalla, en pestañas ocultas y con movimiento reducido. Un
+control de pausa aparece solamente al enfocarlo con el teclado. El texto y
+las acciones permanecen fijos. `PhotoSlideshow` sigue en Sobre nosotros.

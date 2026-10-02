@@ -2,13 +2,14 @@
 
 > **Actualización, 1 de octubre de 2026:** se incorporaron las siete fotografías
 > de `Imagenes/` como copias versionadas en `images/clinica/`. Inicio usa ahora
-> un carrusel con fachada, exterior y suite, en un marco 16:10 junto al texto;
-> sus fotografías no necesitan dejar una mitad vacía para superponer el titular.
+> la composición original: imagen a todo el ancho detrás del texto. Su fondo
+> alterna automáticamente entre suite, fachada y exterior; conserva el velo
+> claro y la tarjeta de emergencias. Se mantienen las indicaciones de encuadre
+> para dejar espacio al titular.
 > Sobre nosotros incorpora una galería del equipo. Atención al paciente muestra
 > el acceso y el letrero de emergencias. El mapa exacto está en
 > [el informe de fotografías](../../docs/navegacion-y-fotografias-2026-10-01.md).
-> Las indicaciones de portada a todo el ancho que siguen corresponden al diseño
-> anterior. Para cambiar sus fotos, editar `homeSlides` en `content/images.ts`;
+> Para cambiar las fotos del fondo, editar `homeSlides` en `content/images.ts`;
 > para la galería institucional, `teamSlides`. El resto del pedido conserva su
 > utilidad para futuras entregas de mayor resolución.
 
