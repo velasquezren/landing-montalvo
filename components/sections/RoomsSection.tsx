@@ -25,7 +25,10 @@ export default function RoomsSection() {
   React.useEffect(() => {
     const sync = () => {
       const slug = readSlugFromHash();
-      if (slug) setActiveSlug(slug);
+      if (slug) {
+        setActiveSlug(slug);
+        document.getElementById("habitaciones")?.scrollIntoView({ block: "start" });
+      }
     };
 
     sync();

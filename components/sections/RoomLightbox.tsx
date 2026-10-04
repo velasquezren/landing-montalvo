@@ -22,5 +22,5 @@ export interface RoomLightboxProps {
  * librería: la galería no necesita conocerla para pedirle que abra una foto.
  */
 export default function RoomLightbox(props: RoomLightboxProps) {
-  return <Lightbox {...props} />;
+  return <Lightbox {...props} labels={{ Close: "Cerrar galería", Next: "Fotografía siguiente", Previous: "Fotografía anterior", "{index} of {total}": "{index} de {total}" }} />;
 }

@@ -37,14 +37,19 @@ export default function RoomGallery({ images, roomName }: RoomGalleryProps) {
    * visor se dibuja sin suspender y abre en el mismo fotograma.
    */
   const [Lightbox, setLightbox] = React.useState<LightboxComponent | null>(null);
+  const [loadError, setLoadError] = React.useState(false);
   const requested = React.useRef(false);
 
   const preloadLightbox = React.useCallback(() => {
     if (requested.current) return;
     requested.current = true;
+    setLoadError(false);
     // El componente se guarda envuelto en una función porque `setState` trata
     // una función suelta como actualizador del estado anterior.
-    void loadLightbox().then((module) => setLightbox(() => module.default));
+    void loadLightbox().then((module) => setLightbox(() => module.default)).catch(() => {
+      requested.current = false;
+      setLoadError(true);
+    });
   }, []);
 
   const openPhoto = React.useCallback(
@@ -90,6 +95,9 @@ export default function RoomGallery({ images, roomName }: RoomGalleryProps) {
           slides={slides}
         />
       )}
+      {openIndex !== null && !Lightbox && <p role={loadError ? "alert" : "status"} className="mb-3 text-sm text-muted-foreground">
+        {loadError ? <>No pudimos abrir la galería. <button type="button" onClick={preloadLightbox} className="min-h-11 px-2 text-primary underline underline-offset-4">Reintentar</button></> : "Abriendo galería…"}
+      </p>}
 
       {/* Móvil: carrusel deslizable. */}
       <SnapCarousel label={`Fotografías de ${roomName}`} className="lg:hidden">
@@ -191,7 +199,7 @@ export default function RoomGallery({ images, roomName }: RoomGalleryProps) {
       <button
         type="button"
         onClick={() => openPhoto(0)}
-        className="mt-3 inline-flex items-center gap-1.5 text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:text-primary"
+        className="mt-3 inline-flex min-h-11 items-center gap-1.5 text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:text-primary"
       >
         <Expand className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
         Ver las {images.length} fotos

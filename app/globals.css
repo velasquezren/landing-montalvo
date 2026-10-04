@@ -348,7 +348,7 @@ body {
  * las dos escalas no se pisen. */
 @keyframes hero-settle {
   from {
-    scale: 1.05;
+    scale: 1.025;
   }
   to {
     scale: none;
@@ -356,7 +356,7 @@ body {
 }
 
 .hero-media {
-  animation: hero-settle 1.8s var(--ease-out-expo) both;
+  animation: hero-settle 0.9s var(--ease-out-expo) both;
 }
 
 @keyframes hero-approach {
@@ -656,6 +656,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hero-motion-control { display: none; }
   .snap-track {
     scroll-behavior: auto;
   }

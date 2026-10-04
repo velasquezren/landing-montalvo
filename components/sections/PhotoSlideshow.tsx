@@ -33,15 +33,22 @@ export default function PhotoSlideshow({ slides, label, priority = false, classN
   const container = useRef<HTMLElement>(null);
   const requestedIndex = useRef<number | null>(null);
   const [requested, setRequested] = useState<number | null>(null);
-  const [active, setActive] = useState(0);
+  const [selected, setActive] = useState(0);
   const [loaded, setLoaded] = useState<Set<number>>(() => new Set());
   const [failed, setFailed] = useState<Set<number>>(() => new Set());
+  // Si falla incluso la primera foto, montar la siguiente permite recuperarse
+  // sin esperar un onLoad que nunca llegará. No se deja el marco vacío.
+  const active = failed.has(selected)
+    ? Math.max(0, slides.findIndex((_, index) => !failed.has(index)))
+    : selected;
   const [paused, setPaused] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [visible, setVisible] = useState(false);
   const reducedMotion = useSyncExternalStore(subscribeMotion, getReducedMotion, getServerSnapshot);
   const hidden = useSyncExternalStore(subscribeVisibility, getHidden, getServerSnapshot);
   const next = Array.from({ length: slides.length - 1 }, (_, n) => (active + n + 1) % slides.length)
+    .find(index => !failed.has(index)) ?? active;
+  const previous = Array.from({ length: slides.length - 1 }, (_, n) => (active - n - 1 + slides.length) % slides.length)
     .find(index => !failed.has(index)) ?? active;
   const running = visible && !hidden && !paused && !hovered && !reducedMotion && loaded.has(next) && next !== active;
 
@@ -67,12 +74,20 @@ export default function PhotoSlideshow({ slides, label, priority = false, classN
   }
 
   async function imageReady(index: number, image: HTMLImageElement) {
-    try { await image.decode(); } catch { return; }
+    try { await image.decode(); } catch { imageFailed(index); return; }
     setLoaded(previous => new Set(previous).add(index));
     if (requestedIndex.current === index) {
       requestedIndex.current = null;
       setRequested(null);
       setActive(index);
+    }
+  }
+
+  function imageFailed(index: number) {
+    setFailed(previous => new Set(previous).add(index));
+    if (requestedIndex.current === index) {
+      requestedIndex.current = null;
+      setRequested(null);
     }
   }
 
@@ -89,6 +104,7 @@ export default function PhotoSlideshow({ slides, label, priority = false, classN
       onFocusCapture={() => setPaused(true)}
     >
       <div className="relative isolate aspect-[16/10] overflow-hidden rounded-lg bg-wash">
+        {failed.size === slides.length && <p role="status" className="absolute inset-0 flex items-center justify-center px-8 text-center text-sm text-muted-foreground">No pudimos cargar las fotografías. Podés seguir recorriendo la página.</p>}
         {slides.map((slide, index) => {
           const mounted = index === 0 || index === active || index === requested || loaded.has(index)
             || (visible && loaded.has(active) && index === next);
@@ -115,13 +131,7 @@ export default function PhotoSlideshow({ slides, label, priority = false, classN
                 className="object-cover"
                 style={{ objectPosition: slide.position }}
                 onLoad={event => void imageReady(index, event.currentTarget)}
-                onError={() => {
-                  setFailed(previous => new Set(previous).add(index));
-                  if (requestedIndex.current === index) {
-                    requestedIndex.current = null;
-                    setRequested(null);
-                  }
-                }}
+                onError={() => imageFailed(index)}
               />
             </div>
           );
@@ -140,7 +150,7 @@ export default function PhotoSlideshow({ slides, label, priority = false, classN
             {paused ? <Play aria-hidden="true" size={15} /> : <Pause aria-hidden="true" size={15} />}
           </button>
         )}
-        <button type="button" className={buttonClass} aria-label="Fotografía anterior" onClick={() => select((active - 1 + slides.length) % slides.length)} disabled={slides.length < 2}>
+        <button type="button" className={buttonClass} aria-label="Fotografía anterior" onClick={() => select(previous)} disabled={previous === active}>
           <ChevronLeft aria-hidden="true" size={18} strokeWidth={1.5} />
         </button>
         <button type="button" className={buttonClass} aria-label="Fotografía siguiente" onClick={() => select(next)} disabled={next === active}>

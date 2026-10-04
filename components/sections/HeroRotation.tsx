@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { EditorialImage } from "@/content/images";
 
@@ -12,11 +13,16 @@ export default function HeroRotation({ images, sizes, lcp }: {
   lcp: boolean;
 }) {
   const frame = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
+  const [selected, setActive] = useState(0);
   const [ready, setReady] = useState<Set<number>>(() => new Set());
+  const [failed, setFailed] = useState<Set<number>>(() => new Set());
   const [running, setRunning] = useState(false);
   const [paused, setPaused] = useState(false);
-  const next = (active + 1) % images.length;
+  const active = failed.has(selected)
+    ? Math.max(0, images.findIndex((_, index) => !failed.has(index)))
+    : selected;
+  const next = Array.from({ length: images.length - 1 }, (_, n) => (active + n + 1) % images.length)
+    .find(index => !failed.has(index)) ?? active;
 
   useEffect(() => {
     const element = frame.current;
@@ -39,19 +45,23 @@ export default function HeroRotation({ images, sizes, lcp }: {
   }, []);
 
   useEffect(() => {
-    if (!running || paused || !ready.has(next) || images.length < 2) return;
+    if (!running || paused || !ready.has(next) || next === active) return;
     const timer = window.setTimeout(() => setActive(next), 8000);
     return () => window.clearTimeout(timer);
-  }, [running, paused, ready, next, images.length]);
+  }, [running, paused, ready, next, active]);
 
   async function decoded(index: number, image: HTMLImageElement) {
-    try { await image.decode(); } catch { return; }
+    try { await image.decode(); } catch {
+      setFailed(previous => new Set(previous).add(index));
+      return;
+    }
     setReady(previous => new Set(previous).add(index));
   }
 
   return (
     <div ref={frame} className="absolute inset-0" data-hero-rotation>
       {images.map((image, index) => {
+        if (failed.has(index)) return null;
         if (index !== 0 && index !== active && !ready.has(index)
           && !(running && ready.has(active) && index === next)) return null;
         return (
@@ -73,19 +83,21 @@ export default function HeroRotation({ images, sizes, lcp }: {
               className="object-cover"
               style={{ objectPosition: image.position }}
               onLoad={event => void decoded(index, event.currentTarget)}
+              onError={() => setFailed(previous => new Set(previous).add(index))}
             />
           </div>
         );
       })}
-      {/* Control disponible al navegar con teclado, sin añadir interfaz visual
-          de carrusel a la portada. Movimiento reducido desactiva el avance. */}
-      <button
+      {/* Un único control discreto, también utilizable desde una pantalla táctil. */}
+      {failed.size < images.length - 1 && <button
         type="button"
         onClick={() => setPaused(value => !value)}
-        className="sr-only focus:not-sr-only focus:absolute focus:right-5 focus:top-5 focus:z-10 focus:rounded-xs focus:bg-background focus:px-4 focus:py-3 focus:text-sm focus:text-primary"
+        aria-label={paused ? "Reanudar fotografías de fondo" : "Pausar fotografías de fondo"}
+        aria-pressed={paused}
+        className="hero-motion-control absolute right-5 top-5 z-10 inline-flex h-11 w-11 items-center justify-center rounded-xs border border-border-strong bg-background text-primary shadow-xs transition-colors hover:bg-wash"
       >
-        {paused ? "Reanudar fotografías de fondo" : "Pausar fotografías de fondo"}
-      </button>
+        {paused ? <Play size={17} aria-hidden="true" /> : <Pause size={17} aria-hidden="true" />}
+      </button>}
     </div>
   );
 }

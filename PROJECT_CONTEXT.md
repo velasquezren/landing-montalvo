@@ -1,5 +1,11 @@
 # Contexto del Proyecto — Clínica Montalvo
 
+> **Revisión de primera visita, 4 de octubre de 2026:** recuperación ante fotos
+> fallidas, pausa táctil discreta en portada, entrada fotográfica más breve,
+> enlaces de suites visibles y visor en español con reintento. El control de
+> portada ya no está limitado al teclado como se describe en §29.
+> Evidencia y alcance: [Revisión de la landing](docs/revision-landing-2026-10-04.md).
+
 > **Actualización local, 4 de octubre de 2026:** se añadió `/reservar`, una
 > demostración exclusivamente frontend con siete pasos y datos ficticios.
 > Los CTAs de reserva ahora apuntan a esta ruta, sustituyendo el comportamiento
