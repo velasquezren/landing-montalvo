@@ -57,9 +57,9 @@ export default function DrMontalvoPage() {
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
           <Button asChild variant="primary" size="lg">
-            <a href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>
+            <Link href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>
               Solicitar una consulta <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
-            </a>
+            </Link>
           </Button>
           <a href="#trayectoria" className="inline-flex min-h-11 items-center gap-2 text-sm font-medium text-primary hover:underline">
             Ver trayectoria <ArrowDown aria-hidden="true" className="h-4 w-4" />

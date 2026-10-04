@@ -126,13 +126,14 @@ export default function MobileNavDrawer({ open, onOpenChange, triggerRef }: Mobi
         >
           <div className="grid grid-cols-2 gap-2">
             <Button asChild size="md">
-              <a
+              <Link
                 href={appointment.href}
+                onNavigate={() => onOpenChange(false)}
                 target={appointment.external ? "_blank" : undefined}
                 rel={appointment.external ? "noopener noreferrer" : undefined}
               >
                 Reservar cita
-              </a>
+              </Link>
             </Button>
             <Button asChild size="md">
               <a href={whatsappHref} target="_blank" rel="noopener noreferrer">

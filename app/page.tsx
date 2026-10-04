@@ -39,7 +39,7 @@ export default function HomePage() {
             <p className="lead mt-6 max-w-lg">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild variant="primary" size="lg">
-                <a href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>Reservar una cita <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></a>
+                <Link href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>Reservar una cita <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" className="bg-background"><Link href="/servicios">Explorar servicios</Link></Button>
             </div>

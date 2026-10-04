@@ -1,5 +1,11 @@
 # Contexto del Proyecto — Clínica Montalvo
 
+> **Actualización local, 4 de octubre de 2026:** se añadió `/reservar`, una
+> demostración exclusivamente frontend con siete pasos y datos ficticios.
+> Los CTAs de reserva ahora apuntan a esta ruta, sustituyendo el comportamiento
+> anterior de `lib/links.ts` descrito abajo. Sin integración ni despliegue.
+> Detalles y pruebas: [Reserva pública frontend](docs/reservas-frontend.md).
+
 > **Documento de persistencia y contexto integral.**  
 > Diseñado para que cualquier desarrollador o agente de IA comprenda la arquitectura, el diseño, los componentes y el estado de la aplicación sin tener que inspeccionar los archivos uno por uno.
 

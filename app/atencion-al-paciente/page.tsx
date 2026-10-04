@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { editorialImages, clinicPhotos } from "@/content/images";
 import EditorialPhoto from "@/components/sections/EditorialPhoto";
 import type { Metadata } from "next";
@@ -95,14 +96,14 @@ export default function AtencionAlPacientePage() {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="md">
-                <a
+                <Link
                   href={appointment.href}
                   target={appointment.external ? "_blank" : undefined}
                   rel={appointment.external ? "noopener noreferrer" : undefined}
                 >
                   <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
                   Reservar cita
-                </a>
+                </Link>
               </Button>
               <Button asChild variant="ghost" size="md">
                 <a href={siteConfig.phoneTel}>

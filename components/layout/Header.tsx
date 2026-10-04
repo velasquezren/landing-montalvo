@@ -31,13 +31,13 @@ export default function Header() {
 
         <div className="flex shrink-0 items-center gap-2">
           <Button asChild size="sm" className="hidden min-h-11 sm:inline-flex">
-            <a
+            <Link
               href={appointment.href}
               target={appointment.external ? "_blank" : undefined}
               rel={appointment.external ? "noopener noreferrer" : undefined}
             >
               Reservar cita
-            </a>
+            </Link>
           </Button>
           <MobileNav />
         </div>

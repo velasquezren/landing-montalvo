@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { usePathname } from "next/navigation";
 import { WhatsAppIcon } from "@/components/brand/SocialIcons";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
 
@@ -31,6 +32,7 @@ const HREF = buildWhatsAppUrl(
 );
 
 export default function WhatsAppFloat() {
+  const pathname = usePathname();
   const linkRef = React.useRef<HTMLAnchorElement>(null);
   const sentinelRef = React.useRef<HTMLDivElement>(null);
 
@@ -48,7 +50,10 @@ export default function WhatsAppFloat() {
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, []);
+  }, [pathname]);
+
+  // El recorrido de reserva tiene sus propias acciones; no taparlas en móvil.
+  if (pathname === "/reservar") return null;
 
   return (
     <>
