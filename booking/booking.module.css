@@ -898,9 +898,12 @@
     padding-bottom: 16px;
   }
 }
-@media (max-width: 600px) {
+/* En teléfono, el recorrido forma parte de la página: una sola superficie,
+   sin panel exterior ni tarjetas anidadas que resten ancho al contenido. */
+@media (max-width: 767px) {
   .booking {
-    padding: 20px 0 50px;
+    background: var(--color-background);
+    padding: 20px 0 56px;
   }
   .container {
     padding: 0 20px;
@@ -919,7 +922,7 @@
   }
   .demoBanner {
     display: block;
-    font-size: 11px;
+    font-size: 12px;
     margin-top: 18px;
   }
   .demoBanner > span {
@@ -927,12 +930,12 @@
     margin: 0 6px 4px 0;
   }
   .progress {
-    margin: 22px 0;
+    margin: 24px 0 32px;
   }
   .progressCaption {
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
+    font-size: 12px;
     margin-bottom: 10px;
     color: var(--color-muted-foreground);
   }
@@ -947,27 +950,61 @@
     display: none;
   }
   .panel {
-    padding: 22px 18px;
-    min-height: 400px;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    min-height: 0;
+  }
+  .mobileSummary {
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--color-border-strong);
+    border-radius: 0;
+    padding: 0;
+    margin-bottom: 24px;
+  }
+  .mobileSummary > summary {
+    font-size: 13px;
+  }
+  .mobileSummary > summary svg {
+    flex-shrink: 0;
+    transition: transform 160ms ease-out;
+  }
+  .mobileSummary[open] > summary svg {
+    transform: rotate(180deg);
   }
   .panelHeader {
     margin-bottom: 22px;
   }
   .panelHeader h2 {
-    font-size: 24px;
+    font-size: 26px;
+    /* Mantener Volver visible cuando el siguiente paso enfoca este título. */
+    scroll-margin-top: calc(var(--header-h) + 118px);
   }
   .panelHeader > p:last-child {
+    font-size: 14px;
+  }
+  .back {
     font-size: 13px;
+  }
+  .search {
+    margin-bottom: 24px;
   }
   .specialties {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 0;
+    border-top: 1px solid var(--color-border-strong);
   }
   .specialty {
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) 18px;
     column-gap: 14px;
-    padding: 18px 14px;
+    padding: 22px 0;
+    border: 0;
+    border-bottom: 1px solid var(--color-border-strong);
+    border-radius: 0;
+    align-items: center;
   }
   .iconTile {
     grid-row: 1 / 3;
@@ -979,7 +1016,7 @@
   }
   .specialty > span:not(.iconTile):not(.choose) {
     grid-column: 2;
-    font-size: 11px;
+    font-size: 12px;
   }
   .choose {
     grid-column: 3;
@@ -991,26 +1028,40 @@
   .choose svg {
     flex-shrink: 0;
   }
+  .doctors {
+    gap: 0;
+    border-top: 1px solid var(--color-border-strong);
+  }
   .doctor {
-    grid-template-columns: 62px minmax(0, 1fr);
-    padding: 16px 12px;
-    gap: 12px;
+    grid-template-columns: 68px minmax(0, 1fr);
+    padding: 24px 0;
+    gap: 16px;
+    border: 0;
+    border-bottom: 1px solid var(--color-border-strong);
+    border-radius: 0;
   }
   .avatar {
     height: 82px;
   }
   .doctorInfo h3 {
-    font-size: 16px;
+    font-size: 18px;
+  }
+  .schedule {
+    font-size: 12px;
+  }
+  .price {
+    font-size: 22px;
   }
   .price span {
     display: block;
+    font-size: 12px;
   }
   .doctorAction {
     justify-content: flex-start;
   }
   .doctorAction button {
     width: 100%;
-    font-size: 12px;
+    font-size: 13px;
     padding: 0 10px;
   }
   .dateHeader {
@@ -1045,26 +1096,52 @@
     width: 100%;
     padding-left: 10px;
     padding-right: 10px;
-    font-size: 12px;
+    font-size: 14px;
   }
   .paymentTop {
-    padding: 16px 12px;
-    gap: 10px;
+    padding: 0 0 24px;
+    gap: 20px;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid var(--color-border-strong);
+    border-radius: 0;
   }
   .paymentAmount {
-    font-size: 30px;
+    font-size: 38px;
   }
   .paymentTop .eyebrow {
-    font-size: 9px;
+    font-size: 11px;
   }
   .qr {
     padding: 12px 8px;
   }
   .qr strong {
-    font-size: 9px;
+    font-size: 10px;
   }
   .fileArea {
-    padding: 16px 12px;
+    padding: 24px 0;
+    border: 0;
+    border-top: 1px solid var(--color-border-strong);
+    border-bottom: 1px solid var(--color-border-strong);
+    border-radius: 0;
+  }
+  .field label {
+    font-size: 14px;
+  }
+  .field input,
+  .field textarea {
+    padding: 14px;
+  }
+  .notice {
+    border: 0;
+    border-radius: 0;
+    padding: 26px 16px;
+  }
+  .paymentState {
+    background: transparent;
+    border: 0;
+    border-left: 2px solid var(--color-primary);
+    padding: 4px 0 4px 16px;
   }
   .finalActions {
     flex-direction: column;
