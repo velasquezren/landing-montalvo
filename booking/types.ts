@@ -1,61 +1,62 @@
-export interface Specialty {
-  id: string;
-  name: string;
-  description: string;
+import type { EspecialidadPublica, MedicoPublico, Referencia } from "../lib/crm/tipos.ts";
+
+/**
+ * Solicitud de consulta por WhatsApp.
+ *
+ * No es una reserva: la agenda real vive en el sistema de la clínica, que la
+ * landing no ve. La paciente elige especialidad, profesional, un día y una
+ * franja **preferidos**, y manda la solicitud por WhatsApp con todo escrito;
+ * la clínica confirma el horario en el chat. Por eso aquí no hay cupos ni
+ * pagos: inventar una hora libre sería prometer lo que nadie comprobó.
+ */
+
+/** Lo que la página entrega al flujo, leído del CRM en el servidor. */
+export interface CatalogoReserva {
+  especialidades: EspecialidadPublica[];
+  medicos: MedicoPublico[];
 }
-export interface Doctor {
-  id: string;
-  specialtyId: string;
-  name: string;
-  photo?: string;
-  weeklySchedule: string;
-  price: number;
-  availability: "online" | "on-request";
+
+export type EleccionEspecialidad =
+  | { tipo: "especialidad"; especialidad: Referencia }
+  /** «No sé qué especialidad necesito»: la clínica orienta. */
+  | { tipo: "orientacion" };
+
+export type EleccionProfesional =
+  | { tipo: "medico"; medico: MedicoPublico }
+  | { tipo: "indistinto" };
+
+export type Franja = "manana" | "tarde" | "indistinta";
+
+export interface PacienteSolicitud {
+  nombre: string;
+  /** Opcional: agiliza el registro, pero no hace falta para pedir una cita. */
+  carnet: string;
+  observaciones: string;
 }
-export interface TimeSlot {
-  id: string;
-  time: string;
+
+export interface SolicitudDraft {
+  especialidad: EleccionEspecialidad | null;
+  profesional: EleccionProfesional | null;
+  /** Fecha civil de Bolivia, "2026-10-07". */
+  fecha: string;
+  franja: Franja | null;
+  paciente: PacienteSolicitud;
 }
-export interface AvailabilityDay {
-  date: string;
-  label: string;
-  day: string;
-}
-export type Availability =
-  | { status: "available"; slots: TimeSlot[] }
-  | { status: "not-working" | "full"; slots: [] };
-export interface PatientDraft {
-  name: string;
-  phone: string;
-  identity: string;
-  observations: string;
-}
-export interface BookingDraft {
-  specialty: Specialty | null;
-  doctor: Doctor | null;
-  date: string;
-  slot: TimeSlot | null;
-  patient: PatientDraft;
-}
-export type PaymentStatus =
-  | "PENDIENTE_PAGO"
-  | "COMPROBANTE_ENVIADO"
-  | "EN_VERIFICACION"
-  | "PAGO_CONFIRMADO";
-export interface PaymentDraft {
-  nit: string;
-  businessName: string;
-  receipt: File | null;
-  status: PaymentStatus;
-}
-export type MockScenario = "normal" | "empty" | "error";
-export interface BookingData {
-  getSpecialties(scenario?: MockScenario): Promise<Specialty[]>;
-  getDoctors(specialtyId: string, scenario?: MockScenario): Promise<Doctor[]>;
-  getDays(): Promise<AvailabilityDay[]>;
-  getAvailability(
-    doctorId: string,
-    date: string,
-    retry?: boolean,
-  ): Promise<Availability>;
+
+/** Cómo atiende un profesional un día concreto, según su horario publicado. */
+export type EstadoDia =
+  /** Tiene horario ese día de la semana. */
+  | "atiende"
+  /** Tiene horario publicado, pero no ese día. */
+  | "no-atiende"
+  /** Ausencia publicada (vacaciones, congreso). */
+  | "ausente"
+  /** Sin horario publicado o sin profesional elegido: lo coordina la clínica. */
+  | "a-coordinar";
+
+export interface OpcionFranja {
+  franja: Franja;
+  disponible: boolean;
+  /** «08:00–12:00», o una indicación genérica si no hay horario publicado. */
+  detalle: string;
 }

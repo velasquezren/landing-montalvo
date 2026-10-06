@@ -1,164 +1,198 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createMockBookingData } from "./booking-data.ts";
-import { doctors, specialties, makeDays } from "./mock-data.ts";
+import type { MedicoPublico } from "../lib/crm/tipos.ts";
 import {
-  bookingReducer,
-  canContinue,
-  initialDraft,
-  receiptError,
-  validatePatient,
+  diaSemanaDe,
+  estadoDelDia,
+  franjasDelDia,
+  hoyEnBolivia,
+  mensajeDeSolicitud,
+  pasoAlcanzable,
+  proximosDias,
+  solicitudInicial,
+  solicitudReducer,
+  solicitudVacia,
+  validarPaciente,
 } from "./state.ts";
+import type { CatalogoReserva, SolicitudDraft } from "./types.ts";
 
-const now = new Date("2026-10-04T16:00:00Z");
-const data = createMockBookingData(0, () => now);
-const patient = {
-  name: "Paciente de ejemplo",
-  phone: "70000000",
-  identity: "1234567 SC",
-  observations: "Ejemplo",
-};
-function completeDraft() {
-  let draft = bookingReducer(initialDraft(), {
-    type: "specialty",
-    value: specialties[0],
-  });
-  draft = bookingReducer(draft, { type: "doctor", value: doctors[0] });
-  draft = bookingReducer(draft, { type: "date", value: "2026-10-05" });
-  draft = bookingReducer(draft, {
-    type: "slot",
-    value: { id: "ana-2026-10-05-09:00", time: "09:00" },
-  });
-  return bookingReducer(draft, { type: "patient", value: patient });
+const ginecologia = { slug: "ginecologia", nombre: "Ginecología" };
+const pediatria = { slug: "pediatria", nombre: "Pediatría" };
+
+function medico(datos: Partial<MedicoPublico> & { slug: string }): MedicoPublico {
+  return {
+    nombre: `Dra. ${datos.slug}`,
+    resumen: null,
+    especialidades: [ginecologia],
+    fotoUrl: null,
+    precioConsulta: 250,
+    horario: [],
+    resumenHorario: "Con cita a solicitud",
+    ausencias: [],
+    ...datos,
+  };
 }
-test("la especialidad filtra médicos y excluye otras especialidades", async () => {
-  const results = await data.getDoctors("ginecologia");
-  assert.equal(results.length, 3);
-  assert.ok(results.every((doctor) => doctor.specialtyId === "ginecologia"));
-  assert.deepEqual(await data.getDoctors("inexistente"), []);
+
+// Lunes, miércoles y viernes por la mañana; miércoles también por la tarde.
+const ana = medico({
+  slug: "ana",
+  horario: [
+    { diaSemana: 1, desde: "08:00", hasta: "12:00", lugar: null },
+    { diaSemana: 3, desde: "10:00", hasta: "13:00", lugar: null },
+    { diaSemana: 3, desde: "15:00", hasta: "18:00", lugar: null },
+    { diaSemana: 5, desde: "08:00", hasta: "11:30", lugar: null },
+  ],
+  ausencias: [{ desde: "2026-10-16", hasta: "2026-10-16", motivo: "Congreso" }],
 });
-test("cambiar especialidad invalida médico/fecha/hora y conserva paciente", () => {
-  const result = bookingReducer(completeDraft(), {
-    type: "specialty",
-    value: specialties[1],
+const sinHorario = medico({ slug: "sin-horario", precioConsulta: null });
+const pediatra = medico({ slug: "pedro", especialidades: [pediatria] });
+
+const catalogo: CatalogoReserva = {
+  especialidades: [
+    { ...ginecologia, descripcion: null, medicos: 2 },
+    { ...pediatria, descripcion: null, medicos: 1 },
+  ],
+  medicos: [ana, sinHorario, pediatra],
+};
+
+const paciente = { nombre: "María Pérez", carnet: "1234567 SC", observaciones: "Es un control." };
+
+// 2026-10-12 es lunes; 2026-10-14, miércoles; 2026-10-16, viernes.
+function completa(): SolicitudDraft {
+  let d = solicitudReducer(solicitudVacia(), {
+    tipo: "especialidad",
+    valor: { tipo: "especialidad", especialidad: ginecologia },
   });
-  assert.equal(result.doctor, null);
-  assert.equal(result.date, "");
-  assert.equal(result.slot, null);
-  assert.deepEqual(result.patient, patient);
+  d = solicitudReducer(d, { tipo: "profesional", valor: { tipo: "medico", medico: ana } });
+  d = solicitudReducer(d, { tipo: "fecha", valor: "2026-10-14" });
+  d = solicitudReducer(d, { tipo: "franja", valor: "manana" });
+  return solicitudReducer(d, { tipo: "paciente", valor: paciente });
+}
+
+test("la fecha de hoy es la de Bolivia, no la del dispositivo", () => {
+  // 03:00 UTC del 13 son las 23:00 del 12 en Bolivia (UTC−4).
+  assert.equal(hoyEnBolivia(new Date("2026-10-13T03:00:00Z")), "2026-10-12");
+  assert.equal(hoyEnBolivia(new Date("2026-10-13T04:00:00Z")), "2026-10-13");
 });
-test("cambiar médico invalida horario, pero elegir el mismo conserva selección", () => {
-  const draft = completeDraft();
-  assert.equal(
-    bookingReducer(draft, { type: "doctor", value: doctors[0] }),
-    draft,
-  );
-  const result = bookingReducer(draft, { type: "doctor", value: doctors[1] });
-  assert.equal(result.date, "");
-  assert.equal(result.slot, null);
-  assert.deepEqual(result.patient, patient);
+
+test("los próximos días cruzan meses y años sin saltarse ninguno", () => {
+  const dias = proximosDias("2026-12-25", 14);
+  assert.equal(dias.length, 14);
+  assert.equal(dias[0], "2026-12-25");
+  assert.equal(dias[7], "2027-01-01");
+  assert.equal(diaSemanaDe("2026-10-12"), 1);
+  assert.equal(diaSemanaDe("2026-10-18"), 7);
 });
-test("no permite médico de otra especialidad ni disponibilidad a solicitud", () => {
-  const draft = completeDraft();
-  assert.equal(
-    bookingReducer(draft, { type: "doctor", value: doctors[3] }),
-    draft,
-  );
-  assert.equal(
-    bookingReducer(draft, { type: "doctor", value: doctors[2] }),
-    draft,
-  );
+
+test("un día se ofrece según el horario y las ausencias publicadas", () => {
+  assert.equal(estadoDelDia(ana, "2026-10-12"), "atiende");
+  assert.equal(estadoDelDia(ana, "2026-10-13"), "no-atiende");
+  assert.equal(estadoDelDia(ana, "2026-10-16"), "ausente");
+  // Sin horario publicado o sin profesional elegido, lo coordina la clínica.
+  assert.equal(estadoDelDia(sinHorario, "2026-10-13"), "a-coordinar");
+  assert.equal(estadoDelDia(null, "2026-10-18"), "a-coordinar");
 });
-test("cambiar fecha borra la hora; sin elección explícita no continúa", async () => {
-  const draft = bookingReducer(completeDraft(), {
-    type: "date",
-    value: "2026-10-09",
-  });
-  assert.equal(draft.slot, null);
-  const availability = await data.getAvailability("ana", draft.date);
-  assert.equal(availability.status, "available");
-  assert.equal(draft.slot, null);
-  assert.equal(canContinue(2, draft), false);
-  assert.equal(canContinue(2, completeDraft()), true);
-});
-test("exige nombre, celular boliviano y carnet; admite +591 y complemento", () => {
-  assert.deepEqual(Object.keys(validatePatient(initialDraft().patient)), [
-    "name",
-    "phone",
-    "identity",
-  ]);
-  assert.deepEqual(validatePatient(patient), {});
+
+test("las franjas salen de los bloques del día, partidos a mediodía", () => {
+  const miercoles = franjasDelDia(ana, "2026-10-14");
   assert.deepEqual(
-    validatePatient({
-      ...patient,
-      phone: "+591 7000 0000",
-      identity: "1234567-1A SC",
-    }),
-    {},
+    miercoles.map((o) => [o.franja, o.disponible, o.detalle]),
+    [
+      ["manana", true, "10:00–12:00"],
+      ["tarde", true, "12:00–13:00 · 15:00–18:00"],
+      ["indistinta", true, "Primer cupo"],
+    ],
   );
-  assert.ok(validatePatient({ ...patient, phone: "123" }).phone);
-  assert.equal(
-    canContinue(3, { ...completeDraft(), patient: initialDraft().patient }),
-    false,
+  const lunes = franjasDelDia(ana, "2026-10-12");
+  assert.equal(lunes[1].disponible, false, "el lunes no atiende por la tarde");
+  assert.ok(franjasDelDia(ana, "2026-10-13").every((o) => !o.disponible), "el martes no atiende");
+  // Sin horario no se inventan horas.
+  assert.deepEqual(
+    franjasDelDia(sinHorario, "2026-10-13").map((o) => o.detalle),
+    ["Antes del mediodía", "Después del mediodía", "Primer cupo"],
   );
 });
-test("volver y reelegir opciones iguales conserva datos válidos", () => {
-  const draft = completeDraft();
-  let result = bookingReducer(draft, {
-    type: "specialty",
-    value: specialties[0],
+
+test("cambiar la especialidad invalida profesional y día, y conserva a la paciente", () => {
+  const d = solicitudReducer(completa(), {
+    tipo: "especialidad",
+    valor: { tipo: "especialidad", especialidad: pediatria },
   });
-  result = bookingReducer(result, { type: "doctor", value: doctors[0] });
-  result = bookingReducer(result, { type: "date", value: draft.date });
-  assert.deepEqual(result, draft);
+  assert.equal(d.profesional, null);
+  assert.equal(d.fecha, "");
+  assert.equal(d.franja, null);
+  assert.deepEqual(d.paciente, paciente);
 });
-test("distingue sin cupos, sin atención y profesional a solicitud", async () => {
+
+test("elegir lo mismo no cambia nada; un médico de otra especialidad se rechaza", () => {
+  const d = completa();
+  assert.equal(solicitudReducer(d, { tipo: "profesional", valor: { tipo: "medico", medico: ana } }), d);
+  assert.equal(solicitudReducer(d, { tipo: "profesional", valor: { tipo: "medico", medico: pediatra } }), d);
+});
+
+test("no se puede elegir un día en que no atiende ni una franja que no ofrece", () => {
+  const d = completa();
+  assert.equal(solicitudReducer(d, { tipo: "fecha", valor: "2026-10-13" }), d, "martes");
+  assert.equal(solicitudReducer(d, { tipo: "fecha", valor: "2026-10-16" }), d, "ausente");
+  const lunes = solicitudReducer(d, { tipo: "fecha", valor: "2026-10-12" });
+  assert.equal(lunes.franja, "manana", "el lunes también hay mañana: se conserva");
+  assert.equal(solicitudReducer(lunes, { tipo: "franja", valor: "tarde" }), lunes);
+  const tarde = solicitudReducer(d, { tipo: "franja", valor: "tarde" });
+  assert.equal(solicitudReducer(tarde, { tipo: "fecha", valor: "2026-10-12" }).franja, null);
+});
+
+test("pedir orientación deja el profesional a cargo de la clínica", () => {
+  const d = solicitudReducer(completa(), { tipo: "especialidad", valor: { tipo: "orientacion" } });
+  assert.deepEqual(d.profesional, { tipo: "indistinto" });
+  assert.equal(pasoAlcanzable(d), 2);
+});
+
+test("los datos de la paciente: nombre obligatorio, carnet opcional pero válido", () => {
+  assert.deepEqual(validarPaciente(paciente), {});
+  assert.ok(validarPaciente({ ...paciente, nombre: " Al " }).nombre);
+  assert.deepEqual(validarPaciente({ ...paciente, carnet: "" }), {});
+  assert.ok(validarPaciente({ ...paciente, carnet: "<script>" }).carnet);
+  assert.ok(validarPaciente({ ...paciente, observaciones: "x".repeat(301) }).observaciones);
+});
+
+test("el paso alcanzable avanza con lo elegido", () => {
+  assert.equal(pasoAlcanzable(solicitudVacia()), 0);
+  assert.equal(pasoAlcanzable(completa()), 4);
+  assert.equal(pasoAlcanzable({ ...completa(), paciente: { ...paciente, nombre: "" } }), 3);
+});
+
+test("un enlace con ?medico= arranca en el día, con su especialidad", () => {
+  const { draft, paso } = solicitudInicial(catalogo, { medico: "ana" });
+  assert.equal(paso, 2);
+  assert.equal(draft.profesional?.tipo === "medico" && draft.profesional.medico.slug, "ana");
+  assert.deepEqual(draft.especialidad, { tipo: "especialidad", especialidad: ginecologia });
+  assert.equal(solicitudInicial(catalogo, { especialidad: "pediatria" }).paso, 1);
+  // Un slug que ya no está publicado no rompe nada: se empieza de cero.
+  assert.equal(solicitudInicial(catalogo, { medico: "retirado" }).paso, 0);
+});
+
+test("el mensaje de WhatsApp lleva cada dato en su línea, sin huecos", () => {
   assert.equal(
-    (await data.getAvailability("ana", "2026-10-06")).status,
-    "full",
+    mensajeDeSolicitud(completa()),
+    [
+      "Hola, Clínica Montalvo. Quisiera solicitar una consulta.",
+      "",
+      "Especialidad: Ginecología",
+      "Profesional: Dra. ana",
+      "Día preferido: miércoles 14 de octubre",
+      "Horario preferido: Mañana (10:00–12:00)",
+      "Paciente: María Pérez",
+      "Carnet: 1234567 SC",
+      "Comentario: Es un control.",
+      "",
+      "Enviado desde la web. Quedo a la espera de la confirmación.",
+    ].join("\n"),
   );
-  assert.equal(
-    (await data.getAvailability("ana", "2026-10-07")).status,
-    "not-working",
-  );
-  assert.equal(
-    (await data.getAvailability("elena", "2026-10-05")).status,
-    "not-working",
-  );
-});
-test("error recuperable no devuelve lista vacía y reintento devuelve horarios", async () => {
-  await assert.rejects(data.getAvailability("ana", "2026-10-08"));
-  const result = await data.getAvailability("ana", "2026-10-08", true);
-  assert.equal(result.status, "available");
-  assert.ok(result.slots.length > 0);
-});
-test("catálogos admiten loading mediante Promise, éxito, vacío y error", async () => {
-  const pending = data.getSpecialties();
-  assert.ok(pending instanceof Promise);
-  assert.equal((await pending).length, 4);
-  assert.deepEqual(await data.getSpecialties("empty"), []);
-  await assert.rejects(data.getSpecialties("error"));
-  await assert.rejects(data.getDoctors("ginecologia", "error"));
-  assert.deepEqual(await data.getDoctors("ginecologia", "empty"), []);
-});
-test("precio disponible antes de recoger datos o confirmar", async () => {
-  const [doctor] = await data.getDoctors("ginecologia");
-  assert.equal(doctor.price, 400);
-  assert.equal(initialDraft().patient.name, "");
-});
-test("fechas civiles correctas al cruzar medianoche y fin de año en Bolivia", () => {
-  assert.equal(
-    makeDays(new Date("2027-01-01T02:00:00Z"))[0].date,
-    "2027-01-01",
-  );
-  assert.equal(
-    makeDays(new Date("2027-01-01T05:00:00Z"))[0].date,
-    "2027-01-02",
-  );
-});
-test("rechaza comprobantes vacíos, tipos inesperados y más de 5 MB", () => {
-  assert.equal(receiptError({ type: "application/pdf", size: 1024 }), "");
-  assert.ok(receiptError({ type: "text/html", size: 1024 }));
-  assert.ok(receiptError({ type: "image/png", size: 6 * 1024 * 1024 }));
-  assert.ok(receiptError({ type: "image/png", size: 0 }));
+  let orientacion = solicitudReducer(solicitudVacia(), { tipo: "especialidad", valor: { tipo: "orientacion" } });
+  orientacion = solicitudReducer(orientacion, { tipo: "fecha", valor: "2026-10-13" });
+  orientacion = solicitudReducer(orientacion, { tipo: "franja", valor: "indistinta" });
+  orientacion = solicitudReducer(orientacion, { tipo: "paciente", valor: { nombre: "Ana  Rojas", carnet: "", observaciones: "" } });
+  const mensaje = mensajeDeSolicitud(orientacion);
+  assert.match(mensaje, /Especialidad: Necesito orientación\nProfesional: Sin preferencia\nDía preferido: martes 13 de octubre\nHorario preferido: Cualquier horario\nPaciente: Ana Rojas\n\nEnviado/);
+  assert.doesNotMatch(mensaje, /Carnet|Comentario/);
 });

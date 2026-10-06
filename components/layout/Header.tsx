@@ -36,7 +36,7 @@ export default function Header() {
               target={appointment.external ? "_blank" : undefined}
               rel={appointment.external ? "noopener noreferrer" : undefined}
             >
-              Reservar cita
+              Pedir cita
             </Link>
           </Button>
           <MobileNav />

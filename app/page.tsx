@@ -9,6 +9,12 @@ import { Button } from "@/components/ui/button";
 import { editorialImages, homeSlides } from "@/content/images";
 import { siteConfig } from "@/content/site";
 import { getAppointmentLink } from "@/lib/links";
+import PromocionCard from "@/components/crm/PromocionCard";
+import { obtenerPromociones } from "@/lib/crm/api";
+import { hoyEnBolivia } from "@/lib/formato";
+
+/** Las promociones del CRM: `REVALIDAR_SEGUNDOS` de lib/crm/api.ts (Next exige un literal). */
+export const revalidate = 300;
 
 export const metadata: Metadata = pageMetadata({
   title: "Clínica Montalvo | Atención médica integral en Santa Cruz",
@@ -23,8 +29,11 @@ const pathways = [
   { title: "Preparar mi visita", body: "Encuentre información sobre citas, horarios, maternidad y seguros.", href: "/atencion-al-paciente", Icon: ClipboardList },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
   const appointment = getAppointmentLink();
+  // Las destacadas llegan primero (orden del CRM): la portada muestra tres.
+  const promociones = (await obtenerPromociones()).slice(0, 3);
+  const hoy = hoyEnBolivia();
   return (
     <>
       <section aria-labelledby="inicio-heading" className="relative overflow-hidden border-b border-border bg-wash lg:flex lg:min-h-[clamp(34rem,calc(100svh_-_var(--header-h)),46rem)] lg:items-center">
@@ -39,7 +48,7 @@ export default function HomePage() {
             <p className="lead mt-6 max-w-lg">Especialidades médicas, maternidad e internación. Encuentre la atención que necesita y dé el siguiente paso con nosotros.</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild variant="primary" size="lg">
-                <Link href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>Reservar una cita <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></Link>
+                <Link href={appointment.href} target={appointment.external ? "_blank" : undefined} rel={appointment.external ? "noopener noreferrer" : undefined}>Pedir una cita <ArrowUpRight aria-hidden="true" className="h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" className="bg-background"><Link href="/servicios">Explorar servicios</Link></Button>
             </div>
@@ -87,6 +96,22 @@ export default function HomePage() {
           ))}
         </ul>
       </section>
+
+      {promociones.length > 0 && (
+        <section aria-labelledby="promociones-heading" className="mx-auto max-w-7xl px-5 pb-16 sm:px-8 lg:pb-20">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <h2 id="promociones-heading" className="h2">Promociones vigentes</h2>
+            <Link href="/promociones" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary hover:underline">Ver todas las promociones <ArrowRight aria-hidden="true" className="h-4 w-4" /></Link>
+          </div>
+          <ul className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+            {promociones.map((promocion) => (
+              <li key={promocion.slug}>
+                <PromocionCard promocion={promocion} hoy={hoy} sizes="(min-width: 1280px) 400px, (min-width: 1024px) 31vw, (min-width: 640px) 46vw, 100vw" />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="estancia-heading" className="bg-wash">
         <div className="mx-auto grid max-w-7xl gap-8 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:items-center lg:gap-16 lg:py-20">

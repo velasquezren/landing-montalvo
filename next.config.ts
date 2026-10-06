@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+import { CRM_API_URL } from "./lib/crm/config";
+
+const crm = new URL(CRM_API_URL);
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -20,9 +23,23 @@ const nextConfig: NextConfig = {
     deviceSizes: [360, 414, 640, 768, 1024, 1280, 1536, 1920, 2560],
     imageSizes: [64, 128, 256, 384],
 
-    /* Las fotos son archivos estáticos versionados por despliegue: no cambian
-       bajo la misma URL. Un año de caché. */
+    /* Ninguna imagen cambia bajo la misma URL: las fotos del sitio cambian de
+       nombre al cambiar (PROJECT_CONTEXT §21) y las del CRM llevan un id nuevo
+       con cada archivo. Un año de caché. */
     minimumCacheTTL: 31_536_000,
+
+    /* Fotos de médicos y banners de promociones, servidos por la API pública
+       del CRM. Solo esas rutas: cualquier otra URL de ese host (o de otro)
+       responde 400 en vez de convertir el optimizador en un proxy abierto. */
+    remotePatterns: [
+      {
+        protocol: crm.protocol === "http:" ? "http" : "https",
+        hostname: crm.hostname,
+        port: crm.port,
+        pathname: "/publico/**",
+        search: "",
+      },
+    ],
   },
 
   /**

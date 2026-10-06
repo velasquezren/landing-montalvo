@@ -102,7 +102,7 @@ export default function AtencionAlPacientePage() {
                   rel={appointment.external ? "noopener noreferrer" : undefined}
                 >
                   <MessageCircle className="h-4 w-4" strokeWidth={1.75} />
-                  Reservar cita
+                  Pedir cita
                 </Link>
               </Button>
               <Button asChild variant="ghost" size="md">

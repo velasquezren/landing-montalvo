@@ -6,11 +6,12 @@
 > portada ya no está limitado al teclado como se describe en §29.
 > Evidencia y alcance: [Revisión de la landing](docs/revision-landing-2026-10-04.md).
 
-> **Actualización local, 4 de octubre de 2026:** se añadió `/reservar`, una
-> demostración exclusivamente frontend con siete pasos y datos ficticios.
-> Los CTAs de reserva ahora apuntan a esta ruta, sustituyendo el comportamiento
-> anterior de `lib/links.ts` descrito abajo. Sin integración ni despliegue.
-> Detalles y pruebas: [Reserva pública frontend](docs/reservas-frontend.md).
+> **Conexión con el CRM, 5 de octubre de 2026 (§30):** promociones, staff
+> médico, especialidades y `/reservar` leen la API pública del CRM con ISR y
+> aviso de revalidación. `/reservar` dejó de ser una demostración: es una
+> solicitud real por WhatsApp, sin cupos inventados ni pagos.
+> Detalles: [La landing y el CRM](docs/integracion-crm.md) y
+> [Solicitud de consulta](docs/reservas-frontend.md).
 
 > **Documento de persistencia y contexto integral.**  
 > Diseñado para que cualquier desarrollador o agente de IA comprenda la arquitectura, el diseño, los componentes y el estado de la aplicación sin tener que inspeccionar los archivos uno por uno.
@@ -98,7 +99,15 @@ app/
 ├── atencion-al-paciente/
 │   └── page.tsx               # Horarios, emergencias, citas, programa Plan Nacer y convenios
 ├── staff-medico/
-│   └── page.tsx               # Placeholder informativo elegante esperando directorio médico
+│   ├── page.tsx               # Directorio del CRM por especialidad (placeholder si no hay fichas)
+│   └── [slug]/page.tsx        # Ficha del médico: horario, ausencias, precio, solicitar consulta
+├── promociones/
+│   ├── page.tsx               # Promociones vigentes del CRM
+│   └── [slug]/page.tsx        # Una promoción: banner, precio, condiciones, WhatsApp con su código
+├── reservar/
+│   └── page.tsx               # Solicitud de consulta por WhatsApp (catálogo del CRM)
+├── api/revalidar/
+│   └── route.ts               # Aviso del CRM: revalidateTag al publicar o editar
 └── blog/
     └── page.tsx               # Placeholder informativo elegante esperando artículos médicos
 ```
@@ -212,11 +221,11 @@ Para cuando el cliente suministre material definitivo:
 4. **Misión y Visión**:
    * En `content/institucional.ts:130`: Redactar misión y visión cuando sean aprobadas formalmente por Dirección (actualmente no se imprimen para no inventar información).
 5. **Directorio del Staff Médico**:
-   * En `app/staff-medico/page.tsx`: Crear la lista o tarjetas de los 80 especialistas cuando se tengan sus nombres, especialidades, fotos y horarios.
+   * Resuelto en código (§30): se carga en el CRM (Directorio médico) y aparece solo. Falta cargar las fichas.
 6. **Preguntas Frecuentes de Internación**:
    * En `content/faq.ts`: Completar respuestas definitivas sobre visitas nocturnas, qué artículos llevar el día del parto y requisitos de internación.
 7. **Especialidades Médicas Restantes**:
-   * En `app/especialidades/page.tsx`: Listar las restantes áreas clínicas además de reproducción asistida.
+   * Resuelto en código (§30): las especialidades activas del CRM salen en la sección 02. Falta cargarlas.
 8. **Blog Institucional**:
    * En `app/blog/page.tsx`: Cargar primeros artículos y autores médicos.
 9. **Portada Principal (`/`)**:
@@ -1217,3 +1226,34 @@ fundido de 1,4 s, esperando la decodificación de la siguiente fotografía. Se
 detiene fuera de pantalla, en pestañas ocultas y con movimiento reducido. Un
 control de pausa aparece solamente al enfocarlo con el teclado. El texto y
 las acciones permanecen fijos. `PhotoSlideshow` sigue en Sobre nosotros.
+
+## 30. Conexión con el CRM — 5 de octubre de 2026
+
+La landing deja de tener datos de ejemplo: lo que la clínica publica en el CRM
+(Promociones y Directorio médico) aparece aquí. Detalle en
+[docs/integracion-crm.md](docs/integracion-crm.md).
+
+* **Capa de datos** `lib/crm/`: `api.ts` (solo servidor, `fetch` con
+  `revalidate: 300` y etiquetas), `normalizar.ts` (contrato en un solo archivo,
+  descarta lo incompleto) y `tipos.ts`. El navegador nunca llama al CRM.
+* **Páginas**: `/promociones` y su detalle, `/staff-medico` y la ficha de cada
+  médico, sección 02 de `/especialidades`, promociones en la portada, sitemap
+  con una URL por promoción y médico. Sin datos publicados, cada una dice la
+  verdad y no se indexa.
+* **`/reservar`**: solicitud real por WhatsApp (decisión del propietario). Cinco
+  pasos, horario y precio reales, día y franja preferidos, mensaje con cada dato
+  en su línea. Se retiraron los datos ficticios, el pago de ejemplo y el
+  paso de confirmación simulado. Ver [docs/reservas-frontend.md](docs/reservas-frontend.md).
+* **Frescura**: el CRM avisa a `/api/revalidar` al publicar o editar
+  (`revalidateTag(…, { expire: 0 })`); cada 5 minutos, como respaldo.
+* **Imágenes del CRM**: `images.remotePatterns` solo para `/publico/**` del
+  host de la API.
+* **Variables en Vercel**: `CRM_REVALIDAR_SECRETO` (aviso instantáneo) y,
+  opcional, `CRM_API_URL`.
+* **Voz**: el recorrido de `/reservar` pasa a «usted», como el resto del sitio
+  (la demostración tuteaba con voseo).
+
+Verificado: 17 pruebas (`pnpm test`), lint, tipos y build. Contra un CRM falso
+local con datos se revisó el HTML de cada ruta, los 404, el aviso (401 con
+secreto incorrecto; retirada inmediata de una promoción pausada) y que lo ya
+generado se sigue sirviendo con el CRM caído.

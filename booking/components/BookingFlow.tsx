@@ -2,389 +2,342 @@
 import { useReducer, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarDays,
-  Check,
-  CheckCheck,
-  ChevronDown,
-  Clock3,
-  ShieldCheck,
-} from "lucide-react";
+import { ArrowLeft, Check, CheckCheck, ChevronDown, MessageCircle, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { bolivianos } from "@/lib/formato";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import {
-  bookingReducer,
-  canContinue,
-  dateLabel,
-  initialDraft,
-  money,
+  NOMBRE_FRANJA,
+  fechaLarga,
+  medicoElegido,
+  medicosDe,
+  mensajeDeSolicitud,
+  pasoAlcanzable,
+  solicitudReducer,
+  solicitudVacia,
 } from "../state";
-import type { BookingDraft, PaymentDraft } from "../types";
-import { SpecialtyStep, DoctorStep, DateTimeStep } from "./SelectionSteps";
+import type { CatalogoReserva, SolicitudDraft } from "../types";
+import { DateStep, DoctorStep, SpecialtyStep } from "./SelectionSteps";
 import { PatientStep } from "./PatientStep";
-import { PaymentStep, paymentLabels } from "./PaymentStep";
 import s from "../booking.module.css";
 
-const steps = [
-  "Especialidad",
-  "Médico",
-  "Horario",
-  "Datos",
-  "Resumen",
-  "Pago",
-  "Confirmación",
+const PASOS = ["Especialidad", "Profesional", "Día", "Sus datos", "Enviar"];
+const TITULOS = [
+  "¿Qué atención necesita?",
+  "¿Con quién prefiere atenderse?",
+  "¿Qué día le conviene?",
+  "¿Quién viene a la consulta?",
+  "Revise y envíe su solicitud",
 ];
-const titles = [
-  "¿Qué atención estás buscando?",
-  "Elegí con quién atenderte",
-  "Un horario que se adapte a vos",
-  "Contanos quién viene a la consulta",
-  "Revisá los detalles con tranquilidad",
-  "Pago y comprobante",
-  "Vista previa de confirmación",
+const DESCRIPCIONES = [
+  "Elija la especialidad. Si no sabe cuál, le orientamos.",
+  "Vea el horario y el precio de la consulta antes de elegir.",
+  "Elija el día y el momento que prefiere. La hora exacta la confirma la clínica.",
+  "Solo lo necesario para registrar la solicitud.",
+  "Se abrirá WhatsApp con el mensaje ya escrito: solo tiene que enviarlo.",
 ];
-const descriptions = [
-  "Empezá por la especialidad. Te acompañamos paso a paso.",
-  "Conocé los horarios y el precio antes de elegir.",
-  "Primero el día. Después, la hora que te quede mejor.",
-  "Solo necesitamos unos pocos datos para esta reserva.",
-  "Podés corregir tu selección antes de continuar.",
-  "Una reserva y un pago son pasos distintos.",
-  "Así se verá la respuesta cuando el sistema esté conectado.",
-];
-const emptyPayment = (): PaymentDraft => ({
-  nit: "",
-  businessName: "",
-  receipt: null,
-  status: "PENDIENTE_PAGO",
-});
 
-function AppointmentSummary({
+function Resumen({
   draft,
-  edit,
-  patient = false,
+  editar,
+  conPaciente = false,
 }: {
-  draft: BookingDraft;
-  edit?: (step: number) => void;
-  patient?: boolean;
+  draft: SolicitudDraft;
+  editar?: (paso: number) => void;
+  conPaciente?: boolean;
 }) {
+  const medico = medicoElegido(draft);
+  const especialidad =
+    draft.especialidad?.tipo === "especialidad"
+      ? draft.especialidad.especialidad.nombre
+      : draft.especialidad
+        ? "Necesito orientación"
+        : "Por elegir";
+  const filas: { termino: string; valor: React.ReactNode; paso: number; accion: string; oculta?: boolean }[] = [
+    { termino: "Especialidad", valor: especialidad, paso: 0, accion: "Cambiar especialidad" },
+    {
+      termino: "Profesional",
+      valor: medico ? medico.nombre : draft.profesional ? "Sin preferencia" : "Por elegir",
+      paso: 1,
+      accion: "Cambiar profesional",
+      // Con «Necesito orientación» no hay profesional que elegir.
+      oculta: draft.especialidad?.tipo === "orientacion",
+    },
+    {
+      termino: "Día y momento",
+      valor: draft.fecha ? (
+        <>
+          <span className={s.capitalize}>{fechaLarga(draft.fecha)}</span>
+          {draft.franja && <strong className={s.summaryTime}>{NOMBRE_FRANJA[draft.franja]}</strong>}
+        </>
+      ) : (
+        "Por elegir"
+      ),
+      paso: 2,
+      accion: "Cambiar día",
+    },
+  ];
+  if (conPaciente) {
+    filas.push({ termino: "Paciente", valor: draft.paciente.nombre.trim(), paso: 3, accion: "Corregir datos" });
+  }
+
   return (
     <dl className={s.summaryList}>
-      <div>
-        <dt>Especialidad</dt>
-        <dd>{draft.specialty?.name ?? "Por elegir"}</dd>
-        {edit && (
-          <button onClick={() => edit(0)} aria-label="Cambiar especialidad">
-            Cambiar
-          </button>
-        )}
-      </div>
-      <div>
-        <dt>Profesional</dt>
-        <dd>{draft.doctor?.name ?? "Por elegir"}</dd>
-        {edit && (
-          <button onClick={() => edit(1)} aria-label="Cambiar médico">
-            Cambiar
-          </button>
-        )}
-      </div>
-      <div>
-        <dt>Fecha y hora</dt>
-        <dd className={s.capitalize}>
-          {dateLabel(draft.date)}
-          {draft.slot && (
-            <strong className={s.summaryTime}>
-              {draft.slot.time} <span>· Bolivia</span>
-            </strong>
-          )}
-        </dd>
-        {edit && (
-          <button onClick={() => edit(2)} aria-label="Cambiar fecha y hora">
-            Cambiar
-          </button>
-        )}
-      </div>
-      {patient && (
-        <div>
-          <dt>Paciente</dt>
-          <dd>
-            {draft.patient.name}
-            <span className={s.patientPhone}>{draft.patient.phone}</span>
-          </dd>
-          {edit && (
-            <button onClick={() => edit(3)} aria-label="Corregir datos">
-              Corregir
-            </button>
-          )}
+      {filas
+        .filter((f) => !f.oculta)
+        .map((fila) => (
+          <div key={fila.termino}>
+            <dt>{fila.termino}</dt>
+            <dd>{fila.valor}</dd>
+            {editar && (
+              <button type="button" onClick={() => editar(fila.paso)} aria-label={fila.accion}>
+                Cambiar
+              </button>
+            )}
+          </div>
+        ))}
+      {medico && (
+        <div className={s.summaryTotal}>
+          <dt>
+            Consulta <span>· precio publicado por la clínica</span>
+          </dt>
+          <dd>{medico.precioConsulta !== null ? bolivianos(medico.precioConsulta) : "A confirmar"}</dd>
         </div>
       )}
-      <div className={s.summaryTotal}>
-        <dt>
-          Consulta <span>· precio de ejemplo</span>
-        </dt>
-        <dd>{draft.doctor ? money(draft.doctor.price) : "Por elegir"}</dd>
-      </div>
     </dl>
   );
 }
-export default function BookingFlow() {
-  const [draft, dispatch] = useReducer(bookingReducer, undefined, initialDraft);
-  const [step, setStep] = useState(0);
-  const [payment, setPayment] = useState<PaymentDraft>(emptyPayment);
-  const heading = useRef<HTMLHeadingElement>(null);
-  function go(next: number) {
-    setStep(next);
+
+export default function BookingFlow({
+  catalogo,
+  inicial,
+}: {
+  catalogo: CatalogoReserva;
+  /** Preelección desde un enlace (`?medico=`, `?especialidad=`). */
+  inicial?: { draft: SolicitudDraft; paso: number };
+}) {
+  const [draft, dispatch] = useReducer(solicitudReducer, inicial?.draft ?? solicitudVacia());
+  const [pasoPedido, setPaso] = useState(inicial?.paso ?? 0);
+  /* Nunca se pinta un paso sin lo que necesita: si falta algo de antes
+     (p. ej. se cambió la especialidad), se muestra el primer paso incompleto. */
+  const paso = Math.min(pasoPedido, pasoAlcanzable(draft));
+  const [enviada, setEnviada] = useState(false);
+  const titulo = useRef<HTMLHeadingElement>(null);
+
+  const especialidadSlug = draft.especialidad?.tipo === "especialidad" ? draft.especialidad.especialidad.slug : null;
+  const medicos = especialidadSlug ? medicosDe(catalogo, especialidadSlug) : [];
+  /* Sin médicos publicados en la especialidad, o pidiendo orientación, no hay
+     a quién elegir: el paso «Profesional» se salta en los dos sentidos. */
+  const sinEleccionDeProfesional = draft.especialidad !== null && medicos.length === 0;
+
+  function ir(siguiente: number) {
+    setPaso(siguiente);
+    setEnviada(false);
     requestAnimationFrame(() => {
-      heading.current?.focus({ preventScroll: true });
-      heading.current?.scrollIntoView({ block: "start", behavior: "instant" });
+      titulo.current?.focus({ preventScroll: true });
+      titulo.current?.scrollIntoView({ block: "start", behavior: "instant" });
     });
   }
-  function changeSelection(action: Parameters<typeof dispatch>[0]) {
-    const changed = bookingReducer(draft, action) !== draft;
-    dispatch(action);
-    if (changed && action.type !== "patient") setPayment(emptyPayment());
+
+  function reiniciar() {
+    dispatch({ tipo: "paciente", valor: solicitudVacia().paciente });
+    setPaso(0);
+    setEnviada(false);
   }
-  const completed = step === 6;
+
+  const mensaje = paso === 4 ? mensajeDeSolicitud(draft) : "";
+  const anterior = paso === 2 && sinEleccionDeProfesional ? 0 : paso - 1;
+
   return (
-    <section className={s.booking} aria-label="Reserva de consulta">
+    <section className={s.booking} aria-label="Solicitud de consulta">
       <div className={s.container}>
         <div className={s.intro}>
-          <Link href="/" className={s.breadcrumb}>
-            Inicio <span>/</span> Reservar
-          </Link>
+          <nav aria-label="Ruta de navegación" className={s.breadcrumb}>
+            <Link href="/">Inicio</Link> <span aria-hidden="true">/</span> Solicitar una consulta
+          </nav>
           <div className={s.introRow}>
             <div>
-              <p className={s.eyebrow}>Clínica Montalvo · Reservas</p>
+              <p className={s.eyebrow}>Clínica Montalvo · Consultas</p>
               <h1>
-                Tu próxima consulta,
+                Solicite su consulta,
                 <br className={s.mobileBreak} /> paso a paso.
               </h1>
             </div>
             <p className={s.introNote}>
-              <ShieldCheck size={21} aria-hidden="true" />
-              Con claridad.
-              <br />A tu ritmo.
+              <MessageCircle size={21} aria-hidden="true" />
+              Confirmación
+              <br />
+              por WhatsApp.
             </p>
           </div>
-          <p className={s.demoBanner}>
-            <span>DEMOSTRACIÓN</span> Profesionales, horarios y precios
-            ficticios. No se crean citas ni se procesan pagos.
+          <p className={s.requestNote}>
+            <span>Solicitud</span> Usted elige el día y el momento que prefiere; la clínica le confirma la hora
+            exacta por WhatsApp.
           </p>
         </div>
-        <nav className={s.progress} aria-label="Progreso de la reserva">
+
+        <nav className={s.progress} aria-label="Progreso de la solicitud">
           <div className={s.progressCaption}>
             <span>
-              Paso {step + 1} de {steps.length}
+              Paso {paso + 1} de {PASOS.length}
             </span>
-            <strong>{steps[step]}</strong>
+            <strong>{PASOS[paso]}</strong>
           </div>
           <ol>
-            {steps.map((label, i) => (
-              <li
-                key={label}
-                aria-current={i === step ? "step" : undefined}
-                data-done={i < step}
-              >
+            {PASOS.map((etiqueta, i) => (
+              <li key={etiqueta} aria-current={i === paso ? "step" : undefined} data-done={i < paso}>
                 <span className={s.progressBar} />
                 <span className={s.stepLabel}>
-                  {i < step ? (
-                    <Check size={13} aria-hidden="true" />
-                  ) : (
-                    `${i + 1}.`
-                  )}{" "}
-                  {label}
+                  {i < paso ? <Check size={13} aria-hidden="true" /> : `${i + 1}.`} {etiqueta}
                 </span>
               </li>
             ))}
           </ol>
         </nav>
+
         <div className={s.layout}>
           <div className={s.mainColumn}>
-            {draft.specialty && step > 0 && step < 6 && (
+            {draft.especialidad && paso > 0 && (
               <details className={s.mobileSummary}>
                 <summary>
-                  <span>
-                    {draft.specialty.name}
-                    {draft.doctor && ` · ${money(draft.doctor.price)}`}
-                  </span>
+                  <span>Su selección</span>
                   <ChevronDown size={18} aria-hidden="true" />
                 </summary>
-                <AppointmentSummary draft={draft} />
+                <Resumen draft={draft} />
               </details>
             )}
+
             <div className={s.panel}>
               <div className={s.panelHeader}>
-                {step > 0 && !completed && (
-                  <button className={s.back} onClick={() => go(step - 1)}>
+                {paso > 0 && (
+                  <button type="button" className={s.back} onClick={() => ir(anterior)}>
                     <ArrowLeft size={16} aria-hidden="true" />
                     Volver
                   </button>
                 )}
                 <p className={s.eyebrow}>
-                  {String(step + 1).padStart(2, "0")} / {steps[step]}
+                  {String(paso + 1).padStart(2, "0")} / {PASOS[paso]}
                 </p>
-                <h2 ref={heading} tabIndex={-1}>
-                  {titles[step]}
+                <h2 ref={titulo} tabIndex={-1}>
+                  {TITULOS[paso]}
                 </h2>
-                <p>{descriptions[step]}</p>
+                <p>{DESCRIPCIONES[paso]}</p>
               </div>
-              <div className={s.stepBody} key={step}>
-                {step === 0 && (
+
+              <div className={s.stepBody} key={paso}>
+                {paso === 0 && (
                   <SpecialtyStep
-                    selected={draft.specialty}
-                    onSelect={(specialty) => {
-                      changeSelection({ type: "specialty", value: specialty });
-                      go(1);
-                    }}
-                  />
-                )}
-                {step === 1 && draft.specialty && (
-                  <DoctorStep
-                    key={draft.specialty.id}
-                    specialty={draft.specialty}
-                    selected={draft.doctor}
-                    onSelect={(doctor) => {
-                      changeSelection({ type: "doctor", value: doctor });
-                      go(2);
-                    }}
-                  />
-                )}
-                {step === 2 && (
-                  <DateTimeStep
-                    draft={draft}
-                    dispatch={changeSelection}
-                    onNext={() => {
-                      if (canContinue(2, draft)) go(3);
-                    }}
-                  />
-                )}
-                {step === 3 && (
-                  <PatientStep
-                    patient={draft.patient}
-                    onChange={(patient) =>
-                      dispatch({ type: "patient", value: patient })
+                    especialidades={catalogo.especialidades}
+                    seleccion={
+                      draft.especialidad?.tipo === "orientacion" ? "orientacion" : especialidadSlug
                     }
-                    onNext={() => {
-                      if (canContinue(3, draft)) go(4);
+                    onSelect={(especialidad) => {
+                      dispatch({
+                        tipo: "especialidad",
+                        valor: {
+                          tipo: "especialidad",
+                          especialidad: { slug: especialidad.slug, nombre: especialidad.nombre },
+                        },
+                      });
+                      if (medicosDe(catalogo, especialidad.slug).length === 0) {
+                        dispatch({ tipo: "profesional", valor: { tipo: "indistinto" } });
+                        ir(2);
+                      } else ir(1);
+                    }}
+                    onOrientacion={() => {
+                      dispatch({ tipo: "especialidad", valor: { tipo: "orientacion" } });
+                      ir(2);
                     }}
                   />
                 )}
-                {step === 4 && (
-                  <>
-                    <AppointmentSummary draft={draft} edit={go} patient />
-                    <p className={s.privacy}>
-                      <ShieldCheck size={18} aria-hidden="true" />
-                      Todavía no se ha reservado ningún horario. Este es un
-                      resumen de demostración.
-                    </p>
-                    <div className={s.nextRow}>
-                      <Button
-                        variant="primary"
-                        size="lg"
-                        disabled={!canContinue(4, draft)}
-                        onClick={() => go(5)}
-                      >
-                        Continuar al pago de ejemplo
-                        <ArrowRight size={16} aria-hidden="true" />
-                      </Button>
-                    </div>
-                  </>
-                )}
-                {step === 5 && (
-                  <PaymentStep
-                    price={draft.doctor?.price ?? 0}
-                    payment={payment}
-                    onChange={setPayment}
-                    onNext={() => go(6)}
+                {paso === 1 && draft.especialidad?.tipo === "especialidad" && (
+                  <DoctorStep
+                    especialidad={draft.especialidad.especialidad.nombre}
+                    medicos={medicos}
+                    seleccion={draft.profesional}
+                    onSelect={(eleccion) => {
+                      dispatch({ tipo: "profesional", valor: eleccion });
+                      ir(2);
+                    }}
                   />
                 )}
-                {completed && (
+                {paso === 2 && <DateStep draft={draft} dispatch={dispatch} onNext={() => ir(3)} />}
+                {paso === 3 && (
+                  <PatientStep
+                    paciente={draft.paciente}
+                    onChange={(paciente) => dispatch({ tipo: "paciente", valor: paciente })}
+                    onNext={() => ir(4)}
+                  />
+                )}
+                {paso === 4 && (
                   <>
-                    <div className={s.confirmation}>
-                      <span className={s.confirmIcon}>
-                        <CheckCheck
-                          size={32}
-                          strokeWidth={1.5}
-                          aria-hidden="true"
-                        />
-                      </span>
-                      <p className={s.eyebrow}>Solo vista previa</p>
-                      <h3>Reserva recibida</h3>
-                      <p>
-                        Este mensaje es un ejemplo.{" "}
-                        <strong>No existe una cita reservada.</strong>
-                      </p>
-                    </div>
-                    <AppointmentSummary draft={draft} patient />
-                    <div className={s.paymentState} role="status">
-                      <Clock3 size={20} aria-hidden="true" />
-                      <div>
-                        <strong>{paymentLabels[payment.status]}</strong>
+                    {enviada && (
+                      <div className={s.confirmation} role="status">
+                        <span className={s.confirmIcon}>
+                          <CheckCheck size={32} strokeWidth={1.5} aria-hidden="true" />
+                        </span>
+                        <h3>Se abrió WhatsApp con su solicitud</h3>
                         <p>
-                          {payment.status === "EN_VERIFICACION"
-                            ? "La revisión humana está representada como ejemplo. No se ha confirmado ningún pago."
-                            : payment.receipt
-                              ? "El comprobante sigue en tu dispositivo. Ningún archivo fue enviado."
-                              : "No se seleccionó un comprobante ni se realizó un pago."}
+                          Envíe el mensaje para completarla. <strong>La cita queda agendada cuando la clínica
+                          le confirme el horario</strong> en ese mismo chat.
                         </p>
                       </div>
-                    </div>
-                    {payment.status === "COMPROBANTE_ENVIADO" && (
-                      <Button
-                        onClick={() =>
-                          setPayment({ ...payment, status: "EN_VERIFICACION" })
-                        }
-                      >
-                        Ver ejemplo de verificación
-                      </Button>
                     )}
+                    <Resumen draft={draft} editar={enviada ? undefined : ir} conPaciente />
+                    <details className={s.preview}>
+                      <summary>Ver el mensaje que se enviará</summary>
+                      <pre>{mensaje}</pre>
+                    </details>
+                    <p className={s.privacy}>
+                      <ShieldCheck size={18} aria-hidden="true" />
+                      Todavía no hay una cita reservada: es una solicitud. La clínica responde en su horario de
+                      atención.
+                    </p>
                     <div className={s.finalActions}>
-                      <Button disabled aria-describedby="calendar-pending">
-                        <CalendarDays size={17} aria-hidden="true" />
-                        Agregar al calendario
-                      </Button>
-                      <Button asChild>
-                        <Link href="/atencion-al-paciente">
-                          Contactar con la clínica
-                        </Link>
-                      </Button>
-                      <Button asChild variant="primary">
-                        <Link href="/">Volver al inicio</Link>
+                      {enviada && (
+                        <Button type="button" onClick={reiniciar}>
+                          Hacer otra solicitud
+                        </Button>
+                      )}
+                      <Button asChild variant="primary" size="lg">
+                        <a
+                          href={buildWhatsAppUrl(mensaje)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setEnviada(true)}
+                        >
+                          <MessageCircle size={17} aria-hidden="true" />
+                          {enviada ? "Abrir WhatsApp de nuevo" : "Enviar por WhatsApp"}
+                        </a>
                       </Button>
                     </div>
-                    <p id="calendar-pending" className={s.hint}>
-                      La opción de calendario estará disponible cuando exista
-                      una reserva real.
-                    </p>
                   </>
                 )}
               </div>
             </div>
           </div>
-          <aside className={s.sidebar} aria-label="Resumen de tu selección">
+
+          <aside className={s.sidebar} aria-label="Resumen de su solicitud">
             <div className={s.sidebarCard}>
-              <p className={s.eyebrow}>Tu consulta</p>
-              <h2>{draft.specialty?.name ?? "Un espacio para cuidarte"}</h2>
-              {draft.specialty ? (
-                <AppointmentSummary draft={draft} />
+              <p className={s.eyebrow}>Su solicitud</p>
+              {draft.especialidad ? (
+                <Resumen draft={draft} />
               ) : (
                 <>
-                  <p>
-                    Elegí tu especialidad, encontrá un profesional y revisá cada
-                    detalle antes de continuar.
-                  </p>
+                  <h2>Un espacio para cuidarse</h2>
+                  <p>Elija la especialidad y el profesional, y revise cada detalle antes de enviar.</p>
                   <Image
                     className={s.clinicPhoto}
                     src="/images/clinica/exterior-20261001.jpg"
                     alt="Exterior de Clínica Montalvo"
                     width={480}
                     height={320}
+                    sizes="264px"
                   />
                   <div className={s.sidebarPoints}>
                     <p>
                       <Check size={17} aria-hidden="true" />
-                      Precio visible desde el inicio
+                      Horario y precio publicados por la clínica
                     </p>
                     <p>
                       <Check size={17} aria-hidden="true" />
@@ -392,16 +345,12 @@ export default function BookingFlow() {
                     </p>
                     <p>
                       <Check size={17} aria-hidden="true" />
-                      Podés volver y corregir
+                      Confirmación por WhatsApp
                     </p>
                   </div>
                 </>
               )}
-              <p className={s.sidebarFoot}>
-                Vista de demostración
-                <br />
-                Santa Cruz de la Sierra · Bolivia
-              </p>
+              <p className={s.sidebarFoot}>Santa Cruz de la Sierra · Bolivia</p>
             </div>
           </aside>
         </div>

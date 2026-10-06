@@ -8,6 +8,11 @@ import { Reveal } from "@/components/ui/reveal";
 import { Button } from "@/components/ui/button";
 import { fertilityTreatments, positioning } from "@/content/institucional";
 import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import Link from "next/link";
+import { obtenerEspecialidades } from "@/lib/crm/api";
+
+/** Las especialidades del CRM: `REVALIDAR_SEGUNDOS` de lib/crm/api.ts (Next exige un literal). */
+export const revalidate = 300;
 
 export const metadata: Metadata = pageMetadata({
   title: "Especialidades",
@@ -17,12 +22,15 @@ export const metadata: Metadata = pageMetadata({
 });
 
 /**
- * De las más de 30 especialidades que la clínica afirma tener, la única
- * documentada hoy es reproducción asistida, con su listado de tratamientos.
- * Se publica esa y se deja dicho qué falta, en lugar de rellenar la página con
- * un listado inventado.
+ * Reproducción asistida, con sus tratamientos, es el contenido institucional
+ * fijo. Debajo, las especialidades que la clínica publica en el CRM, con sus
+ * profesionales: la sección solo aparece cuando hay alguna, en lugar de
+ * rellenar la página con un listado inventado.
  */
-export default function EspecialidadesPage() {
+const profesionales = (n: number) => (n === 1 ? "1 profesional" : `${n} profesionales`);
+
+export default async function EspecialidadesPage() {
+  const especialidades = await obtenerEspecialidades();
   return (
     <>
       <PageHero
@@ -82,6 +90,53 @@ export default function EspecialidadesPage() {
           </Reveal>
         </div>
       </section>
+
+      {especialidades.length > 0 && (
+        <section
+          aria-labelledby="areas"
+          className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 lg:pb-28"
+        >
+          <SectionHeader
+            index="02"
+            eyebrow="Áreas médicas"
+            title="Especialidades y profesionales"
+            description="Elija una especialidad para conocer a sus médicos o solicitar una consulta."
+            id="areas"
+          />
+
+          <ul className="mt-12 grid border-l border-t border-border sm:grid-cols-2 lg:mt-16 lg:grid-cols-3">
+            {especialidades.map((especialidad) => (
+              <li
+                key={especialidad.slug}
+                className="flex flex-col border-b border-r border-border p-6 sm:p-7"
+              >
+                <h3 className="h3">{especialidad.nombre}</h3>
+                {especialidad.descripcion && (
+                  <p className="mt-2 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                    {especialidad.descripcion}
+                  </p>
+                )}
+                <div className="mt-auto flex flex-wrap items-center gap-x-5 pt-5 text-sm font-semibold">
+                  {especialidad.medicos > 0 && (
+                    <Link
+                      href={`/staff-medico#${especialidad.slug}`}
+                      className="inline-flex min-h-11 items-center text-foreground transition-colors hover:text-primary"
+                    >
+                      {profesionales(especialidad.medicos)}
+                    </Link>
+                  )}
+                  <Link
+                    href={`/reservar?especialidad=${especialidad.slug}`}
+                    className="inline-flex min-h-11 items-center text-primary hover:underline"
+                  >
+                    Solicitar consulta →
+                  </Link>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <CtaBand
         title="¿Quiere agendar una consulta?"

@@ -132,7 +132,7 @@ export default function MobileNavDrawer({ open, onOpenChange, triggerRef }: Mobi
                 target={appointment.external ? "_blank" : undefined}
                 rel={appointment.external ? "noopener noreferrer" : undefined}
               >
-                Reservar cita
+                Pedir cita
               </Link>
             </Button>
             <Button asChild size="md">
