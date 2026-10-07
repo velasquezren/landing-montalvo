@@ -1,5 +1,15 @@
 # Solicitud de consulta por WhatsApp (`/reservar`)
 
+> Desde la revisión local del 6 de octubre, este recorrido convive con el
+> prototipo recuperado de reserva y pago web. Este documento describe **la
+> solicitud actual por WhatsApp**. Ver [los dos canales](reservas-dos-canales.md)
+> para activar la demostración y conocer qué sigue pendiente de integración.
+
+La página `/reservar` abre ahora con dos accesos principales: la agenda web
+existente del VPS y WhatsApp directo. El formulario de este documento es una
+ayuda opcional, disponible cuando el CRM tiene especialidades publicadas; ya no
+es un paso obligatorio para reservar ni la única alternativa a la demostración.
+
 Sustituye, el 5 de octubre de 2026, a la demostración con datos ficticios del 4
 de octubre (siete pasos, pago de ejemplo). Decisión del propietario: **solicitud
 real por WhatsApp**, no reserva en línea.
@@ -29,11 +39,18 @@ Especialidad → Profesional → Día → Sus datos → Enviar.
   caracteres). Nada se guarda: los datos van solo en el mensaje.
 - **Enviar**: resumen editable, vista previa del mensaje y un enlace `wa.me`
   (no `window.open`: en el teléfono abre la app). Tras pulsarlo, confirmación
-  que dice la verdad: la cita queda agendada cuando la clínica la confirma.
+  que recuerda completar el envío en WhatsApp. La web no puede comprobar que
+  la app se abrió ni que el mensaje se envió; la clínica confirma la cita.
 
 `?medico=<slug>` (desde la ficha) arranca en el paso Día; `?especialidad=<slug>`
-(directorio, especialidades, promociones) en Profesional. Un slug que ya no está
-publicado se ignora.
+(directorio, especialidades, promociones) en Profesional, o directamente en Día
+si esa especialidad no tiene médicos publicados. Un slug que ya no está publicado
+se ignora. El indicador omite Profesional cuando no hay elección posible.
+
+Volver y corregir conserva los datos de la paciente. «Hacer otra solicitud»
+reinicia todo el borrador, incluida la selección de profesional, fecha y franja.
+
+Revisión local del 6 de octubre: [hallazgos y validación](revision-reservas-2026-10-06.md).
 
 ## Archivos
 

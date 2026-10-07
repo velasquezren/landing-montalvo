@@ -101,3 +101,26 @@ test("especialidades y páginas: lo que no tiene forma se rechaza", () => {
   assert.equal(paginaDe({ error: "x" }), null);
   assert.deepEqual(paginaDe({ datos: [], totalPaginas: 0 }), { datos: [], totalPaginas: 1 });
 });
+
+test("un precio vacío no se convierte en una consulta gratuita", () => {
+  for (const precioConsulta of ["", "  ", null, undefined, false]) {
+    assert.equal(medicoDe({ slug: "ana", nombre: "Dra. Ana", precioConsulta }, API)?.precioConsulta, null);
+  }
+  assert.equal(medicoDe({ slug: "ana", nombre: "Dra. Ana", precioConsulta: 0 }, API)?.precioConsulta, 0);
+});
+
+test("las fechas imposibles no llegan a las fichas ni bloquean días del calendario", () => {
+  const m = medicoDe({ slug: "ana", nombre: "Dra. Ana", ausencias: [
+    { desde: "2026-02-30", hasta: "2026-03-02" },
+    { desde: "2026-13-01", hasta: "2026-13-02" },
+    { desde: "2028-02-29", hasta: "2028-02-29" },
+  ] }, API);
+  assert.deepEqual(m?.ausencias, [{ desde: "2028-02-29", hasta: "2028-02-29", motivo: null }]);
+  assert.equal(promocionDe({ slug: "promo", codigo: "PRM-TEST", titulo: "Ejemplo", vigenteDesde: "2026-13-01" }, API), null);
+});
+
+test("las imágenes respetan también la ruta pública y los parámetros permitidos por Next", () => {
+  for (const ruta of ["/privado/foto", "/publico/../privado/foto", "/publico/foto?token=ejemplo", "/publico/foto#fragmento", "https://usuario:ejemplo@crm.ejemplo.test/publico/foto"]) {
+    assert.equal(urlDeImagen(ruta, API), null, ruta);
+  }
+});

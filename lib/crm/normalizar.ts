@@ -36,6 +36,7 @@ function texto(v: unknown): string | null {
 }
 
 function numero(v: unknown): number | null {
+  if (typeof v === "string" && v.trim() === "") return null;
   const n = typeof v === "string" ? Number(v) : v;
   return typeof n === "number" && Number.isFinite(n) && n >= 0 ? n : null;
 }
@@ -54,7 +55,9 @@ function slug(v: unknown): string | null {
 
 function fecha(v: unknown): string | null {
   const s = texto(v);
-  return s && FECHA.test(s) ? s : null;
+  if (!s || !FECHA.test(s)) return null;
+  const dia = new Date(`${s}T12:00:00Z`);
+  return Number.isFinite(dia.getTime()) && dia.toISOString().slice(0, 10) === s ? s : null;
 }
 
 /** Los elementos válidos de una lista; lo que no lo sea se descarta. */
@@ -80,7 +83,9 @@ export function urlDeImagen(v: unknown, baseApi: string): string | null {
   try {
     const base = new URL(baseApi);
     const url = new URL(s, base);
-    return url.origin === base.origin ? url.href : null;
+    // Mismo contrato que images.remotePatterns en next.config.ts.
+    return url.origin === base.origin && url.pathname.startsWith("/publico/") &&
+      !url.search && !url.hash && !url.username && !url.password ? url.href : null;
   } catch {
     return null;
   }

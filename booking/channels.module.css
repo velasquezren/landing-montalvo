@@ -1,0 +1,38 @@
+.entry {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 30px 32px 80px;
+  outline: none;
+}
+.entry[hidden] { display: none; }
+.breadcrumb { display: flex; gap: 12px; font-size: 12px; color: var(--color-muted-foreground); margin-bottom: 32px; }
+.breadcrumb a:hover { color: var(--color-primary); }
+.eyebrow { color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.entry h1 { margin: 12px 0 16px; font-size: clamp(30px, 4vw, 54px); letter-spacing: -.04em; line-height: 1.12; font-weight: 600; }
+.lead { color: var(--color-muted-foreground); max-width: 550px; font-size: 16px; line-height: 1.7; }
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; margin-top: 40px; }
+.card { display: flex; flex-direction: column; align-items: flex-start; padding-top: 24px; border-top: 1px solid var(--color-border-strong); min-width: 0; }
+.icon { display: grid; place-items: center; width: 56px; height: 56px; background: var(--color-wash); color: var(--color-primary); margin-bottom: 20px; }
+.badge { color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.card h2 { font-size: 25px; font-weight: 600; letter-spacing: -.025em; margin: 8px 0 12px; }
+.card > p:not(.badge) { font-size: 14px; line-height: 1.75; color: var(--color-muted-foreground); }
+.card ul { display: grid; gap: 12px; margin: 24px 0; font-size: 13px; }
+.card li { display: flex; align-items: flex-start; gap: 10px; }
+.card li svg { flex-shrink: 0; color: var(--color-primary); }
+.card .notice { border-left: 2px solid var(--color-border-strong); padding-left: 14px; margin-top: auto; margin-bottom: 24px; }
+.card button, .card > a { min-height: 48px; height: auto; white-space: normal; text-align: center; }
+.prepare { margin-top: 40px; padding: 24px 0; border-top: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.prepare h2 { font-size: 17px; font-weight: 600; }
+.prepare p, .demo p { margin-top: 8px; font-size: 13px; line-height: 1.7; color: var(--color-muted-foreground); }
+.prepare button { flex-shrink: 0; min-height: 48px; height: auto; white-space: normal; }
+.demo { margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--color-border-strong); }
+.demo summary { cursor: pointer; min-height: 44px; font-size: 13px; color: var(--color-muted-foreground); }
+.demo button { margin-top: 16px; }
+.loading { max-width: 1280px; margin: 0 auto; padding: 60px 24px; color: var(--color-muted-foreground); }
+@media (max-width: 767px) {
+  .entry { padding: 24px 20px 48px; }
+  .cards { grid-template-columns: minmax(0, 1fr); gap: 36px; margin-top: 28px; }
+  .card button, .card > a { width: 100%; }
+  .prepare { flex-direction: column; align-items: stretch; }
+  .lead { font-size: 14px; }
+}

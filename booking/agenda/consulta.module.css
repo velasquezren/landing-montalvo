@@ -1,0 +1,51 @@
+.root { max-width: 1280px; margin: 0 auto; padding: 30px 32px 80px; }
+.root h1 { font-size: clamp(29px, 4vw, 48px); letter-spacing: -.035em; line-height: 1.15; font-weight: 600; margin: 14px 0; outline: none; }
+.eyebrow { color: var(--color-primary); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-top: 28px; }
+.intro { max-width: 650px; font-size: 15px; line-height: 1.75; color: var(--color-muted-foreground); }
+.progress { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 28px 0 32px; font-size: 13px; color: var(--color-muted-foreground); }
+.progress li[aria-current] { color: var(--color-primary); font-weight: 700; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 48px; align-items: start; }
+.content { min-width: 0; line-height: 1.7; }
+.summary { padding: 24px; background: var(--color-wash); display: grid; gap: 16px; min-width: 0; }
+.summary svg { color: var(--color-primary); }
+.summary h2 { font-size: 20px; font-weight: 600; }
+.summary p { font-size: 13px; line-height: 1.7; color: var(--color-muted-foreground); }
+.summary a, .selection a { height: auto; min-height: 48px; white-space: normal; text-align: center; }
+.contact { text-decoration: underline; font-size: 13px; text-underline-offset: 4px; }
+.options, .doctors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.option { display: flex; justify-content: space-between; align-items: center; text-align: left; gap: 16px; padding: 20px 16px; min-height: 64px; border: 1px solid var(--color-border-strong); font-size: 15px; cursor: pointer; overflow-wrap: anywhere; }
+.option svg { flex-shrink: 0; color: var(--color-primary); }
+.option:hover, .slot:hover { background: var(--color-wash); border-color: var(--color-primary); }
+.root button:focus-visible, .root a:focus-visible, .date:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 4px; }
+.doctor { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 24px 0; border-top: 1px solid var(--color-border-strong); }
+.doctor h3 { font-weight: 600; font-size: 19px; }
+.doctor p { font-size: 13px; color: var(--color-muted-foreground); }
+.avatar { width: 48px; height: 48px; display: grid; place-items: center; background: var(--color-wash); color: var(--color-primary); font-weight: 600; border-radius: 50%; }
+.schedule { white-space: pre-line; }
+.schedule small { font-size: 12px; }
+.price { font-size: 15px; color: var(--color-primary); margin-top: auto; }
+.doctor button { min-height: 48px; height: auto; white-space: normal; text-align: left; }
+.label { display: block; font-size: 14px; font-weight: 600; margin: 0 0 12px; }
+.date { display: block; width: 100%; max-width: 360px; min-width: 0; box-sizing: border-box; min-height: 52px; padding: 12px; border: 1px solid var(--color-border-strong); font-size: 16px; background: var(--color-background); }
+.hint { font-size: 13px; color: var(--color-muted-foreground); margin: 12px 0 24px; }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 12px; }
+.slot { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--color-border-strong); min-height: 48px; padding: 12px; font-size: 16px; cursor: pointer; }
+.slot[aria-pressed=true] { background: var(--color-primary); border-color: var(--color-primary); color: white; }
+.selection { border-top: 1px solid var(--color-border); padding-top: 20px; display: grid; gap: 12px; }
+.selection p { font-size: 14px; }
+.notice { padding: 18px 0 18px 16px; border-left: 2px solid var(--color-primary); margin: 12px 0 24px; }
+.notice p { margin-bottom: 16px; }
+.textButton { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--color-primary); font-size: 13px; cursor: pointer; text-align: left; }
+.pagination { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 24px; font-size: 13px; }
+.skeleton { height: 60px; background: var(--color-wash); margin: 16px 0; animation: pulse 1.2s ease-in-out infinite alternate; }
+@keyframes pulse { to { opacity: .45; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+@media (max-width: 767px) {
+  .root { padding: 20px 20px 48px; }
+  .layout { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .summary { padding: 24px 0 0; background: transparent; border-top: 1px solid var(--color-border-strong); }
+  .options, .doctors { grid-template-columns: minmax(0, 1fr); }
+  .progress { font-size: 12px; gap: 12px; }
+  .intro { font-size: 14px; }
+  .selection a, .doctor button, .notice button { width: 100%; }
+}

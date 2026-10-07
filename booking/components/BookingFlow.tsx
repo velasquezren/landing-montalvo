@@ -111,17 +111,19 @@ function Resumen({
 export default function BookingFlow({
   catalogo,
   inicial,
+  onChangeChannel,
 }: {
   catalogo: CatalogoReserva;
   /** Preelección desde un enlace (`?medico=`, `?especialidad=`). */
   inicial?: { draft: SolicitudDraft; paso: number };
+  onChangeChannel?: () => void;
 }) {
   const [draft, dispatch] = useReducer(solicitudReducer, inicial?.draft ?? solicitudVacia());
   const [pasoPedido, setPaso] = useState(inicial?.paso ?? 0);
   /* Nunca se pinta un paso sin lo que necesita: si falta algo de antes
      (p. ej. se cambió la especialidad), se muestra el primer paso incompleto. */
   const paso = Math.min(pasoPedido, pasoAlcanzable(draft));
-  const [enviada, setEnviada] = useState(false);
+  const [aperturaIntentada, setAperturaIntentada] = useState(false);
   const titulo = useRef<HTMLHeadingElement>(null);
 
   const especialidadSlug = draft.especialidad?.tipo === "especialidad" ? draft.especialidad.especialidad.slug : null;
@@ -129,10 +131,13 @@ export default function BookingFlow({
   /* Sin médicos publicados en la especialidad, o pidiendo orientación, no hay
      a quién elegir: el paso «Profesional» se salta en los dos sentidos. */
   const sinEleccionDeProfesional = draft.especialidad !== null && medicos.length === 0;
+  const pasosVisibles = PASOS.map((etiqueta, indice) => ({ etiqueta, indice }))
+    .filter(({ indice }) => indice !== 1 || !sinEleccionDeProfesional);
+  const numeroPaso = pasosVisibles.findIndex(({ indice }) => indice === paso) + 1;
 
   function ir(siguiente: number) {
     setPaso(siguiente);
-    setEnviada(false);
+    setAperturaIntentada(false);
     requestAnimationFrame(() => {
       titulo.current?.focus({ preventScroll: true });
       titulo.current?.scrollIntoView({ block: "start", behavior: "instant" });
@@ -140,9 +145,8 @@ export default function BookingFlow({
   }
 
   function reiniciar() {
-    dispatch({ tipo: "paciente", valor: solicitudVacia().paciente });
-    setPaso(0);
-    setEnviada(false);
+    dispatch({ tipo: "reiniciar" });
+    ir(0);
   }
 
   const mensaje = paso === 4 ? mensajeDeSolicitud(draft) : "";
@@ -155,6 +159,11 @@ export default function BookingFlow({
           <nav aria-label="Ruta de navegación" className={s.breadcrumb}>
             <Link href="/">Inicio</Link> <span aria-hidden="true">/</span> Solicitar una consulta
           </nav>
+          {onChangeChannel && (
+            <Button variant="link" className="mb-5 min-h-11 whitespace-normal text-left" onClick={onChangeChannel}>
+              <ArrowLeft size={16} aria-hidden="true" />Cambiar forma de reservar
+            </Button>
+          )}
           <div className={s.introRow}>
             <div>
               <p className={s.eyebrow}>Clínica Montalvo · Consultas</p>
@@ -179,16 +188,16 @@ export default function BookingFlow({
         <nav className={s.progress} aria-label="Progreso de la solicitud">
           <div className={s.progressCaption}>
             <span>
-              Paso {paso + 1} de {PASOS.length}
+              Paso {numeroPaso} de {pasosVisibles.length}
             </span>
             <strong>{PASOS[paso]}</strong>
           </div>
           <ol>
-            {PASOS.map((etiqueta, i) => (
+            {pasosVisibles.map(({ etiqueta, indice: i }, posicion) => (
               <li key={etiqueta} aria-current={i === paso ? "step" : undefined} data-done={i < paso}>
                 <span className={s.progressBar} />
                 <span className={s.stepLabel}>
-                  {i < paso ? <Check size={13} aria-hidden="true" /> : `${i + 1}.`} {etiqueta}
+                  {i < paso ? <Check size={13} aria-hidden="true" /> : `${posicion + 1}.`} {etiqueta}
                 </span>
               </li>
             ))}
@@ -216,7 +225,7 @@ export default function BookingFlow({
                   </button>
                 )}
                 <p className={s.eyebrow}>
-                  {String(paso + 1).padStart(2, "0")} / {PASOS[paso]}
+                  {String(numeroPaso).padStart(2, "0")} / {PASOS[paso]}
                 </p>
                 <h2 ref={titulo} tabIndex={-1}>
                   {TITULOS[paso]}
@@ -271,19 +280,24 @@ export default function BookingFlow({
                 )}
                 {paso === 4 && (
                   <>
-                    {enviada && (
+                    {aperturaIntentada && (
                       <div className={s.confirmation} role="status">
                         <span className={s.confirmIcon}>
                           <CheckCheck size={32} strokeWidth={1.5} aria-hidden="true" />
                         </span>
-                        <h3>Se abrió WhatsApp con su solicitud</h3>
+                        <h3>Complete el envío en WhatsApp</h3>
                         <p>
-                          Envíe el mensaje para completarla. <strong>La cita queda agendada cuando la clínica
+                          Si WhatsApp no se abrió, use el botón para intentarlo de nuevo. Envíe el mensaje allí.
+                          <strong> La cita queda agendada cuando la clínica
                           le confirme el horario</strong> en ese mismo chat.
                         </p>
                       </div>
                     )}
-                    <Resumen draft={draft} editar={enviada ? undefined : ir} conPaciente />
+                    <Resumen
+                      draft={draft}
+                      editar={(destino) => ir(destino === 1 && sinEleccionDeProfesional ? 0 : destino)}
+                      conPaciente
+                    />
                     <details className={s.preview}>
                       <summary>Ver el mensaje que se enviará</summary>
                       <pre>{mensaje}</pre>
@@ -294,7 +308,7 @@ export default function BookingFlow({
                       atención.
                     </p>
                     <div className={s.finalActions}>
-                      {enviada && (
+                      {aperturaIntentada && (
                         <Button type="button" onClick={reiniciar}>
                           Hacer otra solicitud
                         </Button>
@@ -304,10 +318,10 @@ export default function BookingFlow({
                           href={buildWhatsAppUrl(mensaje)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={() => setEnviada(true)}
+                          onClick={() => setAperturaIntentada(true)}
                         >
                           <MessageCircle size={17} aria-hidden="true" />
-                          {enviada ? "Abrir WhatsApp de nuevo" : "Enviar por WhatsApp"}
+                          {aperturaIntentada ? "Abrir WhatsApp de nuevo" : "Continuar en WhatsApp"}
                         </a>
                       </Button>
                     </div>

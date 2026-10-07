@@ -2,7 +2,8 @@
 import { useSearchParams } from "next/navigation";
 import { solicitudInicial } from "../state";
 import type { CatalogoReserva } from "../types";
-import BookingFlow from "./BookingFlow";
+import BookingChannels from "./BookingChannels";
+import { initialChannel } from "../channels";
 
 /**
  * Lee `?medico=` / `?especialidad=` (los enlaces de la ficha de un médico y
@@ -12,15 +13,19 @@ import BookingFlow from "./BookingFlow";
  * una página estática hace que este trozo se pinte en el cliente, y así el
  * resto de la página sigue saliendo prerenderizado.
  */
-export default function ReservaConParametros({ catalogo }: { catalogo: CatalogoReserva }) {
+export default function ReservaConParametros({ catalogo, demoEnabled, agendaEnabled = false }: { catalogo: CatalogoReserva; demoEnabled: boolean; agendaEnabled?: boolean }) {
   const parametros = useSearchParams();
   const medico = parametros.get("medico");
   const especialidad = parametros.get("especialidad");
+  const canal = parametros.get("canal");
   return (
-    <BookingFlow
-      key={`${medico ?? ""}|${especialidad ?? ""}`}
+    <BookingChannels
+      key={`${medico ?? ""}|${especialidad ?? ""}|${canal ?? ""}`}
       catalogo={catalogo}
-      inicial={solicitudInicial(catalogo, { medico, especialidad })}
+      demoEnabled={demoEnabled}
+      agendaEnabled={agendaEnabled}
+      initial={initialChannel(demoEnabled, canal, Boolean(medico || especialidad), agendaEnabled)}
+      preselection={solicitudInicial(catalogo, { medico, especialidad })}
     />
   );
 }

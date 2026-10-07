@@ -15,7 +15,7 @@ sigue en `content/`.
 | `/staff-medico` | Médicos publicados, agrupados por especialidad | `PagePlaceholder`; `noindex` |
 | `/staff-medico/[slug]` | Ficha: foto, trayectoria, horario, ausencias, precio | 404 |
 | `/especialidades` | Sección 02 con las especialidades activas | La sección no aparece |
-| `/reservar` | Especialidades y médicos (catálogo de la solicitud) | Solo «Necesito orientación» |
+| `/reservar` | Especialidades y médicos para la preparación opcional del mensaje | Agenda existente y WhatsApp directo siguen accesibles |
 | `/sitemap.xml` | Una URL por promoción y por médico | Solo las páginas fijas |
 
 ## Cómo se pide (`lib/crm/`)

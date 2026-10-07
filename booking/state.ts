@@ -110,6 +110,7 @@ export function solicitudVacia(): SolicitudDraft {
 }
 
 export type AccionSolicitud =
+  | { tipo: "reiniciar" }
   | { tipo: "especialidad"; valor: EleccionEspecialidad }
   | { tipo: "profesional"; valor: EleccionProfesional }
   | { tipo: "fecha"; valor: string }
@@ -131,6 +132,8 @@ export const medicoElegido = (draft: SolicitudDraft) =>
  */
 export function solicitudReducer(state: SolicitudDraft, accion: AccionSolicitud): SolicitudDraft {
   switch (accion.tipo) {
+    case "reiniciar":
+      return solicitudVacia();
     case "especialidad": {
       if (claveEspecialidad(state.especialidad) === claveEspecialidad(accion.valor)) return state;
       return {
@@ -226,6 +229,10 @@ export function solicitudInicial(
   });
   if (medico) {
     siguiente = solicitudReducer(siguiente, { tipo: "profesional", valor: { tipo: "medico", medico } });
+    return { draft: siguiente, paso: 2 };
+  }
+  if (medicosDe(catalogo, especialidad.slug).length === 0) {
+    siguiente = solicitudReducer(siguiente, { tipo: "profesional", valor: { tipo: "indistinto" } });
     return { draft: siguiente, paso: 2 };
   }
   return { draft: siguiente, paso: 1 };

@@ -161,6 +161,22 @@ test("el paso alcanzable avanza con lo elegido", () => {
   assert.equal(pasoAlcanzable({ ...completa(), paciente: { ...paciente, nombre: "" } }), 3);
 });
 
+test("otra solicitud elimina también profesional, fecha y franja de la anterior", () => {
+  const anterior = completa();
+  const nueva = solicitudReducer(anterior, { tipo: "reiniciar" });
+  assert.deepEqual(nueva, solicitudVacia());
+  assert.equal(pasoAlcanzable(nueva), 0);
+  assert.deepEqual(anterior.paciente, paciente, "no muta el borrador anterior");
+});
+
+test("el enlace a una especialidad sin médicos omite el paso de profesional", () => {
+  const { draft, paso } = solicitudInicial({ ...catalogo, medicos: [] }, { especialidad: "pediatria" });
+  assert.equal(paso, 2);
+  assert.deepEqual(draft.profesional, { tipo: "indistinto" });
+  assert.equal(pasoAlcanzable(draft), 2);
+  assert.equal(draft.fecha, "");
+});
+
 test("un enlace con ?medico= arranca en el día, con su especialidad", () => {
   const { draft, paso } = solicitudInicial(catalogo, { medico: "ana" });
   assert.equal(paso, 2);

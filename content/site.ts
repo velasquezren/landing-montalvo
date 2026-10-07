@@ -1,3 +1,5 @@
+import { appointmentUrl } from "../lib/appointments";
+
 export type NavItem = {
   /** Etiqueta completa: menú móvil, pie de página. */
   label: string;
@@ -29,9 +31,7 @@ export const siteConfig = {
   email: "contacto@clinicamontalvo.net",
   schedule: "Lunes a domingo, 7:00 a 19:00",
   emergencies: "Emergencias, 24 horas",
-  appointmentUrl:
-    process.env.NEXT_PUBLIC_APPOINTMENT_URL ||
-    "[COMPLETAR: URL de reserva de citas en línea]",
+  appointmentUrl: appointmentUrl(process.env.NEXT_PUBLIC_APPOINTMENT_URL),
   socialLinks: {
     facebook: "https://www.facebook.com/clinicamontalvofacebook",
     instagram: "https://www.instagram.com/clinica__montalvo",
