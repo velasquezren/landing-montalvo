@@ -104,8 +104,8 @@ export function SpecialtyStep({
         >
           <p>
             {query
-              ? "Probá con otro nombre."
-              : "Podés volver a consultar en un momento."}
+              ? "Prueba con otro nombre."
+              : "Puedes volver a consultar en un momento."}
           </p>
           <Button
             onClick={() => {
@@ -299,7 +299,7 @@ export function DateTimeStep({
         <Notice title="No pudimos mostrar las fechas." retry={days.retry} />
       ) : !days.data?.length ? (
         <Notice title={`${draft.doctor?.name ?? "Este profesional"} no tiene horas libres en los próximos 30 días.`}>
-          <p>Podés elegir otro profesional o coordinar por WhatsApp.</p>
+          <p>Puedes elegir otro profesional o coordinar por WhatsApp.</p>
           <Button asChild>
             <a
               href={buildWhatsAppUrl(`Hola, quisiera una cita con ${draft.doctor?.name ?? "un profesional"}. En la web no encontré horarios libres.`)}
@@ -314,7 +314,7 @@ export function DateTimeStep({
         <>
           <div className={s.dateHeader}>
             <p>
-              Elegí una fecha <span>· hora de Bolivia</span>
+              Elige una fecha <span>· hora de Bolivia</span>
             </p>
             <div>
               <button
@@ -360,7 +360,7 @@ export function DateTimeStep({
           >
             {!draft.date ? (
               <Notice title="¿Qué día te viene bien?">
-                <p>Elegí una fecha para ver sus horarios.</p>
+                <p>Elige una fecha para ver sus horarios.</p>
               </Notice>
             ) : availability.loading ? (
               <LoadingCards />
@@ -370,18 +370,18 @@ export function DateTimeStep({
                 retry={availability.retry}
               >
                 <p>
-                  Tu selección se conserva. Volvé a intentarlo o elegí otra
+                  Tu selección se conserva. Vuelve a intentarlo o elige otra
                   fecha.
                 </p>
               </Notice>
             ) : availability.data?.status === "not-working" ? (
               <Notice title={`${draft.doctor?.name} no atiende este día.`}>
-                <p>Elegí otra fecha en el calendario.</p>
+                <p>Elige otra fecha en el calendario.</p>
               </Notice>
             ) : availability.data?.status === "full" ||
               !availability.data?.slots.length ? (
               <Notice title="No quedan horarios disponibles para esta fecha.">
-                <p>Podés consultar otro día u otro profesional.</p>
+                <p>Puedes consultar otro día u otro profesional.</p>
               </Notice>
             ) : (
               <>

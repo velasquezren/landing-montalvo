@@ -104,7 +104,7 @@ export default function PhotoSlideshow({ slides, label, priority = false, classN
       onFocusCapture={() => setPaused(true)}
     >
       <div className="relative isolate aspect-[16/10] overflow-hidden rounded-lg bg-wash">
-        {failed.size === slides.length && <p role="status" className="absolute inset-0 flex items-center justify-center px-8 text-center text-sm text-muted-foreground">No pudimos cargar las fotografías. Podés seguir recorriendo la página.</p>}
+        {failed.size === slides.length && <p role="status" className="absolute inset-0 flex items-center justify-center px-8 text-center text-sm text-muted-foreground">No pudimos cargar las fotografías. Puedes seguir recorriendo la página.</p>}
         {slides.map((slide, index) => {
           const mounted = index === 0 || index === active || index === requested || loaded.has(index)
             || (visible && loaded.has(active) && index === next);

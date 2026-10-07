@@ -10,7 +10,7 @@ import { buildWhatsAppUrl } from "@/lib/whatsapp";
 export const metadata = pageMetadata({
   title: "Reservar una consulta",
   description:
-    "Reservá tu consulta en la agenda web de Clínica Montalvo o coordiná una cita por WhatsApp. Elegí la forma que te resulte más cómoda.",
+    "Reserva tu consulta en la agenda web de Clínica Montalvo o coordina una cita por WhatsApp. Elige la forma que te resulte más cómoda.",
   path: "/reservar",
 });
 
@@ -39,7 +39,7 @@ export default async function ReservarPage() {
       </Suspense>
       <noscript>
         <p className="mx-auto max-w-7xl p-8">
-          Podés <a href={siteConfig.appointmentUrl} className="underline">abrir la agenda de citas</a> o
+          Puedes <a href={siteConfig.appointmentUrl} className="underline">abrir la agenda de citas</a> o
           {" "}<a href={buildWhatsAppUrl("Hola, quisiera reservar una cita.")} className="underline">escribirnos por WhatsApp</a>.
         </p>
       </noscript>

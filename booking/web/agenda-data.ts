@@ -49,12 +49,12 @@ async function leer(pedir: typeof fetch, ruta: string, init?: RequestInit): Prom
       signal: AbortSignal.timeout(15_000),
     });
   } catch {
-    throw new AgendaError(0, null, "No pudimos conectar con la agenda. Revisá tu conexión e intentá de nuevo.");
+    throw new AgendaError(0, null, "No pudimos conectar con la agenda. Revisa tu conexión e intenta de nuevo.");
   }
   const cuerpo: unknown = await respuesta.json().catch(() => null);
   if (!respuesta.ok) {
     const c = esObjeto(cuerpo) ? cuerpo : {};
-    const mensaje = typeof c.message === "string" ? c.message : "La agenda no respondió. Intentá de nuevo.";
+    const mensaje = typeof c.message === "string" ? c.message : "La agenda no respondió. Intenta de nuevo.";
     throw new AgendaError(respuesta.status, typeof c.codigo === "string" ? c.codigo : null, mensaje);
   }
   return cuerpo;
@@ -117,7 +117,7 @@ export function disponibilidadDeAgenda(v: unknown, medicoId: string, fecha: stri
 
 export function reservaDeAgenda(v: unknown): Reservation {
   if (!esObjeto(v) || typeof v.codigo !== "number" || typeof v.referencia !== "string" || !esObjeto(v.pago)) {
-    throw new AgendaError(502, null, "La reserva se registró, pero la respuesta fue inesperada. Escribinos por WhatsApp.");
+    throw new AgendaError(502, null, "La reserva se registró, pero la respuesta fue inesperada. Escríbenos por WhatsApp.");
   }
   const fecha = texto(v.fecha);
   const hora = texto(v.hora);

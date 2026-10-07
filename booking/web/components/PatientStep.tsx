@@ -34,7 +34,7 @@ export function PatientStep({
       }}
     >
       <p className={s.hint}>
-        Los campos con * son obligatorios. Usá los datos de quien viene a la consulta.
+        Los campos con * son obligatorios. Usa los datos de quien viene a la consulta.
       </p>
       <div className={s.formFields}>
         {(
@@ -90,7 +90,7 @@ export function PatientStep({
             />
             {field.key === "phone" && !errors.phone && (
               <p id="phone-hint" className={s.hint}>
-                Celular de Bolivia · 8 dígitos. También podés incluir +591.
+                Celular de Bolivia · 8 dígitos. También puedes incluir +591.
               </p>
             )}
             {errors[field.key] && (

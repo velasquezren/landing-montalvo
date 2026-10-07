@@ -176,7 +176,7 @@ export function PaymentStep({
       {sendError && (
         <div className={s.notice} role="alert">
           <p className={s.noticeTitle}>{sendError}</p>
-          <p>Tu reserva sigue registrada. Podés reintentar o enviar el comprobante por WhatsApp.</p>
+          <p>Tu reserva sigue registrada. Puedes reintentar o enviar el comprobante por WhatsApp.</p>
           <Button asChild>
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
               Enviar por WhatsApp

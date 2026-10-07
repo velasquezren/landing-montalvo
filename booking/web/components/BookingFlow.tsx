@@ -25,10 +25,10 @@ import s from "../booking.module.css";
 const steps = ["Especialidad", "Médico", "Horario", "Datos", "Resumen", "Pago", "Confirmación"];
 const titles = [
   "¿Qué atención estás buscando?",
-  "Elegí con quién atenderte",
-  "Un horario que se adapte a vos",
-  "Contanos quién viene a la consulta",
-  "Revisá los detalles y confirmá",
+  "Elige con quién atenderte",
+  "Un horario que se adapte a ti",
+  "Cuéntanos quién viene a la consulta",
+  "Revisa los detalles y confirma",
   "Pago y comprobante",
   "Tu reserva está registrada",
 ];
@@ -142,7 +142,7 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
     } catch (error) {
       if (error instanceof AgendaError && error.code === "HORA_NO_DISPONIBLE") {
         dispatch({ type: "slot", value: null });
-        setSlotNotice("La hora que elegiste acaba de ocuparse. Elegí otra; tus datos se conservan.");
+        setSlotNotice("La hora que elegiste acaba de ocuparse. Elige otra; tus datos se conservan.");
         go(2);
       } else {
         setSubmitError(error instanceof Error ? error.message : "No pudimos registrar la reserva.");
@@ -299,7 +299,7 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                     {submitError && (
                       <div className={s.notice} role="alert">
                         <p className={s.noticeTitle}>{submitError}</p>
-                        <p>Tu selección se conserva. Podés intentarlo de nuevo o reservar por WhatsApp.</p>
+                        <p>Tu selección se conserva. Puedes intentarlo de nuevo o reservar por WhatsApp.</p>
                         <Button asChild>
                           <a href={whatsappReserva} target="_blank" rel="noopener noreferrer">
                             Reservar por WhatsApp
@@ -359,7 +359,7 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                           {paid
                             ? "Recibimos tu comprobante. Caja lo verifica y la clínica te confirma por WhatsApp."
                             : reservation.amount !== null
-                              ? "Podés enviar el comprobante por WhatsApp citando tu número de reserva."
+                              ? "Puedes enviar el comprobante por WhatsApp citando tu número de reserva."
                               : "La clínica te contactará para confirmar el monto de la consulta."}
                         </p>
                       </div>
@@ -388,7 +388,7 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                 <AppointmentSummary draft={draft} />
               ) : (
                 <>
-                  <p>Elegí tu especialidad, encontrá un profesional y revisá cada detalle antes de confirmar.</p>
+                  <p>Elige tu especialidad, encuentra un profesional y revisa cada detalle antes de confirmar.</p>
                   <Image
                     className={s.clinicPhoto}
                     src="/images/clinica/exterior-20261001.jpg"

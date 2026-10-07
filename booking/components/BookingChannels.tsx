@@ -56,13 +56,13 @@ export default function BookingChannels({
         </nav>
         <p className={s.eyebrow}>Clínica Montalvo · A tu ritmo</p>
         <h1 id="booking-channels-title">Tu consulta,<br />a tu manera.</h1>
-        <p className={s.lead}>Reservá en línea con los horarios reales de la agenda o coordiná tu cita por WhatsApp. Vos elegís.</p>
+        <p className={s.lead}>Reserva en línea con los horarios reales de la agenda o coordina tu cita por WhatsApp. Tú eliges.</p>
         <div className={s.cards}>
           <article className={s.card}>
             <span className={s.icon}><CalendarDays size={28} strokeWidth={1.5} aria-hidden="true" /></span>
             <p className={s.badge}>Agenda de la clínica</p>
             <h2>Reservar en la web</h2>
-            <p>Elegí la especialidad, el profesional y una hora libre de la agenda. Confirmás y la cita queda registrada.</p>
+            <p>Elige la especialidad, el profesional y una hora libre de la agenda. Confirmas y la cita queda registrada.</p>
             <ul>
               <li><Check size={17} aria-hidden="true" />Horarios reales, al momento</li>
               <li><Check size={17} aria-hidden="true" />Pago por QR y comprobante en línea</li>
@@ -80,11 +80,11 @@ export default function BookingChannels({
             <span className={s.icon}><MessageCircle size={28} strokeWidth={1.5} aria-hidden="true" /></span>
             <p className={s.badge}>Atención por chat</p>
             <h2>Reservar por WhatsApp</h2>
-            <p>Escribinos directamente para coordinar tu cita. No hace falta completar un formulario antes.</p>
+            <p>Escríbenos directamente para coordinar tu cita. No hace falta completar un formulario antes.</p>
             <ul>
               <li><Check size={17} aria-hidden="true" />Consultá por el profesional que buscás</li>
               <li><Check size={17} aria-hidden="true" />Coordiná día y hora con recepción</li>
-              <li><Check size={17} aria-hidden="true" />Pedí orientación si la necesitás</li>
+              <li><Check size={17} aria-hidden="true" />Pide orientación si la necesitas</li>
             </ul>
             <p className={s.notice}>La cita queda reservada cuando la clínica te confirma el horario en el chat.</p>
             <Button asChild size="lg">
@@ -98,7 +98,7 @@ export default function BookingChannels({
           <div className={s.prepare}>
             <div>
               <h2>¿Preferís preparar la solicitud?</h2>
-              <p>Elegí profesional y día antes de escribir. Es opcional; recepción confirmará el horario.</p>
+              <p>Elige profesional y día antes de escribir. Es opcional; recepción confirmará el horario.</p>
             </div>
             <Button onClick={() => choose("whatsapp")}>Preparar mi solicitud<ArrowRight size={17} aria-hidden="true" /></Button>
           </div>

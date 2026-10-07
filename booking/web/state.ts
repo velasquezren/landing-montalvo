@@ -59,7 +59,7 @@ export function bookingReducer(
 export function validatePatient(patient: PatientDraft) {
   const errors: Partial<Record<keyof PatientDraft, string>> = {};
   if (patient.name.trim().length < 3)
-    errors.name = "Escribí tu nombre completo.";
+    errors.name = "Escribe tu nombre completo.";
   const phone = patient.phone.replace(/[\s()-]/g, "").replace(/^\+591/, "");
   if (!/^[67]\d{7}$/.test(phone))
     errors.phone =
@@ -82,10 +82,10 @@ export function canContinue(step: number, draft: BookingDraft) {
 }
 export function receiptError(file: Pick<File, "size" | "type">) {
   if (!["image/jpeg", "image/png", "image/webp"].includes(file.type))
-    return "Elegí una foto o captura del comprobante (JPG, PNG o WebP).";
+    return "Elige una foto o captura del comprobante (JPG, PNG o WebP).";
   if (file.size > 5 * 1024 * 1024)
     return "El archivo debe pesar como máximo 5 MB.";
-  if (file.size === 0) return "El archivo está vacío. Elegí otro comprobante.";
+  if (file.size === 0) return "El archivo está vacío. Elige otro comprobante.";
   return "";
 }
 export const money = (amount: number) =>

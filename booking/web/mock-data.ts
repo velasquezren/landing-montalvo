@@ -20,7 +20,7 @@ export const specialties: Specialty[] = [
   {
     id: "ecografia",
     name: "Ecografía",
-    description: "Elegí al profesional para tu consulta.",
+    description: "Elige al profesional para tu consulta.",
   },
 ];
 export const doctors: Doctor[] = [
