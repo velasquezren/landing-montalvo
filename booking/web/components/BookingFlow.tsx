@@ -165,14 +165,17 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
     <section className={s.booking} aria-label="Reserva de consulta">
       <div className={s.container}>
         <div className={s.intro}>
-          <Link href="/" className={s.breadcrumb}>
-            Inicio <span>/</span> Reservar
-          </Link>
-          {onChangeChannel && !locked && (
-            <Button variant="link" className="mb-5 min-h-11 whitespace-normal text-left" onClick={onChangeChannel}>
-              <ArrowLeft size={16} aria-hidden="true" />Cambiar forma de reservar
-            </Button>
-          )}
+          <div className={s.introTop}>
+            <Link href="/" className={s.breadcrumb}>
+              Inicio <span>/</span> Reservar
+            </Link>
+            {onChangeChannel && !locked && (
+              <button type="button" className={s.changeChannel} onClick={onChangeChannel}>
+                <ArrowLeft size={14} aria-hidden="true" />
+                Otra forma de reservar
+              </button>
+            )}
+          </div>
           <div className={s.introRow}>
             <div>
               <p className={s.eyebrow}>Clínica Montalvo · Reservas</p>

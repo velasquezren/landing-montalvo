@@ -61,7 +61,8 @@ export type ReservationStatus = "PENDIENTE" | "PAGADO";
 export interface BookingData {
   getSpecialties(): Promise<Specialty[]>;
   getDoctors(specialtyId: string): Promise<Doctor[]>;
-  getDays(): Promise<AvailabilityDay[]>;
+  /** Solo los días con al menos una hora libre para ese médico. */
+  getDays(doctorId: string): Promise<AvailabilityDay[]>;
   getAvailability(
     doctorId: string,
     date: string,

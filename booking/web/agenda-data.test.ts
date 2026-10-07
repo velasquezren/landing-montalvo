@@ -5,7 +5,7 @@ import {
   createAgendaBookingData,
   disponibilidadDeAgenda,
   medicoDeAgenda,
-  proximosDias,
+  diasDeAgenda,
   reservaDeAgenda,
 } from "./agenda-data.ts";
 import type { BookingDraft } from "./types.ts";
@@ -32,10 +32,20 @@ test("la disponibilidad distingue sin atención, sin cupos y horas libres", () =
   assert.throws(() => disponibilidadDeAgenda({ ...base, estado: "DISPONIBLE" }, "83", "2026-10-08"));
 });
 
-test("los días salen en la fecha civil de Bolivia", () => {
-  // 03:00 UTC del 8 son las 23:00 del 7 en Bolivia.
-  assert.equal(proximosDias(new Date("2026-10-08T03:00:00Z"))[0].date, "2026-10-07");
-  assert.equal(proximosDias(new Date("2026-10-08T03:00:00Z")).length, 14);
+test("solo se ofrecen los días que la agenda da con horas libres", () => {
+  assert.deepEqual(diasDeAgenda({ medicoId: "20", fechas: ["2026-10-08", "basura", "2026-10-09"] }, "20"), [
+    { date: "2026-10-08", label: "jue", day: "8" },
+    { date: "2026-10-09", label: "vie", day: "9" },
+  ]);
+  assert.throws(() => diasDeAgenda({ medicoId: "21", fechas: [] }, "20"));
+});
+
+test("la foto del médico llega como URL absoluta del CRM", () => {
+  const base = { id: "20", especialidadId: "abc", nombre: "Dra. Lady", horarioInformativo: null, modalidad: "ONLINE", precio: null };
+  assert.match(medicoDeAgenda({ ...base, fotoUrl: "/publico/agenda/fotos/20/0123456789abcdef" })?.photo ?? "", /^https:\/\/.+\/publico\/agenda\/fotos\/20\/0123456789abcdef$/);
+  assert.equal(medicoDeAgenda({ ...base, fotoUrl: "https://crm.107.175.132.15.nip.io/publico/agenda/fotos/20/x" })?.photo, "https://crm.107.175.132.15.nip.io/publico/agenda/fotos/20/x");
+  assert.equal(medicoDeAgenda({ ...base, fotoUrl: "javascript:alert(1)" })?.photo, undefined);
+  assert.equal(medicoDeAgenda({ ...base, fotoUrl: null })?.photo, undefined);
 });
 
 test("la reserva se lee con su número, referencia y monto", () => {

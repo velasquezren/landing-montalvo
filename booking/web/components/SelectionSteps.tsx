@@ -180,12 +180,8 @@ export function DoctorStep({
             >
               <div className={s.avatar}>
                 {doctor.photo ? (
-                  <Image
-                    src={doctor.photo}
-                    alt={doctor.name}
-                    width={88}
-                    height={104}
-                  />
+                  // El nombre ya está al lado: la foto no lo repite al lector de pantalla.
+                  <Image src={doctor.photo} alt="" width={88} height={104} sizes="88px" />
                 ) : (
                   <UserRound size={38} strokeWidth={1} aria-hidden="true" />
                 )}
@@ -254,15 +250,17 @@ export function DateTimeStep({
   dispatch: (action: BookingAction) => void;
   onNext: () => void;
 }) {
-  const [chosenWeek, setWeek] = useState<number | null>(null);
-  const daysLoader = useCallback(() => agendaData.getDays(), []);
-  const days = useResource("days", daysLoader);
-  const week =
-    chosenWeek ??
-    ((days.data?.findIndex((day) => day.date === draft.date) ?? -1) >= 7
-      ? 1
-      : 0);
-  const visibleDays = days.data?.slice(week * 7, week * 7 + 7) ?? [];
+  const [chosenPage, setPage] = useState<number | null>(null);
+  const doctorId = draft.doctor?.id ?? "";
+  // Solo los días con horas libres: un día sin cupo no se ofrece.
+  const daysLoader = useCallback(() => agendaData.getDays(doctorId), [doctorId]);
+  const days = useResource(`days-${doctorId}`, daysLoader);
+  const PAGE = 7;
+  const pages = Math.max(1, Math.ceil((days.data?.length ?? 0) / PAGE));
+  const page =
+    chosenPage ??
+    Math.max(0, Math.floor((days.data?.findIndex((day) => day.date === draft.date) ?? 0) / PAGE));
+  const visibleDays = days.data?.slice(page * PAGE, page * PAGE + PAGE) ?? [];
   const calendarLabel = visibleDays.length
     ? new Intl.DateTimeFormat("es-BO", {
         day: "numeric",
@@ -300,7 +298,18 @@ export function DateTimeStep({
       ) : days.error ? (
         <Notice title="No pudimos mostrar las fechas." retry={days.retry} />
       ) : !days.data?.length ? (
-        <Notice title="Todavía no hay fechas publicadas." retry={days.retry} />
+        <Notice title={`${draft.doctor?.name ?? "Este profesional"} no tiene horas libres en los próximos 30 días.`}>
+          <p>Podés elegir otro profesional o coordinar por WhatsApp.</p>
+          <Button asChild>
+            <a
+              href={buildWhatsAppUrl(`Hola, quisiera una cita con ${draft.doctor?.name ?? "un profesional"}. En la web no encontré horarios libres.`)}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Consultar por WhatsApp
+            </a>
+          </Button>
+        </Notice>
       ) : (
         <>
           <div className={s.dateHeader}>
@@ -309,16 +318,18 @@ export function DateTimeStep({
             </p>
             <div>
               <button
-                aria-label="Semana anterior"
-                disabled={week === 0}
-                onClick={() => setWeek(0)}
+                type="button"
+                aria-label="Fechas anteriores"
+                disabled={page === 0}
+                onClick={() => setPage(page - 1)}
               >
                 ←
               </button>
               <button
-                aria-label="Semana siguiente"
-                disabled={week === 1}
-                onClick={() => setWeek(1)}
+                type="button"
+                aria-label="Fechas siguientes"
+                disabled={page >= pages - 1}
+                onClick={() => setPage(page + 1)}
               >
                 →
               </button>

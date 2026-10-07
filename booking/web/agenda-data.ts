@@ -89,10 +89,13 @@ export function medicoDeAgenda(v: unknown): Doctor | null {
   const precio = esObjeto(v.precio) && typeof v.precio.importeCentavos === "number" && v.precio.importeCentavos > 0
     ? v.precio.importeCentavos / 100
     : null;
+  const foto = texto(v.fotoUrl);
   return {
     id,
     specialtyId: especialidad,
     name: nombre,
+    // La foto la sirve el CRM; una URL relativa es de ese mismo origen.
+    ...(foto && /^(\/|https:\/\/)/.test(foto) ? { photo: foto.startsWith("/") ? `${CRM_PUBLICO}${foto}` : foto } : {}),
     weeklySchedule: texto(v.horarioInformativo),
     price: precio,
     availability: v.modalidad === "ONLINE" ? "online" : "on-request",
@@ -132,18 +135,23 @@ export function reservaDeAgenda(v: unknown): Reservation {
   };
 }
 
-/** Los próximos 14 días en la fecha civil de Bolivia (la agenda llega a 30). */
-export function proximosDias(ahora: Date = new Date(), cantidad = 14): AvailabilityDay[] {
-  const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/La_Paz", year: "numeric", month: "2-digit", day: "2-digit" }).format(ahora);
-  const corto = new Intl.DateTimeFormat("es-BO", { weekday: "short", timeZone: "UTC" });
-  return Array.from({ length: cantidad }, (_, i) => {
-    const d = new Date(`${hoy}T12:00:00Z`);
-    d.setUTCDate(d.getUTCDate() + i);
-    return { date: d.toISOString().slice(0, 10), label: corto.format(d).replace(".", ""), day: String(d.getUTCDate()) };
-  });
+const CORTO = new Intl.DateTimeFormat("es-BO", { weekday: "short", timeZone: "UTC" });
+
+/** Una fecha civil como botón del calendario: «jue» / «8». */
+export function diaDeAgenda(fecha: string): AvailabilityDay {
+  const d = new Date(`${fecha}T12:00:00Z`);
+  return { date: fecha, label: CORTO.format(d).replace(".", ""), day: String(d.getUTCDate()) };
 }
 
-export function createAgendaBookingData(pedir: typeof fetch = (...a) => fetch(...a), ahora = () => new Date()): BookingData & {
+/** Los días con horas libres de un médico, tal como los da la agenda (próximos 30). */
+export function diasDeAgenda(v: unknown, medicoId: string): AvailabilityDay[] {
+  if (!esObjeto(v) || v.medicoId !== medicoId || !Array.isArray(v.fechas)) {
+    throw new AgendaError(502, null, "La agenda respondió algo inesperado.");
+  }
+  return v.fechas.filter((f): f is string => typeof f === "string" && FECHA.test(f)).map(diaDeAgenda);
+}
+
+export function createAgendaBookingData(pedir: typeof fetch = (...a) => fetch(...a)): BookingData & {
   reservar(draft: BookingDraft): Promise<Reservation>;
   pagar(reference: string, receipt: File, nit: string, businessName: string): Promise<void>;
 } {
@@ -155,8 +163,8 @@ export function createAgendaBookingData(pedir: typeof fetch = (...a) => fetch(..
       const crudos = await todas(pedir, `medicos?especialidadId=${encodeURIComponent(specialtyId)}`);
       return crudos.map(medicoDeAgenda).filter((m): m is Doctor => m !== null && m.specialtyId === specialtyId);
     },
-    async getDays() {
-      return proximosDias(ahora());
+    async getDays(doctorId) {
+      return diasDeAgenda(await leer(pedir, `dias?medicoId=${encodeURIComponent(doctorId)}`), doctorId);
     },
     async getAvailability(doctorId, date) {
       const consulta = new URLSearchParams({ medicoId: doctorId, fecha: date });
