@@ -23,11 +23,11 @@
 .card button, .card > a { min-height: 48px; height: auto; white-space: normal; text-align: center; }
 .prepare { margin-top: 40px; padding: 24px 0; border-top: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .prepare h2 { font-size: 17px; font-weight: 600; }
-.prepare p, .demo p { margin-top: 8px; font-size: 13px; line-height: 1.7; color: var(--color-muted-foreground); }
+.prepare p { margin-top: 8px; font-size: 13px; line-height: 1.7; color: var(--color-muted-foreground); }
 .prepare button { flex-shrink: 0; min-height: 48px; height: auto; white-space: normal; }
-.demo { margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--color-border-strong); }
-.demo summary { cursor: pointer; min-height: 44px; font-size: 13px; color: var(--color-muted-foreground); }
-.demo button { margin-top: 16px; }
+/* La agenda anterior queda como salida secundaria, no como segundo botón. */
+.secondaryLink { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; margin-top: 6px; font-size: 13px; color: var(--color-muted-foreground); text-decoration: underline; text-underline-offset: 4px; }
+.secondaryLink:hover { color: var(--color-primary); }
 .loading { max-width: 1280px; margin: 0 auto; padding: 60px 24px; color: var(--color-muted-foreground); }
 @media (max-width: 767px) {
   .entry { padding: 24px 20px 48px; }

@@ -1,24 +1,10 @@
 # Contexto del Proyecto — Clínica Montalvo
 
-> **Implementación de agenda pausada — 6 de octubre de 2026.** Por instrucción
-> del propietario se conservan `booking/agenda`, `lib/agenda` y `app/api/agenda`,
-> pero **no constituyen una conexión verificada al VPS**. No activar
-> `AGENDA_VPS_LECTURA` ni continuar sobre ese contrato hasta verificar FileMaker/caja.
-> SQL ya confirmó horizonte de 30 días y cupos descontados de `agenda_med`, no de
-> `para_agendar`; el borrador de 90 días no coincide con la fuente.
-> ScriptCase/MySQL es la fuente operativa existente; el
-> directorio editorial CRM no sustituye sus cupos, precios o identificadores.
-> [Auditoría y contraste del borrador](../backend-crm-montalvo/docs/auditoria-agenda-vps-2026-10-06.md).
-> [Ampliación SQL verificada](../backend-crm-montalvo/docs/auditoria-agenda-sql-2026-10-06.md).
-
-> **Dos recorridos, 6 de octubre de 2026 — local, sin publicar:** se recuperó
-> la reserva web de siete pasos, con hora exacta y pago de demostración, en
-> `booking/web-demo/`. Convive con la solicitud actual por WhatsApp. En desarrollo
-> se conserva como vista previa; en una compilación de preview hace falta
-> `RESERVA_WEB_DEMO=on`. La entrada pública ofrece agenda existente y WhatsApp
-> directo. Preparar el mensaje es opcional si hay catálogo. Los borradores
-> permanecen separados: ningún dato ficticio se envía al chat real.
-> Alcance y continuación: [Reservas por web y WhatsApp](docs/reservas-dos-canales.md).
+> **Reserva en línea real — 7 de octubre de 2026.** `/reservar` → «Reservar en
+> línea» usa la agenda de ScriptCase a través del CRM: horas libres reales, la
+> cita queda registrada como en el formulario de ScriptCase, pago por QR y
+> comprobante. Sin datos ficticios. Ver [Reservar desde la web o desde
+> WhatsApp](docs/reservas-dos-canales.md).
 
 > **Agenda existente preservada:** el botón «RESERVA TU CITA MÉDICA» de
 > `www.clinicamontalvo.net` enlaza a `http://23.95.128.187/clinicaw/medicos/`.

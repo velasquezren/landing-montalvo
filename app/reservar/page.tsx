@@ -29,17 +29,13 @@ export default async function ReservarPage() {
     // cerrar el acceso a la agenda existente ni al contacto por WhatsApp.
     console.warn("[reservar] Catálogo no disponible; se mantienen los dos accesos de reserva.");
   }
-  // Solo revisión local/preview explícita. Una URL nunca activa cupos ficticios.
-  const demoEnabled = process.env.NODE_ENV === "development" || process.env.RESERVA_WEB_DEMO === "on";
-  // No se enciende hasta verificar el adaptador de lectura del VPS.
-  const agendaEnabled = process.env.AGENDA_VPS_LECTURA === "on";
 
   return (
     <>
       {/* El respaldo es el mismo recorrido sin preelección: es lo que sale en
           el HTML y lo que ve quien llega sin parámetros. */}
-      <Suspense fallback={<BookingChannels catalogo={catalogo} demoEnabled={demoEnabled} agendaEnabled={agendaEnabled} />}>
-        <ReservaConParametros catalogo={catalogo} demoEnabled={demoEnabled} agendaEnabled={agendaEnabled} />
+      <Suspense fallback={<BookingChannels catalogo={catalogo} />}>
+        <ReservaConParametros catalogo={catalogo} />
       </Suspense>
       <noscript>
         <p className="mx-auto max-w-7xl p-8">

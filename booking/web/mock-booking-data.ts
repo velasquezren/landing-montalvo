@@ -1,11 +1,17 @@
 import { doctors, specialties, makeDays } from "./mock-data.ts";
-import type { BookingData, MockScenario } from "./types.ts";
+import type { BookingData } from "./types.ts";
+
+/** Solo para pruebas del reductor: estados de error y vacío en memoria. */
+export type MockScenario = "normal" | "empty" | "error";
 
 /** Contrato de lectura en memoria. No usa fetch, storage ni peticiones. */
 export function createMockBookingData(
   delay = 280,
   now = () => new Date(),
-): BookingData {
+): BookingData & {
+  getSpecialties(scenario?: MockScenario): ReturnType<BookingData["getSpecialties"]>;
+  getDoctors(specialtyId: string, scenario?: MockScenario): ReturnType<BookingData["getDoctors"]>;
+} {
   const wait = () => new Promise<void>((resolve) => setTimeout(resolve, delay));
   async function list<T>(items: T[], scenario: MockScenario = "normal") {
     await wait();
@@ -13,8 +19,8 @@ export function createMockBookingData(
     return scenario === "empty" ? [] : items;
   }
   return {
-    getSpecialties: (scenario) => list(specialties, scenario),
-    getDoctors: (id, scenario) =>
+    getSpecialties: (scenario?: MockScenario) => list(specialties, scenario),
+    getDoctors: (id: string, scenario?: MockScenario) =>
       list(
         doctors.filter((doctor) => doctor.specialtyId === id),
         scenario,

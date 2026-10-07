@@ -5,60 +5,42 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
-  CalendarDays,
-  Check,
   CheckCheck,
+  Check,
   ChevronDown,
   Clock3,
+  MessageCircle,
   ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  bookingReducer,
-  canContinue,
-  dateLabel,
-  initialDraft,
-  money,
-} from "../state";
-import type { BookingDraft, PaymentDraft } from "../types";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
+import { AgendaError, agendaData } from "../agenda-data";
+import { bookingReducer, canContinue, dateLabel, initialDraft, money } from "../state";
+import type { BookingDraft, Reservation } from "../types";
 import { SpecialtyStep, DoctorStep, DateTimeStep } from "./SelectionSteps";
 import { PatientStep } from "./PatientStep";
-import { PaymentStep, paymentLabels } from "./PaymentStep";
+import { PaymentStep } from "./PaymentStep";
 import s from "../booking.module.css";
 
-const steps = [
-  "Especialidad",
-  "Médico",
-  "Horario",
-  "Datos",
-  "Resumen",
-  "Pago",
-  "Confirmación",
-];
+const steps = ["Especialidad", "Médico", "Horario", "Datos", "Resumen", "Pago", "Confirmación"];
 const titles = [
   "¿Qué atención estás buscando?",
   "Elegí con quién atenderte",
   "Un horario que se adapte a vos",
   "Contanos quién viene a la consulta",
-  "Revisá los detalles con tranquilidad",
+  "Revisá los detalles y confirmá",
   "Pago y comprobante",
-  "Vista previa de confirmación",
+  "Tu reserva está registrada",
 ];
 const descriptions = [
   "Empezá por la especialidad. Te acompañamos paso a paso.",
   "Conocé los horarios y el precio antes de elegir.",
   "Primero el día. Después, la hora que te quede mejor.",
-  "Solo necesitamos unos pocos datos para esta reserva.",
-  "Podés corregir tu selección antes de continuar.",
-  "Una reserva y un pago son pasos distintos.",
-  "Así se verá la respuesta cuando el sistema esté conectado.",
+  "Solo necesitamos unos pocos datos para la reserva.",
+  "Al confirmar, la hora queda registrada en la agenda de la clínica.",
+  "Pagá con el QR y subí el comprobante. Caja lo verifica.",
+  "Te esperamos. Guardá tu número de reserva.",
 ];
-const emptyPayment = (): PaymentDraft => ({
-  nit: "",
-  businessName: "",
-  receipt: null,
-  status: "PENDIENTE_PAGO",
-});
 
 function AppointmentSummary({
   draft,
@@ -69,13 +51,14 @@ function AppointmentSummary({
   edit?: (step: number) => void;
   patient?: boolean;
 }) {
+  const precio = draft.doctor?.price;
   return (
     <dl className={s.summaryList}>
       <div>
         <dt>Especialidad</dt>
         <dd>{draft.specialty?.name ?? "Por elegir"}</dd>
         {edit && (
-          <button onClick={() => edit(0)} aria-label="Cambiar especialidad">
+          <button type="button" onClick={() => edit(0)} aria-label="Cambiar especialidad">
             Cambiar
           </button>
         )}
@@ -84,7 +67,7 @@ function AppointmentSummary({
         <dt>Profesional</dt>
         <dd>{draft.doctor?.name ?? "Por elegir"}</dd>
         {edit && (
-          <button onClick={() => edit(1)} aria-label="Cambiar médico">
+          <button type="button" onClick={() => edit(1)} aria-label="Cambiar médico">
             Cambiar
           </button>
         )}
@@ -100,7 +83,7 @@ function AppointmentSummary({
           )}
         </dd>
         {edit && (
-          <button onClick={() => edit(2)} aria-label="Cambiar fecha y hora">
+          <button type="button" onClick={() => edit(2)} aria-label="Cambiar fecha y hora">
             Cambiar
           </button>
         )}
@@ -113,7 +96,7 @@ function AppointmentSummary({
             <span className={s.patientPhone}>{draft.patient.phone}</span>
           </dd>
           {edit && (
-            <button onClick={() => edit(3)} aria-label="Corregir datos">
+            <button type="button" onClick={() => edit(3)} aria-label="Corregir datos">
               Corregir
             </button>
           )}
@@ -121,18 +104,24 @@ function AppointmentSummary({
       )}
       <div className={s.summaryTotal}>
         <dt>
-          Consulta <span>· precio de ejemplo</span>
+          Consulta <span>· {precio != null ? "precio de la agenda" : "a confirmar por la clínica"}</span>
         </dt>
-        <dd>{draft.doctor ? money(draft.doctor.price) : "Por elegir"}</dd>
+        <dd>{!draft.doctor ? "Por elegir" : precio != null ? money(precio) : "—"}</dd>
       </div>
     </dl>
   );
 }
+
 export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () => void }) {
   const [draft, dispatch] = useReducer(bookingReducer, undefined, initialDraft);
   const [step, setStep] = useState(0);
-  const [payment, setPayment] = useState<PaymentDraft>(emptyPayment);
+  const [reservation, setReservation] = useState<Reservation | null>(null);
+  const [paid, setPaid] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [slotNotice, setSlotNotice] = useState("");
   const heading = useRef<HTMLHeadingElement>(null);
+
   function go(next: number) {
     setStep(next);
     requestAnimationFrame(() => {
@@ -140,12 +129,38 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
       heading.current?.scrollIntoView({ block: "start", behavior: "instant" });
     });
   }
-  function changeSelection(action: Parameters<typeof dispatch>[0]) {
-    const changed = bookingReducer(draft, action) !== draft;
-    dispatch(action);
-    if (changed && action.type !== "patient") setPayment(emptyPayment());
+
+  /** Registra la cita en la agenda. Un solo envío a la vez; una vez registrada, ya no se repite. */
+  async function confirm() {
+    if (submitting || reservation || !canContinue(4, draft)) return;
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const nueva = await agendaData.reservar(draft);
+      setReservation(nueva);
+      go(nueva.amount !== null && nueva.bankId !== null ? 5 : 6);
+    } catch (error) {
+      if (error instanceof AgendaError && error.code === "HORA_NO_DISPONIBLE") {
+        dispatch({ type: "slot", value: null });
+        setSlotNotice("La hora que elegiste acaba de ocuparse. Elegí otra; tus datos se conservan.");
+        go(2);
+      } else {
+        setSubmitError(error instanceof Error ? error.message : "No pudimos registrar la reserva.");
+      }
+    } finally {
+      setSubmitting(false);
+    }
   }
+
   const completed = step === 6;
+  // Con la cita registrada, la selección ya no se cambia desde aquí.
+  const locked = reservation !== null;
+  const whatsappReserva = reservation
+    ? buildWhatsAppUrl(
+        `Hola, Clínica Montalvo. Hice la reserva N.º ${reservation.code} en la web (${dateLabel(reservation.date)}, ${reservation.time}).`,
+      )
+    : buildWhatsAppUrl("Hola, Clínica Montalvo. Quisiera reservar una cita.");
+
   return (
     <section className={s.booking} aria-label="Reserva de consulta">
       <div className={s.container}>
@@ -153,7 +168,7 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
           <Link href="/" className={s.breadcrumb}>
             Inicio <span>/</span> Reservar
           </Link>
-          {onChangeChannel && (
+          {onChangeChannel && !locked && (
             <Button variant="link" className="mb-5 min-h-11 whitespace-normal text-left" onClick={onChangeChannel}>
               <ArrowLeft size={16} aria-hidden="true" />Cambiar forma de reservar
             </Button>
@@ -172,10 +187,6 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
               <br />A tu ritmo.
             </p>
           </div>
-          <p className={s.demoBanner}>
-            <span>DEMOSTRACIÓN</span> Profesionales, horarios y precios
-            ficticios. No se crean citas ni se procesan pagos. Usá datos de ejemplo.
-          </p>
         </div>
         <nav className={s.progress} aria-label="Progreso de la reserva">
           <div className={s.progressCaption}>
@@ -186,19 +197,10 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
           </div>
           <ol>
             {steps.map((label, i) => (
-              <li
-                key={label}
-                aria-current={i === step ? "step" : undefined}
-                data-done={i < step}
-              >
+              <li key={label} aria-current={i === step ? "step" : undefined} data-done={i < step}>
                 <span className={s.progressBar} />
                 <span className={s.stepLabel}>
-                  {i < step ? (
-                    <Check size={13} aria-hidden="true" />
-                  ) : (
-                    `${i + 1}.`
-                  )}{" "}
-                  {label}
+                  {i < step ? <Check size={13} aria-hidden="true" /> : `${i + 1}.`} {label}
                 </span>
               </li>
             ))}
@@ -211,7 +213,7 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                 <summary>
                   <span>
                     {draft.specialty.name}
-                    {draft.doctor && ` · ${money(draft.doctor.price)}`}
+                    {draft.doctor?.price != null && ` · ${money(draft.doctor.price)}`}
                   </span>
                   <ChevronDown size={18} aria-hidden="true" />
                 </summary>
@@ -220,8 +222,8 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
             )}
             <div className={s.panel}>
               <div className={s.panelHeader}>
-                {step > 0 && !completed && (
-                  <button className={s.back} onClick={() => go(step - 1)}>
+                {step > 0 && !locked && (
+                  <button type="button" className={s.back} onClick={() => go(step - 1)}>
                     <ArrowLeft size={16} aria-hidden="true" />
                     Volver
                   </button>
@@ -239,7 +241,7 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                   <SpecialtyStep
                     selected={draft.specialty}
                     onSelect={(specialty) => {
-                      changeSelection({ type: "specialty", value: specialty });
+                      dispatch({ type: "specialty", value: specialty });
                       go(1);
                     }}
                   />
@@ -250,26 +252,34 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                     specialty={draft.specialty}
                     selected={draft.doctor}
                     onSelect={(doctor) => {
-                      changeSelection({ type: "doctor", value: doctor });
+                      dispatch({ type: "doctor", value: doctor });
                       go(2);
                     }}
                   />
                 )}
                 {step === 2 && (
-                  <DateTimeStep
-                    draft={draft}
-                    dispatch={changeSelection}
-                    onNext={() => {
-                      if (canContinue(2, draft)) go(3);
-                    }}
-                  />
+                  <>
+                    {slotNotice && (
+                      <p className={s.requestNotice} role="alert">
+                        {slotNotice}
+                      </p>
+                    )}
+                    <DateTimeStep
+                      draft={draft}
+                      dispatch={(action) => {
+                        setSlotNotice("");
+                        dispatch(action);
+                      }}
+                      onNext={() => {
+                        if (canContinue(2, draft)) go(3);
+                      }}
+                    />
+                  </>
                 )}
                 {step === 3 && (
                   <PatientStep
                     patient={draft.patient}
-                    onChange={(patient) =>
-                      dispatch({ type: "patient", value: patient })
-                    }
+                    onChange={(patient) => dispatch({ type: "patient", value: patient })}
                     onNext={() => {
                       if (canContinue(3, draft)) go(4);
                     }}
@@ -277,91 +287,91 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                 )}
                 {step === 4 && (
                   <>
-                    <AppointmentSummary draft={draft} edit={go} patient />
+                    <AppointmentSummary draft={draft} edit={locked ? undefined : go} patient />
                     <p className={s.privacy}>
                       <ShieldCheck size={18} aria-hidden="true" />
-                      Todavía no se ha reservado ningún horario. Este es un
-                      resumen de demostración.
+                      Al confirmar, la hora queda registrada a tu nombre en la agenda de la clínica. Tus datos
+                      solo se usan para esta cita.
                     </p>
+                    {submitError && (
+                      <div className={s.notice} role="alert">
+                        <p className={s.noticeTitle}>{submitError}</p>
+                        <p>Tu selección se conserva. Podés intentarlo de nuevo o reservar por WhatsApp.</p>
+                        <Button asChild>
+                          <a href={whatsappReserva} target="_blank" rel="noopener noreferrer">
+                            Reservar por WhatsApp
+                          </a>
+                        </Button>
+                      </div>
+                    )}
                     <div className={s.nextRow}>
                       <Button
                         variant="primary"
                         size="lg"
-                        disabled={!canContinue(4, draft)}
-                        onClick={() => go(5)}
+                        disabled={!canContinue(4, draft) || submitting}
+                        aria-busy={submitting}
+                        onClick={confirm}
                       >
-                        Continuar al pago de ejemplo
-                        <ArrowRight size={16} aria-hidden="true" />
+                        {submitting ? "Registrando tu reserva…" : "Confirmar reserva"}
+                        {!submitting && <ArrowRight size={16} aria-hidden="true" />}
                       </Button>
                     </div>
                   </>
                 )}
-                {step === 5 && (
+                {step === 5 && reservation && (
                   <PaymentStep
-                    price={draft.doctor?.price ?? 0}
-                    payment={payment}
-                    onChange={setPayment}
-                    onNext={() => go(6)}
+                    reservation={reservation}
+                    whatsappUrl={whatsappReserva}
+                    onPaid={() => {
+                      setPaid(true);
+                      go(6);
+                    }}
+                    onLater={() => go(6)}
                   />
                 )}
-                {completed && (
+                {completed && reservation && (
                   <>
-                    <div className={s.confirmation}>
+                    <div className={s.confirmation} role="status">
                       <span className={s.confirmIcon}>
-                        <CheckCheck
-                          size={32}
-                          strokeWidth={1.5}
-                          aria-hidden="true"
-                        />
+                        <CheckCheck size={32} strokeWidth={1.5} aria-hidden="true" />
                       </span>
-                      <p className={s.eyebrow}>Solo vista previa</p>
-                      <h3>Reserva recibida</h3>
-                      <p>
-                        Este mensaje es un ejemplo.{" "}
-                        <strong>No existe una cita reservada.</strong>
+                      <p className={s.eyebrow}>Reserva N.º {reservation.code}</p>
+                      <h3>{reservation.doctorName}</h3>
+                      <p className={s.capitalize}>
+                        {dateLabel(reservation.date)} · {reservation.time}
                       </p>
                     </div>
                     <AppointmentSummary draft={draft} patient />
                     <div className={s.paymentState} role="status">
                       <Clock3 size={20} aria-hidden="true" />
                       <div>
-                        <strong>{paymentLabels[payment.status]}</strong>
+                        <strong>
+                          {paid
+                            ? "Pago en verificación"
+                            : reservation.amount !== null
+                              ? "Pendiente de pago"
+                              : "Monto por confirmar"}
+                        </strong>
                         <p>
-                          {payment.status === "EN_VERIFICACION"
-                            ? "La revisión humana está representada como ejemplo. No se ha confirmado ningún pago."
-                            : payment.receipt
-                              ? "El comprobante sigue en tu dispositivo. Ningún archivo fue enviado."
-                              : "No se seleccionó un comprobante ni se realizó un pago."}
+                          {paid
+                            ? "Recibimos tu comprobante. Caja lo verifica y la clínica te confirma por WhatsApp."
+                            : reservation.amount !== null
+                              ? "Podés enviar el comprobante por WhatsApp citando tu número de reserva."
+                              : "La clínica te contactará para confirmar el monto de la consulta."}
                         </p>
                       </div>
                     </div>
-                    {payment.status === "COMPROBANTE_ENVIADO" && (
-                      <Button
-                        onClick={() =>
-                          setPayment({ ...payment, status: "EN_VERIFICACION" })
-                        }
-                      >
-                        Ver ejemplo de verificación
-                      </Button>
-                    )}
                     <div className={s.finalActions}>
-                      <Button disabled aria-describedby="calendar-pending">
-                        <CalendarDays size={17} aria-hidden="true" />
-                        Agregar al calendario
-                      </Button>
                       <Button asChild>
-                        <Link href="/atencion-al-paciente">
-                          Contactar con la clínica
-                        </Link>
+                        <a href={whatsappReserva} target="_blank" rel="noopener noreferrer">
+                          <MessageCircle size={17} aria-hidden="true" />
+                          Escribir a la clínica
+                        </a>
                       </Button>
                       <Button asChild variant="primary">
                         <Link href="/">Volver al inicio</Link>
                       </Button>
                     </div>
-                    <p id="calendar-pending" className={s.hint}>
-                      La opción de calendario estará disponible cuando exista
-                      una reserva real.
-                    </p>
                   </>
                 )}
               </div>
@@ -369,16 +379,13 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
           </div>
           <aside className={s.sidebar} aria-label="Resumen de tu selección">
             <div className={s.sidebarCard}>
-              <p className={s.eyebrow}>Tu consulta</p>
+              <p className={s.eyebrow}>{reservation ? `Reserva N.º ${reservation.code}` : "Tu consulta"}</p>
               <h2>{draft.specialty?.name ?? "Un espacio para cuidarte"}</h2>
               {draft.specialty ? (
                 <AppointmentSummary draft={draft} />
               ) : (
                 <>
-                  <p>
-                    Elegí tu especialidad, encontrá un profesional y revisá cada
-                    detalle antes de continuar.
-                  </p>
+                  <p>Elegí tu especialidad, encontrá un profesional y revisá cada detalle antes de confirmar.</p>
                   <Image
                     className={s.clinicPhoto}
                     src="/images/clinica/exterior-20261001.jpg"
@@ -389,7 +396,7 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                   <div className={s.sidebarPoints}>
                     <p>
                       <Check size={17} aria-hidden="true" />
-                      Precio visible desde el inicio
+                      Horarios reales de la agenda
                     </p>
                     <p>
                       <Check size={17} aria-hidden="true" />
@@ -397,13 +404,13 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                     </p>
                     <p>
                       <Check size={17} aria-hidden="true" />
-                      Podés volver y corregir
+                      Pago por QR desde tu banco
                     </p>
                   </div>
                 </>
               )}
               <p className={s.sidebarFoot}>
-                Vista de demostración
+                Agenda de Clínica Montalvo
                 <br />
                 Santa Cruz de la Sierra · Bolivia
               </p>

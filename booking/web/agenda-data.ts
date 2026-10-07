@@ -1,0 +1,195 @@
+import type {
+  Availability,
+  AvailabilityDay,
+  BookingData,
+  BookingDraft,
+  Doctor,
+  Reservation,
+  Specialty,
+} from "./types.ts";
+
+/**
+ * La agenda real de la clínica (ScriptCase), a través del CRM.
+ *
+ * El navegador llama al CRM directamente (`/publico/agenda/*`, CORS solo para
+ * la landing y sin cookies): así el límite de peticiones es por paciente y el
+ * comprobante no pasa por las funciones de Vercel, que cortan a 4,5 MB.
+ *
+ * Todo lo que llega se valida antes de pintarse. Un fallo de red o del CRM se
+ * propaga como error —la pantalla ofrece reintentar—, nunca como «no hay
+ * horarios».
+ */
+
+export const CRM_PUBLICO = (process.env.NEXT_PUBLIC_CRM_API_URL || "https://crm.107.175.132.15.nip.io").replace(/\/+$/, "");
+
+/** Error de la agenda con el código del CRM, para decidir qué mostrar. */
+export class AgendaError extends Error {
+  readonly status: number;
+  readonly code: string | null;
+  constructor(status: number, code: string | null, message: string) {
+    super(message);
+    this.status = status;
+    this.code = code;
+  }
+}
+
+type Objeto = Record<string, unknown>;
+const esObjeto = (v: unknown): v is Objeto => typeof v === "object" && v !== null && !Array.isArray(v);
+const texto = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
+const FECHA = /^\d{4}-\d{2}-\d{2}$/;
+const HORA = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+
+async function leer(pedir: typeof fetch, ruta: string, init?: RequestInit): Promise<unknown> {
+  let respuesta: Response;
+  try {
+    respuesta = await pedir(`${CRM_PUBLICO}/publico/agenda/${ruta}`, {
+      ...init,
+      credentials: "omit",
+      cache: "no-store",
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch {
+    throw new AgendaError(0, null, "No pudimos conectar con la agenda. Revisá tu conexión e intentá de nuevo.");
+  }
+  const cuerpo: unknown = await respuesta.json().catch(() => null);
+  if (!respuesta.ok) {
+    const c = esObjeto(cuerpo) ? cuerpo : {};
+    const mensaje = typeof c.message === "string" ? c.message : "La agenda no respondió. Intentá de nuevo.";
+    throw new AgendaError(respuesta.status, typeof c.codigo === "string" ? c.codigo : null, mensaje);
+  }
+  return cuerpo;
+}
+
+/** Todas las páginas de un listado de la agenda (100 por página, hasta 500). */
+async function todas(pedir: typeof fetch, ruta: string): Promise<unknown[]> {
+  const datos: unknown[] = [];
+  for (let pagina = 1; pagina <= 5; pagina++) {
+    const separador = ruta.includes("?") ? "&" : "?";
+    const cuerpo = await leer(pedir, `${ruta}${separador}pagina=${pagina}&limite=100`);
+    if (!esObjeto(cuerpo) || !Array.isArray(cuerpo.datos)) throw new AgendaError(502, null, "La agenda respondió algo inesperado.");
+    datos.push(...cuerpo.datos);
+    if (pagina >= Number(cuerpo.totalPaginas ?? 1)) break;
+  }
+  return datos;
+}
+
+export function especialidadDeAgenda(v: unknown): Specialty | null {
+  if (!esObjeto(v)) return null;
+  const id = texto(v.id);
+  const nombre = texto(v.nombre);
+  return id && nombre ? { id, name: nombre, description: "" } : null;
+}
+
+export function medicoDeAgenda(v: unknown): Doctor | null {
+  if (!esObjeto(v)) return null;
+  const id = texto(v.id);
+  const especialidad = texto(v.especialidadId);
+  const nombre = texto(v.nombre);
+  if (!id || !especialidad || !nombre) return null;
+  const precio = esObjeto(v.precio) && typeof v.precio.importeCentavos === "number" && v.precio.importeCentavos > 0
+    ? v.precio.importeCentavos / 100
+    : null;
+  return {
+    id,
+    specialtyId: especialidad,
+    name: nombre,
+    weeklySchedule: texto(v.horarioInformativo),
+    price: precio,
+    availability: v.modalidad === "ONLINE" ? "online" : "on-request",
+  };
+}
+
+export function disponibilidadDeAgenda(v: unknown, medicoId: string, fecha: string): Availability {
+  if (!esObjeto(v) || v.medicoId !== medicoId || v.fecha !== fecha || !Array.isArray(v.horarios)) {
+    throw new AgendaError(502, null, "La agenda respondió algo inesperado.");
+  }
+  if (v.estado === "SIN_ATENCION" || v.estado === "A_SOLICITUD") return { status: "not-working", slots: [] };
+  if (v.estado === "SIN_CUPOS") return { status: "full", slots: [] };
+  if (v.estado !== "DISPONIBLE") throw new AgendaError(502, null, "La agenda respondió algo inesperado.");
+  const slots = v.horarios
+    .map((h) => (esObjeto(h) && typeof h.hora === "string" && HORA.test(h.hora) ? { id: `${medicoId}_${fecha}_${h.hora}`, time: h.hora } : null))
+    .filter((h): h is { id: string; time: string } => h !== null);
+  return slots.length ? { status: "available", slots } : { status: "full", slots: [] };
+}
+
+export function reservaDeAgenda(v: unknown): Reservation {
+  if (!esObjeto(v) || typeof v.codigo !== "number" || typeof v.referencia !== "string" || !esObjeto(v.pago)) {
+    throw new AgendaError(502, null, "La reserva se registró, pero la respuesta fue inesperada. Escribinos por WhatsApp.");
+  }
+  const fecha = texto(v.fecha);
+  const hora = texto(v.hora);
+  const precio = esObjeto(v.pago.precio) && typeof v.pago.precio.importeCentavos === "number" && v.pago.precio.importeCentavos > 0
+    ? v.pago.precio.importeCentavos / 100
+    : null;
+  return {
+    code: v.codigo,
+    reference: v.referencia,
+    doctorName: texto(v.medico) ?? "",
+    date: fecha && FECHA.test(fecha) ? fecha : "",
+    time: hora && HORA.test(hora) ? hora : "",
+    amount: precio,
+    bankId: typeof v.pago.bancoId === "number" ? v.pago.bancoId : null,
+  };
+}
+
+/** Los próximos 14 días en la fecha civil de Bolivia (la agenda llega a 30). */
+export function proximosDias(ahora: Date = new Date(), cantidad = 14): AvailabilityDay[] {
+  const hoy = new Intl.DateTimeFormat("en-CA", { timeZone: "America/La_Paz", year: "numeric", month: "2-digit", day: "2-digit" }).format(ahora);
+  const corto = new Intl.DateTimeFormat("es-BO", { weekday: "short", timeZone: "UTC" });
+  return Array.from({ length: cantidad }, (_, i) => {
+    const d = new Date(`${hoy}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + i);
+    return { date: d.toISOString().slice(0, 10), label: corto.format(d).replace(".", ""), day: String(d.getUTCDate()) };
+  });
+}
+
+export function createAgendaBookingData(pedir: typeof fetch = (...a) => fetch(...a), ahora = () => new Date()): BookingData & {
+  reservar(draft: BookingDraft): Promise<Reservation>;
+  pagar(reference: string, receipt: File, nit: string, businessName: string): Promise<void>;
+} {
+  return {
+    async getSpecialties() {
+      return (await todas(pedir, "especialidades")).map(especialidadDeAgenda).filter((e): e is Specialty => e !== null);
+    },
+    async getDoctors(specialtyId) {
+      const crudos = await todas(pedir, `medicos?especialidadId=${encodeURIComponent(specialtyId)}`);
+      return crudos.map(medicoDeAgenda).filter((m): m is Doctor => m !== null && m.specialtyId === specialtyId);
+    },
+    async getDays() {
+      return proximosDias(ahora());
+    },
+    async getAvailability(doctorId, date) {
+      const consulta = new URLSearchParams({ medicoId: doctorId, fecha: date });
+      return disponibilidadDeAgenda(await leer(pedir, `disponibilidad?${consulta}`), doctorId, date);
+    },
+    async reservar(draft) {
+      if (!draft.doctor || !draft.date || !draft.slot) throw new AgendaError(400, null, "Falta elegir profesional, día y hora.");
+      const cuerpo = await leer(pedir, "reservas", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          medicoId: draft.doctor.id,
+          fecha: draft.date,
+          hora: draft.slot.time,
+          nombre: draft.patient.name.trim(),
+          telefono: draft.patient.phone.trim(),
+          ci: draft.patient.identity.trim(),
+          observaciones: draft.patient.observations.trim(),
+        }),
+      });
+      return reservaDeAgenda(cuerpo);
+    },
+    async pagar(reference, receipt, nit, businessName) {
+      const form = new FormData();
+      form.append("referencia", reference);
+      if (nit.trim()) form.append("nit", nit.trim());
+      if (businessName.trim()) form.append("razonSocial", businessName.trim());
+      form.append("comprobante", receipt, receipt.name);
+      await leer(pedir, "reservas/pago", { method: "POST", body: form });
+    },
+  };
+}
+
+export const qrDelBanco = (bankId: number) => `${CRM_PUBLICO}/publico/agenda/qr/${bankId}`;
+
+export const agendaData = createAgendaBookingData();

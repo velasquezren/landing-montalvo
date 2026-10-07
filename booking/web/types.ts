@@ -8,8 +8,10 @@ export interface Doctor {
   specialtyId: string;
   name: string;
   photo?: string;
-  weeklySchedule: string;
-  price: number;
+  /** Horario habitual en una frase; `null` si la agenda no lo publica. */
+  weeklySchedule: string | null;
+  /** Bolivianos. `null`: la agenda no tiene una tarifa válida (no es «gratis»). */
+  price: number | null;
   availability: "online" | "on-request";
 }
 export interface TimeSlot {
@@ -37,21 +39,28 @@ export interface BookingDraft {
   slot: TimeSlot | null;
   patient: PatientDraft;
 }
-export type PaymentStatus =
-  | "PENDIENTE_PAGO"
-  | "COMPROBANTE_ENVIADO"
-  | "EN_VERIFICACION"
-  | "PAGO_CONFIRMADO";
 export interface PaymentDraft {
   nit: string;
   businessName: string;
   receipt: File | null;
-  status: PaymentStatus;
 }
-export type MockScenario = "normal" | "empty" | "error";
+/** La cita ya registrada en la agenda de la clínica (estado PENDIENTE). */
+export interface Reservation {
+  /** Número de reserva en la agenda; lo usa recepción. */
+  code: number;
+  /** Autoriza el pago de ESTA reserva; caduca a las 6 h. */
+  reference: string;
+  doctorName: string;
+  date: string;
+  time: string;
+  /** Monto copiado del médico al reservar; `null` si no tiene tarifa. */
+  amount: number | null;
+  bankId: number | null;
+}
+export type ReservationStatus = "PENDIENTE" | "PAGADO";
 export interface BookingData {
-  getSpecialties(scenario?: MockScenario): Promise<Specialty[]>;
-  getDoctors(specialtyId: string, scenario?: MockScenario): Promise<Doctor[]>;
+  getSpecialties(): Promise<Specialty[]>;
+  getDoctors(specialtyId: string): Promise<Doctor[]>;
   getDays(): Promise<AvailabilityDay[]>;
   getAvailability(
     doctorId: string,

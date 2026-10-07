@@ -12,37 +12,29 @@ import type { CatalogoReserva, SolicitudDraft } from "../types";
 import BookingFlow from "./BookingFlow";
 import s from "../channels.module.css";
 
-// El prototipo y sus mocks no se cargan al elegir WhatsApp.
-const WebBookingDemo = dynamic(() => import("../web-demo/components/BookingFlow"), {
-  loading: () => <p className={s.loading} role="status">Preparando la vista de reserva web…</p>,
-});
-const ConsultaAgenda = dynamic(() => import("../agenda/ConsultaAgenda"), {
-  loading: () => <p className={s.loading} role="status">Abriendo la consulta de agenda…</p>,
+// La reserva web solo se descarga al elegirla.
+const WebBooking = dynamic(() => import("../web/components/BookingFlow"), {
+  loading: () => <p className={s.loading} role="status">Abriendo la agenda de la clínica…</p>,
 });
 
 export default function BookingChannels({
   catalogo,
-  demoEnabled,
   initial = "choose",
   preselection,
-  agendaEnabled = false,
 }: {
   catalogo: CatalogoReserva;
-  demoEnabled: boolean;
   initial?: BookingChannel;
   preselection?: { draft: SolicitudDraft; paso: number };
-  agendaEnabled?: boolean;
 }) {
   const canPrepare = catalogo.especialidades.length > 0;
   const [requestedChannel, setChannel] = useState<BookingChannel>(initial);
-  const channel = requestedChannel === "web-demo" && !demoEnabled || requestedChannel === "whatsapp" && !canPrepare || requestedChannel === "agenda" && !agendaEnabled
-    ? "choose" : requestedChannel;
-  const [demoVisited, setDemoVisited] = useState(demoEnabled && initial === "web-demo");
+  const channel = requestedChannel === "whatsapp" && !canPrepare ? "choose" : requestedChannel;
+  // Una vez abierta, la reserva web queda montada: volver al selector no pierde lo elegido.
+  const [webVisited, setWebVisited] = useState(initial === "web");
   const root = useRef<HTMLDivElement>(null);
 
   function choose(next: BookingChannel) {
-    if (next === "web-demo" && !demoEnabled || next === "agenda" && !agendaEnabled) return;
-    if (next === "web-demo") setDemoVisited(true);
+    if (next === "web") setWebVisited(true);
     setChannel(next);
     requestAnimationFrame(() => {
       root.current?.querySelector<HTMLElement>('[data-active="true"]')?.focus({ preventScroll: true });
@@ -64,25 +56,25 @@ export default function BookingChannels({
         </nav>
         <p className={s.eyebrow}>Clínica Montalvo · A tu ritmo</p>
         <h1 id="booking-channels-title">Tu consulta,<br />a tu manera.</h1>
-        <p className={s.lead}>Reservá en nuestra agenda web o coordiná tu cita por WhatsApp. Vos elegís.</p>
+        <p className={s.lead}>Reservá en línea con los horarios reales de la agenda o coordiná tu cita por WhatsApp. Vos elegís.</p>
         <div className={s.cards}>
           <article className={s.card}>
             <span className={s.icon}><CalendarDays size={28} strokeWidth={1.5} aria-hidden="true" /></span>
             <p className={s.badge}>Agenda de la clínica</p>
             <h2>Reservar en la web</h2>
-            <p>Continuá en nuestra agenda de citas. Elegí la especialidad, el profesional y el horario de tu consulta.</p>
+            <p>Elegí la especialidad, el profesional y una hora libre de la agenda. Confirmás y la cita queda registrada.</p>
             <ul>
-              <li><Check size={17} aria-hidden="true" />Reserva desde el navegador</li>
-              <li><Check size={17} aria-hidden="true" />Médicos y horarios de la agenda</li>
+              <li><Check size={17} aria-hidden="true" />Horarios reales, al momento</li>
+              <li><Check size={17} aria-hidden="true" />Pago por QR y comprobante en línea</li>
               <li><Check size={17} aria-hidden="true" />Sin necesidad de pasar por WhatsApp</li>
             </ul>
-            <p className={s.notice}>El siguiente paso se realiza en la página de nuestra agenda de citas.</p>
-            {agendaEnabled && <Button onClick={() => choose("agenda")} size="lg">Consultar médicos y horarios<ArrowRight size={17} aria-hidden="true" /></Button>}
-            <Button asChild variant="primary" size="lg">
-              <a href={siteConfig.appointmentUrl} referrerPolicy="no-referrer">
-                Abrir agenda y reservar<ArrowRight size={17} aria-hidden="true" />
-              </a>
+            <p className={s.notice}>Caja verifica el pago y la clínica te confirma por WhatsApp.</p>
+            <Button onClick={() => choose("web")} variant="primary" size="lg">
+              Reservar en línea<ArrowRight size={17} aria-hidden="true" />
             </Button>
+            <a className={s.secondaryLink} href={siteConfig.appointmentUrl} referrerPolicy="no-referrer">
+              o usar la agenda anterior
+            </a>
           </article>
           <article className={s.card}>
             <span className={s.icon}><MessageCircle size={28} strokeWidth={1.5} aria-hidden="true" /></span>
@@ -111,23 +103,15 @@ export default function BookingChannels({
             <Button onClick={() => choose("whatsapp")}>Preparar mi solicitud<ArrowRight size={17} aria-hidden="true" /></Button>
           </div>
         )}
-        {demoEnabled && (
-          <details className={s.demo}>
-            <summary>Vista previa de la futura reserva web</summary>
-            <p>El diseño nuevo se conserva para mejorar la agenda más adelante. Esta demostración usa datos ficticios, no crea citas ni admite pagos.</p>
-            <Button onClick={() => choose("web-demo")}>Probar reserva web<ArrowRight size={17} aria-hidden="true" /></Button>
-          </details>
-        )}
       </section>
-      {agendaEnabled && channel === "agenda" && <div data-active="true" tabIndex={-1}><ConsultaAgenda volver={() => choose("choose")} /></div>}
       {/* Cada borrador permanece en memoria al cambiar de canal. Los datos
-          ficticios nunca se copian al mensaje real de WhatsApp. */}
+          de un recorrido nunca se copian al otro. */}
       {canPrepare && <div hidden={channel !== "whatsapp"} data-active={channel === "whatsapp"} tabIndex={-1} aria-label="Solicitud por WhatsApp">
         <BookingFlow catalogo={catalogo} inicial={preselection} onChangeChannel={() => choose("choose")} />
       </div>}
-      {demoEnabled && demoVisited && (
-        <div hidden={channel !== "web-demo"} data-active={channel === "web-demo"} tabIndex={-1} aria-label="Reserva web de demostración">
-          <WebBookingDemo onChangeChannel={() => choose("choose")} />
+      {webVisited && (
+        <div hidden={channel !== "web"} data-active={channel === "web"} tabIndex={-1} aria-label="Reserva en línea">
+          <WebBooking onChangeChannel={() => choose("choose")} />
         </div>
       )}
     </div>

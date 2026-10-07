@@ -1,14 +1,13 @@
-export type BookingChannel = "choose" | "whatsapp" | "web-demo" | "agenda";
+export type BookingChannel = "choose" | "whatsapp" | "web";
 
-/** Un parámetro de URL nunca habilita el prototipo en un despliegue real. */
-export function initialChannel(
-  demoEnabled: boolean,
-  requested: string | null = null,
-  hasPreselection = false,
-  agendaEnabled = false,
-): BookingChannel {
-  if (requested === "agenda") return agendaEnabled ? "agenda" : "choose";
-  if (requested === "web-demo") return demoEnabled ? "web-demo" : "choose";
+/**
+ * El recorrido con el que se abre /reservar. `?canal=web` entra directo a la
+ * reserva web; los enlaces antiguos (`web-demo`, `agenda`) llevan al mismo
+ * sitio. `?medico=` / `?especialidad=` vienen del directorio del CRM y abren
+ * la solicitud por WhatsApp con esa preelección.
+ */
+export function initialChannel(requested: string | null = null, hasPreselection = false): BookingChannel {
+  if (requested === "web" || requested === "web-demo" || requested === "agenda") return "web";
   if (requested === "whatsapp") return "whatsapp";
   return hasPreselection ? "whatsapp" : "choose";
 }

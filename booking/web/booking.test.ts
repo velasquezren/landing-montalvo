@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { createMockBookingData } from "./booking-data.ts";
+import { createMockBookingData } from "./mock-booking-data.ts";
 import { doctors, specialties, makeDays } from "./mock-data.ts";
 import {
   bookingReducer,
@@ -157,7 +157,9 @@ test("fechas civiles correctas al cruzar medianoche y fin de año en Bolivia", (
   );
 });
 test("rechaza comprobantes vacíos, tipos inesperados y más de 5 MB", () => {
-  assert.equal(receiptError({ type: "application/pdf", size: 1024 }), "");
+  assert.equal(receiptError({ type: "image/webp", size: 1024 }), "");
+  // El backend solo acepta imágenes (lo que ScriptCase muestra como comprobante).
+  assert.ok(receiptError({ type: "application/pdf", size: 1024 }));
   assert.ok(receiptError({ type: "text/html", size: 1024 }));
   assert.ok(receiptError({ type: "image/png", size: 6 * 1024 * 1024 }));
   assert.ok(receiptError({ type: "image/png", size: 0 }));

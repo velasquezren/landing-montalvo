@@ -81,8 +81,8 @@ export function canContinue(step: number, draft: BookingDraft) {
   );
 }
 export function receiptError(file: Pick<File, "size" | "type">) {
-  if (!["image/jpeg", "image/png", "application/pdf"].includes(file.type))
-    return "Elegí un archivo JPG, PNG o PDF.";
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type))
+    return "Elegí una foto o captura del comprobante (JPG, PNG o WebP).";
   if (file.size > 5 * 1024 * 1024)
     return "El archivo debe pesar como máximo 5 MB.";
   if (file.size === 0) return "El archivo está vacío. Elegí otro comprobante.";

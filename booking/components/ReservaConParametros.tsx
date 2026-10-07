@@ -13,7 +13,7 @@ import { initialChannel } from "../channels";
  * una página estática hace que este trozo se pinte en el cliente, y así el
  * resto de la página sigue saliendo prerenderizado.
  */
-export default function ReservaConParametros({ catalogo, demoEnabled, agendaEnabled = false }: { catalogo: CatalogoReserva; demoEnabled: boolean; agendaEnabled?: boolean }) {
+export default function ReservaConParametros({ catalogo }: { catalogo: CatalogoReserva }) {
   const parametros = useSearchParams();
   const medico = parametros.get("medico");
   const especialidad = parametros.get("especialidad");
@@ -22,9 +22,7 @@ export default function ReservaConParametros({ catalogo, demoEnabled, agendaEnab
     <BookingChannels
       key={`${medico ?? ""}|${especialidad ?? ""}|${canal ?? ""}`}
       catalogo={catalogo}
-      demoEnabled={demoEnabled}
-      agendaEnabled={agendaEnabled}
-      initial={initialChannel(demoEnabled, canal, Boolean(medico || especialidad), agendaEnabled)}
+      initial={initialChannel(canal, Boolean(medico || especialidad))}
       preselection={solicitudInicial(catalogo, { medico, especialidad })}
     />
   );

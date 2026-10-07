@@ -34,7 +34,7 @@ export function PatientStep({
       }}
     >
       <p className={s.hint}>
-        Los campos con * son obligatorios. Usá datos de ejemplo para probar.
+        Los campos con * son obligatorios. Usá los datos de quien viene a la consulta.
       </p>
       <div className={s.formFields}>
         {(
@@ -124,7 +124,7 @@ export function PatientStep({
       <AntiBotPlaceholder />
       <p className={s.privacy}>
         <LockKeyhole size={16} aria-hidden="true" />
-        En esta demostración, tus datos no se envían ni se guardan al salir.
+        Tus datos se registran solo con tu reserva en la agenda de la clínica.
       </p>
       <div className={s.nextRow}>
         <Button type="submit" variant="primary" size="lg">

@@ -3,12 +3,10 @@ import assert from "node:assert/strict";
 import { initialChannel } from "./channels.ts";
 import { appointmentUrl, CURRENT_AGENDA_URL } from "../lib/appointments.ts";
 
-test("la URL no puede habilitar la reserva de demostración si el servidor la desactiva", () => {
-  for (const channel of [null, "web-demo", "otro"]) {
-    assert.equal(initialChannel(false, channel), "choose");
-  }
-  assert.equal(initialChannel(false, "whatsapp"), "whatsapp");
-  assert.equal(initialChannel(false, null, true), "whatsapp");
+test("la reserva web se abre con ?canal=web y con los enlaces antiguos", () => {
+  for (const canal of ["web", "web-demo", "agenda"]) assert.equal(initialChannel(canal), "web");
+  assert.equal(initialChannel(null), "choose");
+  assert.equal(initialChannel("otro"), "choose");
 });
 
 test("la reserva web conserva el destino público existente y descarta URLs inválidas", () => {
@@ -18,10 +16,8 @@ test("la reserva web conserva el destino público existente y descarta URLs inv�
   assert.equal(appointmentUrl("https://agenda.ejemplo.test/reservar"), "https://agenda.ejemplo.test/reservar");
 });
 
-test("ambos recorridos tienen entrada y los enlaces del directorio conservan su destino real", () => {
-  assert.equal(initialChannel(true), "choose");
-  assert.equal(initialChannel(true, "web-demo"), "web-demo");
-  assert.equal(initialChannel(true, "whatsapp"), "whatsapp");
-  assert.equal(initialChannel(true, null, true), "whatsapp");
-  assert.equal(initialChannel(true, "desconocido"), "choose");
+test("los enlaces del directorio abren la solicitud con su preelección", () => {
+  assert.equal(initialChannel("whatsapp"), "whatsapp");
+  assert.equal(initialChannel(null, true), "whatsapp");
+  assert.equal(initialChannel("web", true), "web");
 });

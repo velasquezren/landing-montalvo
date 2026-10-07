@@ -14,11 +14,12 @@ import {
   Waves,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { bookingData } from "../booking-data";
+import { agendaData } from "../agenda-data";
+import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { dateLabel, money } from "../state";
 import { useResource } from "../use-resource";
 import type { BookingAction } from "../state";
-import type { BookingDraft, Doctor, MockScenario, Specialty } from "../types";
+import type { BookingDraft, Doctor, Specialty } from "../types";
 import s from "../booking.module.css";
 
 export function LoadingCards() {
@@ -49,22 +50,6 @@ export function Notice({
     </div>
   );
 }
-function DemoControls({
-  onChange,
-}: {
-  onChange: (scenario: MockScenario) => void;
-}) {
-  return (
-    <details className={s.demoControls}>
-      <summary>Probar otros estados de esta demostración</summary>
-      <div className={s.inlineActions}>
-        <Button onClick={() => onChange("empty")}>Sin resultados</Button>
-        <Button onClick={() => onChange("error")}>Simular error</Button>
-        <Button onClick={() => onChange("normal")}>Restablecer</Button>
-      </div>
-    </details>
-  );
-}
 const icons: Record<string, typeof Stethoscope> = {
   ginecologia: Stethoscope,
   cardiologia: HeartPulse,
@@ -84,13 +69,8 @@ export function SpecialtyStep({
   onSelect: (item: Specialty) => void;
 }) {
   const [query, setQuery] = useState("");
-  const [scenario, setScenario] = useState<MockScenario>("normal");
-  const load = useCallback(
-    (attempt: number) =>
-      bookingData.getSpecialties(attempt > 0 ? "normal" : scenario),
-    [scenario],
-  );
-  const resource = useResource(`specialties-${scenario}`, load);
+  const load = useCallback(() => agendaData.getSpecialties(), []);
+  const resource = useResource("specialties", load);
   const filtered =
     resource.data?.filter((item) =>
       searchText(item.name).includes(searchText(query)),
@@ -130,7 +110,6 @@ export function SpecialtyStep({
           <Button
             onClick={() => {
               setQuery("");
-              setScenario("normal");
               resource.retry();
             }}
           >
@@ -163,7 +142,6 @@ export function SpecialtyStep({
           })}
         </div>
       )}
-      <DemoControls onChange={setScenario} />
     </>
   );
 }
@@ -176,14 +154,8 @@ export function DoctorStep({
   selected: Doctor | null;
   onSelect: (item: Doctor) => void;
 }) {
-  const [scenario, setScenario] = useState<MockScenario>("normal");
-  const [requested, setRequested] = useState<string>();
-  const load = useCallback(
-    (attempt: number) =>
-      bookingData.getDoctors(specialty.id, attempt > 0 ? "normal" : scenario),
-    [specialty.id, scenario],
-  );
-  const resource = useResource(`doctors-${specialty.id}-${scenario}`, load);
+  const load = useCallback(() => agendaData.getDoctors(specialty.id), [specialty.id]);
+  const resource = useResource(`doctors-${specialty.id}`, load);
   return (
     <>
       {resource.loading ? (
@@ -215,21 +187,26 @@ export function DoctorStep({
                     height={104}
                   />
                 ) : (
-                  <>
-                    <UserRound size={38} strokeWidth={1} aria-hidden="true" />
-                    <span>Ejemplo</span>
-                  </>
+                  <UserRound size={38} strokeWidth={1} aria-hidden="true" />
                 )}
               </div>
               <div className={s.doctorInfo}>
                 <h3>{doctor.name}</h3>
                 <p className={s.specialtyName}>{specialty.name}</p>
-                <p className={s.schedule}>
-                  <Clock3 size={15} aria-hidden="true" />
-                  {doctor.weeklySchedule}
-                </p>
+                {doctor.weeklySchedule && (
+                  <p className={s.schedule}>
+                    <Clock3 size={15} aria-hidden="true" />
+                    {doctor.weeklySchedule}
+                  </p>
+                )}
                 <p className={s.price}>
-                  {money(doctor.price)} <span>· consulta de ejemplo</span>
+                  {doctor.price !== null ? (
+                    <>
+                      {money(doctor.price)} <span>· consulta</span>
+                    </>
+                  ) : (
+                    <span>Precio de la consulta a confirmar</span>
+                  )}
                 </p>
               </div>
               <div className={s.doctorAction}>
@@ -249,24 +226,22 @@ export function DoctorStep({
                     <span className={s.requestBadge}>
                       Disponibilidad a solicitud
                     </span>
-                    <Button onClick={() => setRequested(doctor.id)}>
-                      Consultar disponibilidad
+                    <Button asChild>
+                      <a
+                        href={buildWhatsAppUrl(`Hola, quisiera consultar disponibilidad con ${doctor.name}.`)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Consultar disponibilidad
+                      </a>
                     </Button>
                   </>
                 )}
               </div>
-              {requested === doctor.id && (
-                <p className={s.requestNotice} role="status">
-                  La atención con {doctor.name} requiere coordinación con la
-                  clínica. En esta demostración no se envían consultas. Podés
-                  elegir otro profesional con horarios online.
-                </p>
-              )}
             </article>
           ))}
         </div>
       )}
-      <DemoControls onChange={setScenario} />
     </>
   );
 }
@@ -280,7 +255,7 @@ export function DateTimeStep({
   onNext: () => void;
 }) {
   const [chosenWeek, setWeek] = useState<number | null>(null);
-  const daysLoader = useCallback(() => bookingData.getDays(), []);
+  const daysLoader = useCallback(() => agendaData.getDays(), []);
   const days = useResource("days", daysLoader);
   const week =
     chosenWeek ??
@@ -300,9 +275,9 @@ export function DateTimeStep({
       )
     : "";
   const availabilityLoader = useCallback(
-    (attempt: number) =>
+    () =>
       draft.date && draft.doctor
-        ? bookingData.getAvailability(draft.doctor.id, draft.date, attempt > 0)
+        ? agendaData.getAvailability(draft.doctor.id, draft.date)
         : Promise.resolve(null),
     [draft.date, draft.doctor],
   );
@@ -318,7 +293,7 @@ export function DateTimeStep({
       <p className={s.contextLine}>
         <UserRound size={17} aria-hidden="true" />
         {draft.doctor?.name}
-        <span>{money(draft.doctor?.price ?? 0)}</span>
+        <span>{draft.doctor?.price != null ? money(draft.doctor.price) : "Precio a confirmar"}</span>
       </p>
       {days.loading ? (
         <LoadingCards />
