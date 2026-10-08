@@ -52,6 +52,8 @@ export interface MedicoPublico {
   resumenHorario: string;
   /** Próximas ausencias; el listado las trae solo si el backend las publica. */
   ausencias: Ausencia[];
+  /** Su número en la agenda de la clínica: con él «Reservar» abre su calendario en línea. `null`: solo solicitud. */
+  agendaMedicoId: string | null;
 }
 
 export interface FichaMedico extends MedicoPublico {

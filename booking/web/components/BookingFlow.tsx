@@ -1,5 +1,5 @@
 "use client";
-import { useReducer, useRef, useState } from "react";
+import { useEffect, useReducer, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -17,7 +17,7 @@ import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import { AgendaError, agendaData } from "../agenda-data";
 import { bookingReducer, canContinue, dateLabel, initialDraft, money } from "../state";
 import type { BookingDraft, Reservation } from "../types";
-import { SpecialtyStep, DoctorStep, DateTimeStep } from "./SelectionSteps";
+import { SpecialtyStep, DoctorStep, DateTimeStep, LoadingCards } from "./SelectionSteps";
 import { PatientStep } from "./PatientStep";
 import { PaymentStep } from "./PaymentStep";
 import s from "../booking.module.css";
@@ -112,9 +112,16 @@ function AppointmentSummary({
   );
 }
 
-export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () => void }) {
+/**
+ * `profesional`: el número de agenda de un médico (desde «Reservar» en su
+ * ficha). La reserva abre con su especialidad y con él ya elegidos, en el paso
+ * de fecha; si dejó de reservarse en línea, en la lista de su especialidad; si
+ * ya no está, desde el principio, sin error.
+ */
+export default function BookingFlow({ onChangeChannel, profesional }: { onChangeChannel?: () => void; profesional?: string | null }) {
   const [draft, dispatch] = useReducer(bookingReducer, undefined, initialDraft);
   const [step, setStep] = useState(0);
+  const [preparando, setPreparando] = useState(Boolean(profesional));
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [paid, setPaid] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -129,6 +136,28 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
       heading.current?.scrollIntoView({ block: "start", behavior: "instant" });
     });
   }
+
+  useEffect(() => {
+    if (!profesional) return;
+    let vigente = true;
+    agendaData
+      .getDoctor(profesional)
+      .then((elegido) => {
+        if (!vigente || !elegido) return;
+        dispatch({ type: "specialty", value: elegido.specialty });
+        if (elegido.doctor.availability === "online") {
+          dispatch({ type: "doctor", value: elegido.doctor });
+          setStep(2);
+        } else {
+          setStep(1);
+        }
+      })
+      .catch(() => undefined) // sin conexión: empieza desde el principio, como siempre
+      .finally(() => vigente && setPreparando(false));
+    return () => {
+      vigente = false;
+    };
+  }, [profesional]);
 
   /** Registra la cita en la agenda. Un solo envío a la vez; una vez registrada, ya no se repite. */
   async function confirm() {
@@ -240,7 +269,8 @@ export default function BookingFlow({ onChangeChannel }: { onChangeChannel?: () 
                 <p>{descriptions[step]}</p>
               </div>
               <div className={s.stepBody} key={step}>
-                {step === 0 && (
+                {preparando && <LoadingCards />}
+                {step === 0 && !preparando && (
                   <SpecialtyStep
                     selected={draft.specialty}
                     onSelect={(specialty) => {

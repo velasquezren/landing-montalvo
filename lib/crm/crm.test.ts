@@ -44,6 +44,7 @@ test("un médico sin slug o sin nombre se descarta; lo opcional malformado queda
     "ordenado y sin bloques imposibles",
   );
   assert.equal(m.resumenHorario, "Con cita a solicitud");
+  assert.equal(m.agendaMedicoId, null);
   assert.deepEqual(m.ausencias, []);
 });
 
@@ -122,5 +123,12 @@ test("las fechas imposibles no llegan a las fichas ni bloquean días del calenda
 test("las imágenes respetan también la ruta pública y los parámetros permitidos por Next", () => {
   for (const ruta of ["/privado/foto", "/publico/../privado/foto", "/publico/foto?token=ejemplo", "/publico/foto#fragmento", "https://usuario:ejemplo@crm.ejemplo.test/publico/foto"]) {
     assert.equal(urlDeImagen(ruta, API), null, ruta);
+  }
+});
+
+test("el número de la agenda solo pasa si es un número: con él se reserva en línea", () => {
+  assert.equal(medicoDe({ slug: "ana", nombre: "Dra. Ana", agendaMedicoId: "20" }, API)?.agendaMedicoId, "20");
+  for (const agendaMedicoId of ["20; drop", "../1", 20, "", null]) {
+    assert.equal(medicoDe({ slug: "ana", nombre: "Dra. Ana", agendaMedicoId }, API)?.agendaMedicoId, null);
   }
 });

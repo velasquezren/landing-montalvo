@@ -21,10 +21,13 @@ export default function BookingChannels({
   catalogo,
   initial = "choose",
   preselection,
+  profesional,
 }: {
   catalogo: CatalogoReserva;
   initial?: BookingChannel;
   preselection?: { draft: SolicitudDraft; paso: number };
+  /** Número de agenda de un médico: la reserva en línea abre con él elegido. */
+  profesional?: string | null;
 }) {
   const canPrepare = catalogo.especialidades.length > 0;
   const [requestedChannel, setChannel] = useState<BookingChannel>(initial);
@@ -111,7 +114,7 @@ export default function BookingChannels({
       </div>}
       {webVisited && (
         <div hidden={channel !== "web"} data-active={channel === "web"} tabIndex={-1} aria-label="Reserva en línea">
-          <WebBooking onChangeChannel={() => choose("choose")} />
+          <WebBooking onChangeChannel={() => choose("choose")} profesional={profesional} />
         </div>
       )}
     </div>

@@ -134,9 +134,10 @@ export default async function MedicoPage({ params }: Props) {
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Button asChild variant="primary" size="lg">
-                <Link href={`/reservar?medico=${medico.slug}`}>
+                {/* Con número de agenda se reserva en línea con este médico; si no, se solicita por WhatsApp. */}
+                <Link href={medico.agendaMedicoId ? `/reservar?profesional=${medico.agendaMedicoId}` : `/reservar?medico=${medico.slug}`}>
                   <CalendarCheck aria-hidden="true" className="h-4 w-4" strokeWidth={1.75} />
-                  Solicitar una consulta
+                  {medico.agendaMedicoId ? "Reservar en línea" : "Solicitar una consulta"}
                 </Link>
               </Button>
               <Button asChild size="lg" className="bg-background">

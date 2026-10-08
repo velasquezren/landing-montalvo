@@ -28,6 +28,7 @@ function medico(datos: Partial<MedicoPublico> & { slug: string }): MedicoPublico
     precioConsulta: 250,
     horario: [],
     resumenHorario: "Con cita a solicitud",
+    agendaMedicoId: null,
     ausencias: [],
     ...datos,
   };

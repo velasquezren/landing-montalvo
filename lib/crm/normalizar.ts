@@ -148,6 +148,7 @@ export function medicoDe(v: unknown, baseApi: string): MedicoPublico | null {
     horario,
     resumenHorario: texto(v.resumenHorario) ?? "Con cita a solicitud",
     ausencias: lista(v.ausencias, ausencia),
+    agendaMedicoId: typeof v.agendaMedicoId === "string" && /^\d{1,10}$/.test(v.agendaMedicoId) ? v.agendaMedicoId : null,
   };
 }
 

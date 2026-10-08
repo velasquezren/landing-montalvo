@@ -151,11 +151,30 @@ export function diasDeAgenda(v: unknown, medicoId: string): AvailabilityDay[] {
   return v.fechas.filter((f): f is string => typeof f === "string" && FECHA.test(f)).map(diaDeAgenda);
 }
 
+/** Un médico con su especialidad (`/publico/agenda/medicos/:id`): para abrir la reserva ya elegida. */
+export function medicoConEspecialidadDeAgenda(v: unknown): { doctor: Doctor; specialty: Specialty } | null {
+  if (!esObjeto(v)) return null;
+  const doctor = medicoDeAgenda(v.medico);
+  const specialty = especialidadDeAgenda(v.especialidad);
+  return doctor && specialty && doctor.specialtyId === specialty.id ? { doctor, specialty } : null;
+}
+
 export function createAgendaBookingData(pedir: typeof fetch = (...a) => fetch(...a)): BookingData & {
+  /** `null` si ya no está disponible (inactivo, sin especialidad o inexistente). */
+  getDoctor(doctorId: string): Promise<{ doctor: Doctor; specialty: Specialty } | null>;
   reservar(draft: BookingDraft): Promise<Reservation>;
   pagar(reference: string, receipt: File, nit: string, businessName: string): Promise<void>;
 } {
   return {
+    async getDoctor(doctorId) {
+      if (!/^\d{1,10}$/.test(doctorId)) return null;
+      try {
+        return medicoConEspecialidadDeAgenda(await leer(pedir, `medicos/${doctorId}`));
+      } catch (error) {
+        if (error instanceof AgendaError && error.status === 404) return null;
+        throw error;
+      }
+    },
     async getSpecialties() {
       return (await todas(pedir, "especialidades")).map(especialidadDeAgenda).filter((e): e is Specialty => e !== null);
     },

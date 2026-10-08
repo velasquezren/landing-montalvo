@@ -84,3 +84,20 @@ test("reservar manda exactamente lo elegido y una hora ocupada llega con su cód
   const sinRed = createAgendaBookingData(() => Promise.reject(new TypeError("Failed to fetch")));
   await assert.rejects(sinRed.getSpecialties(), (e: unknown) => e instanceof AgendaError && e.status === 0);
 });
+
+test("abrir la reserva con un médico: su especialidad viene con él; si ya no está, sin error", async () => {
+  const medico = { id: "20", especialidadId: "esp-1", nombre: "Dra. Ana", horarioInformativo: null, modalidad: "ONLINE", precio: null };
+  const pedidos: string[] = [];
+  const datos = createAgendaBookingData((url) => {
+    pedidos.push(String(url));
+    return String(url).endsWith("/medicos/20")
+      ? json({ version: 1, medico, especialidad: { id: "esp-1", nombre: "Ginecología" } })
+      : json({ codigo: "MEDICO_NO_DISPONIBLE", message: "Ese profesional no está disponible en línea." }, 404);
+  });
+  const elegido = await datos.getDoctor("20");
+  assert.equal(elegido?.doctor.name, "Dra. Ana");
+  assert.deepEqual(elegido?.specialty, { id: "esp-1", name: "Ginecología", description: "" });
+  assert.equal(await datos.getDoctor("21"), null); // 404: empieza desde el principio
+  assert.equal(await datos.getDoctor("21; drop"), null); // ni siquiera se pide
+  assert.equal(pedidos.length, 2);
+});
